@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { cn, format } from '../../../shared/lib/utils';
 import { PortfolioItem } from '../../../shared/types/types';
-import { Card, Button, Badge, Progress } from '../../../shared/components/ui/NeoComponents';
+import { Card, Button, Badge, Progress, NeoSelect } from '../../../shared/components/ui/NeoComponents';
 import { ActionBottomSheet } from '../../../shared/components/ui/BottomSheet';
 
 // Mock portfolio data - Beauty Salon themed images
@@ -380,33 +380,17 @@ export const Portfolio: React.FC = () => {
             </Button>
           </div>
 
-          {/* Filter Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            <button
-              onClick={() => setFilter('all')}
-              className={cn(
-                'px-4 py-2 rounded-neo text-sm font-medium transition-all whitespace-nowrap',
-                filter === 'all'
-                  ? 'shadow-neo-pressed text-neo-accent'
-                  : 'shadow-neo-out text-neo-text-secondary'
-              )}
-            >
-              Todos
-            </button>
-            {PORTFOLIO_CATEGORIES.map(cat => (
-              <button
-                key={cat.value}
-                onClick={() => setFilter(cat.value)}
-                className={cn(
-                  'px-4 py-2 rounded-neo text-sm font-medium transition-all whitespace-nowrap',
-                  filter === cat.value
-                    ? 'shadow-neo-pressed text-neo-accent'
-                    : 'shadow-neo-out text-neo-text-secondary'
-                )}
-              >
-                {cat.label}
-              </button>
-            ))}
+          {/* Filter Dropdown */}
+          <div className="mb-6">
+            <NeoSelect
+              options={[
+                { value: 'all', label: 'Todos' },
+                ...PORTFOLIO_CATEGORIES
+              ]}
+              value={filter}
+              onChange={(value) => setFilter(value as 'all' | PortfolioCategory)}
+              className="w-full"
+            />
           </div>
         </header>
 

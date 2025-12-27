@@ -14,8 +14,25 @@ import { AuthProvider } from './modules/auth/context/AuthContext';
 import { ProtectedRoute } from './modules/auth/components/ProtectedRoute';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
 import { queryClient } from './shared/lib/QueryClient';
+
+// Config Guard Component
+const ConfigGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  React.useEffect(() => {
+    const requiredKeys = ['VITE_FIREBASE_API_KEY', 'VITE_MERCADOPAGO_PUBLIC_KEY'];
+    const missing = requiredKeys.filter(key => !import.meta.env[key]);
+
+    if (missing.length > 0) {
+      toast.error('Configuração Necessária', {
+        description: `As seguintes chaves estão faltando: ${missing.join(', ')}. O aplicativo pode não funcionar corretamente.`,
+        duration: Infinity,
+      });
+    }
+  }, []);
+
+  return <>{children}</>;
+};
 
 // Organization Module
 import { BrandingProvider } from './modules/organization/context/BrandingContext';
@@ -278,63 +295,65 @@ const App: React.FC = () => {
         <AuthProvider>
           <BrandingProvider>
             <AppLayout>
-              <React.Suspense fallback={<PageLoader />}>
-                <Routes>
-                  {/* Auth Routes */}
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/register-business" element={<RegisterBusinessPage />} />
+              <ConfigGuard>
+                <React.Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    {/* Auth Routes */}
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register-business" element={<RegisterBusinessPage />} />
 
-                  {/* Client Routes */}
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/booking" element={<ClientBooking />} />
-                  <Route path="/booking/online" element={<OnlineBookingPage />} />
-                  <Route path="/booking/success" element={<BookingSuccessPage />} />
-                  <Route path="/checkout" element={<CheckoutPage />} />
-                  <Route path="/portfolio" element={<Portfolio />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/noiva" element={<BridePortalPage />} />
-                  <Route path="/noiva/cadastro" element={<BrideSelfOnboardingPage />} />
-                  <Route path="/noiva/colecao" element={<BrideCollectionPage />} />
-                  <Route path="/bride-portal" element={<BridePortalPage />} /> {/* Legacy alias */}
+                    {/* Client Routes */}
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/booking" element={<ClientBooking />} />
+                    <Route path="/booking/online" element={<OnlineBookingPage />} />
+                    <Route path="/booking/success" element={<BookingSuccessPage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/portfolio" element={<Portfolio />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/noiva" element={<BridePortalPage />} />
+                    <Route path="/noiva/cadastro" element={<BrideSelfOnboardingPage />} />
+                    <Route path="/noiva/colecao" element={<BrideCollectionPage />} />
+                    <Route path="/bride-portal" element={<BridePortalPage />} /> {/* Legacy alias */}
 
-                  {/* Admin Routes */}
-                  <Route path="/admin" element={<AdminDashboard />} />
-                  <Route path="/admin/calendar" element={<AdminDashboard initialView="calendar" />} />
-                  <Route path="/admin/clients" element={
-                    <PageWrapper>
-                      <div className="p-6">
-                        <h1 className="text-display">Clientes</h1>
-                      </div>
-                    </PageWrapper>
-                  } />
-                  <Route path="/admin/services" element={<ServicesManagement />} />
-                  <Route path="/admin/portfolio" element={<Portfolio />} />
-                  <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
-                  <Route path="/admin/team" element={<TeamManagementPage />} />
-                  <Route path="/admin/brides" element={<BrideCommandCenter />} />
-                  <Route path="/admin/brides/:brideId" element={<BrideCommandCenter />} />
-                  <Route path="/admin/commissions" element={<CommissionDashboard />} />
-                  <Route path="/admin/online-booking" element={
-                    <PageWrapper>
-                      <div className="p-6">
-                        <h1 className="text-display">Link de Agendamento</h1>
-                        <p className="text-caption mt-2">Configure seu link de agendamento online</p>
-                      </div>
-                    </PageWrapper>
-                  } />
-                  <Route path="/admin/reports" element={
-                    <PageWrapper>
-                      <div className="p-6">
-                        <h1 className="text-display">Relatórios</h1>
-                        <p className="text-caption mt-2">Comandas e receitas</p>
-                      </div>
-                    </PageWrapper>
-                  } />
+                    {/* Admin Routes */}
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/admin/calendar" element={<AdminDashboard initialView="calendar" />} />
+                    <Route path="/admin/clients" element={
+                      <PageWrapper>
+                        <div className="p-6">
+                          <h1 className="text-display">Clientes</h1>
+                        </div>
+                      </PageWrapper>
+                    } />
+                    <Route path="/admin/services" element={<ServicesManagement />} />
+                    <Route path="/admin/portfolio" element={<Portfolio />} />
+                    <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
+                    <Route path="/admin/team" element={<TeamManagementPage />} />
+                    <Route path="/admin/brides" element={<BrideCommandCenter />} />
+                    <Route path="/admin/brides/:brideId" element={<BrideCommandCenter />} />
+                    <Route path="/admin/commissions" element={<CommissionDashboard />} />
+                    <Route path="/admin/online-booking" element={
+                      <PageWrapper>
+                        <div className="p-6">
+                          <h1 className="text-display">Link de Agendamento</h1>
+                          <p className="text-caption mt-2">Configure seu link de agendamento online</p>
+                        </div>
+                      </PageWrapper>
+                    } />
+                    <Route path="/admin/reports" element={
+                      <PageWrapper>
+                        <div className="p-6">
+                          <h1 className="text-display">Relatórios</h1>
+                          <p className="text-caption mt-2">Comandas e receitas</p>
+                        </div>
+                      </PageWrapper>
+                    } />
 
-                  {/* Fallback */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </React.Suspense>
+                    {/* Fallback */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </Routes>
+                </React.Suspense>
+              </ConfigGuard>
               <Toaster position="top-center" richColors />
               <ReactQueryDevtools initialIsOpen={false} />
             </AppLayout>

@@ -4,7 +4,7 @@
  */
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { doc, onSnapshot, getDocs, collection, limit, query } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
+import { db, isFirebaseInitialized } from '@/shared/lib/firebase';
 import { Organization } from '@/shared/types/types';
 
 interface BrandingContextType {
@@ -31,6 +31,10 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             try {
                 // For this demo, we'll grab the first organization or a default ID
                 // In a real multi-tenant app, this would come from the logged-in user's claims or subdomain
+                if (!isFirebaseInitialized) {
+                    setLoading(false);
+                    return;
+                }
                 const q = query(collection(db, 'organizations'), limit(1));
                 const snapshot = await getDocs(q);
 

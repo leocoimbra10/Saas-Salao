@@ -165,11 +165,32 @@ export async function registerBusiness(
 // Create new client account
 export async function createClientAccount(
     email: string,
-    password: string
+    password: string,
+    displayName?: string
 ): Promise<UserCredential> {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    await createUserProfile(userCredential.user, 'client');
-    return userCredential;
+    if (!auth || !auth.app) {
+        throw new Error("Sistema de autenticação indisponível (Firebase não configurado).");
+    }
+
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+        if (displayName) {
+            await updateProfile(userCredential.user, { displayName });
+        }
+
+        await createUserProfile(userCredential.user, 'client');
+        return userCredential;
+    } catch (error: any) {
+        console.error("Create Account Error:", error);
+        if (error.code === 'auth/email-already-in-use') {
+            throw new Error('Este email já está em uso.');
+        }
+        if (error.code === 'auth/weak-password') {
+            throw new Error('A senha é muito fraca.');
+        }
+        throw error;
+    }
 }
 
 // Add employee to organization
@@ -210,10 +231,26 @@ export async function addEmployee(
 
 // Sign in with Google
 export async function signInWithGoogle(): Promise<{ user: User; profile: UserProfile; isAdmin: boolean }> {
-    const userCredential = await signInWithPopup(auth, googleProvider);
-    const profile = await createUserProfile(userCredential.user);
-    const isAdmin = profile.role === 'owner' || profile.role === 'employee';
-    return { user: userCredential.user, profile, isAdmin };
+    if (!auth || !auth.app) { // Basic check, real check dependent on isFirebaseInitialized
+        console.error("Firebase Auth not initialized");
+        throw new Error("Sistema de autenticação indisponível (Firebase não configurado).");
+    }
+
+    try {
+        const userCredential = await signInWithPopup(auth, googleProvider);
+        const profile = await createUserProfile(userCredential.user);
+        const isAdmin = profile.role === 'owner' || profile.role === 'employee';
+        return { user: userCredential.user, profile, isAdmin };
+    } catch (error: any) {
+        console.error("Google Sign-In Error:", error);
+        if (error?.code === 'auth/popup-closed-by-user') {
+            throw new Error('O login foi cancelado.');
+        }
+        if (error?.code === 'auth/cancelled-popup-request') {
+            throw new Error('Uma janela de login já está aberta.');
+        }
+        throw error;
+    }
 }
 
 // Sign out

@@ -499,3 +499,99 @@ export const Skeleton: React.FC<{ className?: string }> = ({ className }) => {
   );
 };
 Skeleton.displayName = 'Skeleton';
+
+// Custom Neomorphic Select (Custom Dropdown)
+export interface NeoSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: string }[];
+  label?: string;
+  placeholder?: string;
+  className?: string;
+}
+
+export const NeoSelect: React.FC<NeoSelectProps> = ({
+  value,
+  onChange,
+  options,
+  label,
+  placeholder = 'Selecione...',
+  className
+}) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  // Close on click outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedLabel = options.find(opt => opt.value === value)?.label || placeholder;
+
+  return (
+    <div className={cn("relative w-full", className)} ref={containerRef}>
+      {label && (
+        <label className="block text-sm font-medium text-neo-text-secondary mb-2">
+          {label}
+        </label>
+      )}
+
+      {/* Trigger */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "w-full flex items-center justify-between",
+          "bg-neo-bg rounded-neo px-4 py-3 text-neo-text text-left",
+          isOpen ? "shadow-neo-pressed" : "shadow-neo-out", // Pressed effect when open
+          "transition-all duration-200 outline-none"
+        )}
+      >
+        <span className={!value ? "text-neo-text-secondary" : ""}>{selectedLabel}</span>
+        <svg
+          width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          className={cn("text-neo-text-secondary transition-transform duration-200", isOpen && "rotate-180")}
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      {/* Dropdown Menu */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scaleY: 0.95 }}
+            animate={{ opacity: 1, y: 0, scaleY: 1 }}
+            exit={{ opacity: 0, y: -10, scaleY: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute top-full left-0 right-0 mt-2 z-50 overflow-hidden bg-neo-bg rounded-neo shadow-neo-out border border-white/40 p-2 max-h-60 overflow-y-auto"
+          >
+            {options.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+                className={cn(
+                  "w-full text-left px-3 py-2 rounded-neo-sm text-sm font-medium transition-colors mb-1 last:mb-0",
+                  value === opt.value
+                    ? "bg-neo-accent text-white shadow-neo-out"
+                    : "text-neo-text hover:bg-neo-text-secondary/10"
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};

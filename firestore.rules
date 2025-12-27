@@ -129,5 +129,33 @@ service cloud.firestore {
         && request.resource.data.orgId == getUserOrgId()
         && hasPermission('canEditServices');
     }
+
+    // Payments - Client can read/create theirs, Admin can read/update all in org
+    match /payments/{paymentId} {
+      allow read: if isSignedIn() && (
+        resource.data.clientId == request.auth.uid ||
+        resource.data.orgId == getUserOrgId()
+      );
+      
+      allow create: if isSignedIn() && (
+        request.resource.data.clientId == request.auth.uid ||
+        (isSignedIn() && request.resource.data.orgId != null)
+      );
+      
+      allow update: if isSignedIn() && (
+        resource.data.orgId == getUserOrgId() ||
+        resource.data.clientId == request.auth.uid
+      );
+    }
+
+    // Staff Commissions - Staff can read theirs, Admin can read/write all in org
+    match /staff_commissions/{commId} {
+      allow read: if isSignedIn() && (
+        resource.data.staffId == request.auth.uid ||
+        isOrgMember(resource.data.orgId)
+      );
+      
+      allow write: if isSignedIn() && isOrgOwner(getUserOrgId());
+    }
   }
 }

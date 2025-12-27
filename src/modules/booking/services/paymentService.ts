@@ -1,9 +1,12 @@
 import { db } from '../../../shared/lib/firebase';
 import { doc, updateDoc, setDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { loadStripe } from '@stripe/stripe-js';
+import { functions } from '../../../shared/lib/firebase';
+import { httpsCallable } from 'firebase/functions';
 
-// Initialize Stripe (Publishable Key should be in .env)
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+const MP_PUBLIC_KEY = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
+if (!MP_PUBLIC_KEY) {
+    console.warn('[Payment Service] Warning: VITE_MERCADOPAGO_PUBLIC_KEY is missing. Payments will not initialize.');
+}
 
 export interface PaymentDetails {
     appointmentId: string;
@@ -35,6 +38,24 @@ export const paymentService = {
         });
 
         return paymentRef.id;
+    },
+
+    /**
+     * Creates a Mercado Pago payment preference
+     */
+    async createPreference(appointmentId: string, amount: number, items: any[]) {
+        const createPreferenceFn = httpsCallable(functions, 'createMercadoPagoPreference');
+        const response = await createPreferenceFn({ appointmentId, amount, items });
+        return response.data as { preferenceId: string };
+    },
+
+    /**
+     * Processes a payment from Mercado Pago Brick
+     */
+    async processPayment(paymentData: any) {
+        const processPaymentFn = httpsCallable(functions, 'processMercadoPagoPayment');
+        const response = await processPaymentFn(paymentData);
+        return response.data as { status: string, paymentId?: string, pixData?: any };
     },
 
     /**

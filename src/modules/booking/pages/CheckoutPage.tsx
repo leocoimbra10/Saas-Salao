@@ -15,8 +15,11 @@ import {
     Lock,
     Sparkles,
     CheckCircle,
-    Crown
+    Crown,
+    ExternalLink
 } from 'lucide-react';
+import { initMercadoPago, Payment } from '@mercadopago/sdk-react';
+import { paymentService } from '../services/paymentService';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
 import { BrideOnboardingModal } from '../../bride/components/BrideOnboardingModal';
 import { saveBrideJourney } from '../../bride/services/brideIntelligence';
@@ -284,6 +287,14 @@ export const CheckoutPage: React.FC = () => {
         time: '18h30'
     };
 
+    // Initialize Mercado Pago
+    React.useEffect(() => {
+        const mpKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
+        if (mpKey) {
+            initMercadoPago(mpKey, { locale: 'pt-BR' });
+        }
+    }, []);
+
     const depositAmount = checkoutData.depositType === 'percentage'
         ? checkoutData.totalAmount * (checkoutData.depositPercentage / 100)
         : (checkoutData.depositFixed || 0);
@@ -297,6 +308,7 @@ export const CheckoutPage: React.FC = () => {
     // State
     const [paymentChoice, setPaymentChoice] = useState<'deposit' | 'full'>('deposit');
     const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card'>('pix');
+    const [pixData, setPixData] = useState<{ qr_code: string, qr_code_base64: string } | null>(null);
     const [pixCopied, setPixCopied] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -319,23 +331,33 @@ export const CheckoutPage: React.FC = () => {
         setTimeout(() => setPixCopied(false), 2000);
     };
 
-    const handlePayment = async () => {
+    const handlePayment = async (param?: any) => {
         setIsProcessing(true);
 
-        // Simulate payment processing
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+            // If param is present, it's a Brick submission
+            if (param) {
+                const result = await paymentService.processPayment({
+                    ...param,
+                    external_reference: checkoutData.bookingId,
+                    metadata: {
+                        paymentChoice,
+                        appointmentId: checkoutData.bookingId
+                    }
+                });
 
-        // TODO: Save to Firestore
-        // await updateDoc(doc(db, 'appointments', appointmentId), {
-        //     status: 'confirmed',
-        //     paymentStatus: paymentChoice === 'deposit' ? 'Sinal Pago' : 'Pago Integral',
-        //     paidAmount: selectedAmount,
-        //     paymentMethod: paymentMethod,
-        //     paidAt: serverTimestamp()
-        // });
-
-        setIsProcessing(false);
-        setShowSuccess(true);
+                if (result.status === 'approved') {
+                    setShowSuccess(true);
+                } else if (result.pixData) {
+                    setPixData(result.pixData);
+                    setPaymentMethod('pix');
+                }
+            }
+        } catch (error) {
+            console.error("Payment error:", error);
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const handleBrideJourneySave = async (data: { weddingDate: Date; ceremonyTime: string; venue: string }) => {
@@ -489,121 +511,60 @@ export const CheckoutPage: React.FC = () => {
 
                     {/* Payment Content */}
                     <AnimatePresence mode="wait">
-                        {paymentMethod === 'pix' ? (
+                        {paymentMethod === 'pix' && pixData ? (
                             <motion.div
-                                key="pix"
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: 20 }}
-                                className="mb-6"
+                                key="pix-result"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="mb-6 bg-white rounded-neo p-6 flex flex-col items-center shadow-neo-out"
                             >
-                                {/* QR Code Area */}
-                                <div className="bg-white rounded-2xl p-6 mb-4 flex flex-col items-center">
-                                    <div className="w-48 h-48 bg-gray-100 rounded-xl flex items-center justify-center mb-4">
-                                        <QrCode size={120} className="text-gray-800" />
-                                    </div>
-                                    <p className="text-sm text-gray-600 text-center">
-                                        Escaneie o QR Code ou copie a chave PIX
-                                    </p>
-                                </div>
+                                <img
+                                    src={`data:image/png;base64,${pixData.qr_code_base64}`}
+                                    alt="QR Code PIX"
+                                    className="w-48 h-48 mb-4"
+                                />
+                                <p className="text-sm text-gray-600 mb-4 text-center">
+                                    Escaneie o código acima para pagar {formatCurrency(selectedAmount)}
+                                </p>
 
-                                {/* Copy PIX Key Button */}
                                 <button
-                                    onClick={handleCopyPix}
-                                    className={cn(
-                                        "w-full py-4 rounded-neo font-semibold flex items-center justify-center gap-2 transition-all",
-                                        "bg-neo-bg shadow-neo-out active:shadow-neo-pressed"
-                                    )}
-                                    style={{ color: pixCopied ? '#22c55e' : ROSE }}
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(pixData.qr_code);
+                                        setPixCopied(true);
+                                        setTimeout(() => setPixCopied(false), 2000);
+                                    }}
+                                    className="w-full py-3 rounded-xl bg-gray-100 text-gray-800 font-medium flex items-center justify-center gap-2"
                                 >
-                                    {pixCopied ? (
-                                        <>
-                                            <Check size={18} />
-                                            Chave copiada!
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Copy size={18} />
-                                            Copiar Chave PIX
-                                        </>
-                                    )}
+                                    {pixCopied ? <Check size={18} /> : <Copy size={18} />}
+                                    {pixCopied ? 'Copiado!' : 'Copiar Código Copia e Cola'}
                                 </button>
                             </motion.div>
                         ) : (
-                            <motion.div
-                                key="card"
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20 }}
-                            >
-                                {/* 3D Credit Card */}
-                                <GlassCreditCard
-                                    cardNumber={cardNumber}
-                                    cardName={cardName}
-                                    expiry={expiry}
-                                    cvv={cvv}
-                                    isFlipped={isCardFlipped}
-                                    onCardNumberChange={setCardNumber}
-                                    onCardNameChange={setCardName}
-                                    onExpiryChange={setExpiry}
-                                    onCvvChange={setCvv}
-                                    onCvvFocus={() => setIsCardFlipped(true)}
-                                    onCvvBlur={() => setIsCardFlipped(false)}
+                            <div className="mb-8">
+                                <Payment
+                                    initialization={{
+                                        amount: selectedAmount,
+                                        preferenceId: undefined, // Let it be calculated on backend or use simple flow
+                                    }}
+                                    customization={{
+                                        paymentMethods: {
+                                            ticket: "all",
+                                            bankTransfer: "all",
+                                            creditCard: "all",
+                                            debitCard: "all",
+                                            mercadoPago: "all",
+                                        },
+                                        visual: {
+                                            style: {
+                                                theme: 'flat', // or 'default'
+                                            }
+                                        }
+                                    }}
+                                    onSubmit={handlePayment}
+                                    onReady={() => console.log('MP Brick Ready')}
+                                    onError={(error) => console.error('MP Brick Error:', error)}
                                 />
-
-                                {/* Installments */}
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-                                        Número de parcelas
-                                    </label>
-                                    <div className="relative">
-                                        <select
-                                            value={installments}
-                                            onChange={(e) => setInstallments(Number(e.target.value))}
-                                            className="w-full neo-input appearance-none cursor-pointer pr-10"
-                                            style={{ borderColor: GOLD }}
-                                        >
-                                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
-                                                <option key={n} value={n}>
-                                                    {n}x de {formatCurrency(selectedAmount / n)}
-                                                    {n === 1 ? ' (à vista)' : ''}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-
-                                {/* Save Card Toggle */}
-                                <div className="flex items-center justify-between p-4 bg-neo-bg rounded-neo shadow-neo-in mb-6">
-                                    <div className="flex items-center gap-2">
-                                        <Shield size={18} className="text-neo-text-secondary" />
-                                        <span className="text-sm text-neo-text">Salvar cartão para próximas compras</span>
-                                    </div>
-                                    <button
-                                        onClick={() => setSaveCard(!saveCard)}
-                                        className={cn(
-                                            "relative w-12 h-6 rounded-full transition-all duration-300",
-                                            saveCard
-                                                ? "shadow-[0_0_12px_rgba(212,175,55,0.5)]"
-                                                : "bg-neo-bg shadow-neo-in"
-                                        )}
-                                        style={{
-                                            background: saveCard ? `linear-gradient(90deg, ${GOLD}, ${ROSE})` : undefined
-                                        }}
-                                    >
-                                        <motion.div
-                                            animate={{ x: saveCard ? 26 : 2 }}
-                                            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                                            className={cn(
-                                                "absolute top-1 w-4 h-4 rounded-full",
-                                                saveCard
-                                                    ? "bg-white shadow-[0_0_6px_rgba(212,175,55,0.8)]"
-                                                    : "bg-neo-bg shadow-neo-out"
-                                            )}
-                                        />
-                                    </button>
-                                </div>
-                            </motion.div>
+                            </div>
                         )}
                     </AnimatePresence>
 

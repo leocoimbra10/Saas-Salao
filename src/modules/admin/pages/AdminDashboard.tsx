@@ -263,9 +263,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
           </div>
 
           {initialView === 'schedule' && (
-            <Button variant="ghost" size="sm">
-              <Settings size={20} />
-            </Button>
+            <a href="/register-business" title="Configurações do Salão">
+              <Button variant="ghost" size="sm">
+                <Settings size={20} />
+              </Button>
+            </a>
           )}
         </div>
       </header>

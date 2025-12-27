@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
 import { Card, Button, Badge, Progress } from '../../../shared/components/ui/NeoComponents';
+import { paymentService } from '../services/paymentService';
 
 // Brand Colors - Rose Pink
 const ROSE = '#E8A0B8';
@@ -552,23 +553,45 @@ export const OnlineBookingPage: React.FC = () => {
         }
     };
 
-    const handleSubmit = () => {
-        // Navigate to checkout page with booking data
-        navigate('/checkout', {
-            state: {
-                checkoutData: {
-                    totalAmount,
-                    depositPercentage: 30,
-                    depositType: 'percentage',
-                    pixKey: 'pagamentos@salaobeauty.com.br',
-                    serviceName: selectedServiceDetails.map(s => s.name).join(', '),
-                    date: selectedDate?.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }),
-                    time: selectedTime?.replace(':', 'h'),
+    const handleSubmit = async () => {
+        try {
+            const bookingId = `BK${Date.now().toString().slice(-8)}`;
+
+            // 1. Create payment record in Firestore
+            const paymentId = await paymentService.createPaymentRecord({
+                appointmentId: bookingId,
+                amount: depositAmount,
+                currency: 'BRL',
+                method: 'pix',
+                metadata: {
+                    clientName,
+                    clientPhone,
+                    services: selectedServiceDetails.map(s => s.name).join(', '),
                     professional: PROFESSIONALS.find(p => p.id === selectedProfessional)?.name,
-                    bookingId: `BK${Date.now().toString().slice(-8)}`,
                 }
-            }
-        });
+            });
+
+            // 2. Navigate to checkout page with booking and payment data
+            navigate('/checkout', {
+                state: {
+                    checkoutData: {
+                        totalAmount,
+                        depositPercentage: 25,
+                        depositType: 'percentage',
+                        pixKey: 'pagamentos@salaobeauty.com.br',
+                        serviceName: selectedServiceDetails.map(s => s.name).join(', '),
+                        date: selectedDate?.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' }),
+                        time: selectedTime?.replace(':', 'h'),
+                        professional: PROFESSIONALS.find(p => p.id === selectedProfessional)?.name,
+                        bookingId,
+                        paymentId,
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Error creating payment record:", error);
+            // We could show a toast here if we had one available
+        }
     };
 
     const handleServiceToggle = (id: string) => {

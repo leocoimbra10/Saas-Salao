@@ -4,7 +4,7 @@
  */
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/shared/lib/firebase';
+import { auth, isFirebaseInitialized } from '@/shared/lib/firebase';
 
 interface AuthContextType {
     user: User | null;
@@ -24,21 +24,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         console.log("AuthProvider: useEffect triggered, subcribing to auth state change...");
+
+        if (!isFirebaseInitialized) {
+            console.warn("AuthProvider: Firebase not initialized. Skipping auth check.");
+            setLoading(false);
+            return;
+        }
+
+        // Safeguard: If Firebase hangs, don't keep the app blank forever
+        const timeoutId = setTimeout(() => {
+            if (loading) {
+                console.warn("AuthProvider: Auth state detection timed out after 5s. Rendering app anyway.");
+                setLoading(false);
+            }
+        }, 5000);
+
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             console.log("AuthProvider: onAuthStateChanged fired. User:", user ? user.uid : "null");
             setUser(user);
             setLoading(false);
+            clearTimeout(timeoutId);
         });
 
         return () => {
             console.log("AuthProvider: unsubscribing...");
+            clearTimeout(timeoutId);
             unsubscribe();
         };
     }, []);
 
     return (
         <AuthContext.Provider value={{ user, loading }}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 };

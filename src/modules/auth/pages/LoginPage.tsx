@@ -20,6 +20,7 @@ export const LoginPage: React.FC = () => {
     const [authMode, setAuthMode] = useState<AuthMode>('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [displayName, setDisplayName] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -92,7 +93,7 @@ export const LoginPage: React.FC = () => {
         setIsLoading(true);
 
         try {
-            await createClientAccount(email, password);
+            await createClientAccount(email, password, displayName);
             setSuccessMessage('Conta criada com sucesso! Redirecionando...');
             setTimeout(() => navigate('/'), 1500);
         } catch (err: any) {
@@ -234,17 +235,48 @@ export const LoginPage: React.FC = () => {
                             exit={{ opacity: 0, x: activeTab === 'user' ? 20 : -20 }}
                             transition={{ duration: 0.2 }}
                         >
-                            {/* Welcome Message */}
                             <div className="mb-6 text-center">
                                 <h2 className="text-lg font-semibold text-neo-text">
-                                    {activeTab === 'user' ? 'Olá! Bem-vinda de volta' : 'Área Administrativa'}
+                                    {activeTab === 'user'
+                                        ? (authMode === 'login' ? 'Olá! Bem-vinda de volta' : 'Crie sua conta')
+                                        : 'Área Administrativa'}
                                 </h2>
                                 <p className="text-sm text-neo-text-secondary mt-1">
                                     {activeTab === 'user'
-                                        ? 'Entre para acessar seus agendamentos'
+                                        ? (authMode === 'login' ? 'Entre para acessar seus agendamentos' : 'Preencha os dados abaixo')
                                         : 'Acesse o painel de controle'}
                                 </p>
                             </div>
+
+                            {/* Name Field (Register Only) */}
+                            {authMode === 'register' && activeTab === 'user' && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="mb-4"
+                                >
+                                    <label className="block text-sm font-medium text-neo-text-secondary mb-2">
+                                        Nome Completo
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neo-text-secondary">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                                <circle cx="12" cy="7" r="4" />
+                                            </svg>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={displayName}
+                                            onChange={(e) => setDisplayName(e.target.value)}
+                                            placeholder="Seu nome"
+                                            className="w-full neo-input pl-12"
+                                            required={authMode === 'register'}
+                                        />
+                                    </div>
+                                </motion.div>
+                            )}
 
                             {/* Email Field */}
                             <div className="mb-4">
@@ -309,6 +341,37 @@ export const LoginPage: React.FC = () => {
                                 </div>
                             </div>
 
+                            {/* Confirm Password (Register Only) */}
+                            {authMode === 'register' && activeTab === 'user' && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="mb-6"
+                                >
+                                    <label className="block text-sm font-medium text-neo-text-secondary mb-2">
+                                        Confirmar Senha
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neo-text-secondary">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                                <path d="M15 11v-1" />
+                                            </svg>
+                                        </div>
+                                        <input
+                                            type={showPassword ? 'text' : 'password'}
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            placeholder="••••••••"
+                                            className="w-full neo-input pl-12"
+                                            required={authMode === 'register'}
+                                        />
+                                    </div>
+                                </motion.div>
+                            )}
+
                             {/* Success Message */}
                             {successMessage && (
                                 <motion.div
@@ -334,6 +397,7 @@ export const LoginPage: React.FC = () => {
                             {/* Submit Button */}
                             <button
                                 type="submit"
+                                onClick={authMode === 'register' ? handleRegister : undefined}
                                 disabled={isLoading}
                                 className={`w-full py-4 rounded-neo font-semibold text-white transition-all duration-300 flex items-center justify-center gap-2 bg-gradient-to-r from-neo-accent to-amber-500 shadow-neo-out hover:shadow-neo-out-lg ${isLoading ? 'opacity-70 cursor-not-allowed' : 'active:shadow-neo-pressed'}`}
                             >
@@ -343,11 +407,13 @@ export const LoginPage: React.FC = () => {
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                         </svg>
-                                        Entrando...
+                                        {authMode === 'login' ? 'Entrando...' : 'Cadastrando...'}
                                     </>
                                 ) : (
                                     <>
-                                        {activeTab === 'admin' ? 'Acessar Painel' : 'Entrar'}
+                                        {activeTab === 'admin'
+                                            ? 'Acessar Painel'
+                                            : (authMode === 'login' ? 'Entrar' : 'Criar Conta')}
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path d="M5 12h14M12 5l7 7-7 7" />
                                         </svg>
@@ -397,66 +463,110 @@ export const LoginPage: React.FC = () => {
                 )}
             </motion.div>
 
-            {/* Sign Up Link */}
+            {/* Toggle Login/Register */}
             {activeTab === 'user' && (
-                <motion.p
+                <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="mt-6 text-sm text-neo-text-secondary z-10"
+                    className="mt-6 text-sm flex gap-2 z-10"
                 >
-                    Não tem uma conta?{' '}
-                    <a href="/register-business" className="text-neo-accent font-semibold hover:underline">
-                        Cadastre-se
-                    </a>
-                </motion.p>
+                    <span className="text-neo-text-secondary">
+                        {authMode === 'login' ? 'Não tem uma conta?' : 'Já tem uma conta?'}
+                    </span>
+                    <button
+                        onClick={() => {
+                            setAuthMode(authMode === 'login' ? 'register' : 'login');
+                            setError('');
+                            setSuccessMessage('');
+                        }}
+                        className="text-neo-accent font-semibold hover:underline"
+                    >
+                        {authMode === 'login' ? 'Cadastre-se' : 'Fazer Login'}
+                    </button>
+                </motion.div>
             )}
 
-            {/* Register Business Button - Prominent CTA */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.45 }}
-                className="mt-6 z-10"
-            >
-                <a
-                    href="/register-business"
-                    className="relative inline-flex items-center gap-3 px-8 py-4 rounded-neo font-semibold text-white transition-all group overflow-hidden"
-                    style={{
-                        background: 'linear-gradient(135deg, #E8A0B8 0%, #D4AF37 100%)',
-                        boxShadow: '0 8px 32px -4px rgba(232, 160, 184, 0.4), inset 0 1px 1px 0 rgba(255,255,255,0.3)'
-                    }}
+            {/* Register Business Link - Admin Only */}
+            {activeTab === 'admin' && authMode === 'login' && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="mt-6 z-10 bg-neo-bg rounded-neo shadow-neo-out p-4 text-center border border-white/20"
                 >
-                    {/* Glow animation on hover */}
-                    <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-neo" />
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="relative z-10">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                        <polyline points="9 22 9 12 15 12 15 22" />
-                    </svg>
-                    <span className="relative z-10">Cadastrar Meu Salão</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="relative z-10 group-hover:translate-x-1 transition-transform">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                </a>
-            </motion.div>
+                    <p className="text-sm text-neo-text-secondary mb-2">
+                        Ainda não tem um salão cadastrado?
+                    </p>
+                    <a
+                        href="/register-business"
+                        className="inline-flex items-center gap-2 text-neo-accent font-semibold hover:underline"
+                    >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <rect x="3" y="3" width="7" height="7" />
+                            <rect x="14" y="3" width="7" height="7" />
+                            <rect x="14" y="14" width="7" height="7" />
+                            <rect x="3" y="14" width="7" height="7" />
+                        </svg>
+                        Cadastrar Meu Salão
+                    </a>
+                </motion.div>
+            )}
+
+            {/* Create Account Button - Prominent CTA */}
+            {authMode === 'login' && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.45 }}
+                    className="mt-6 z-10"
+                >
+                    <button
+                        onClick={() => {
+                            setAuthMode('register');
+                            setError('');
+                        }}
+                        className="relative inline-flex items-center gap-3 px-8 py-4 rounded-neo font-semibold text-white transition-all group overflow-hidden w-full justify-center"
+                        style={{
+                            background: 'linear-gradient(135deg, #E8A0B8 0%, #D4AF37 100%)',
+                            boxShadow: '0 8px 32px -4px rgba(232, 160, 184, 0.4), inset 0 1px 1px 0 rgba(255,255,255,0.3)'
+                        }}
+                    >
+                        {/* Glow animation on hover */}
+                        <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-neo" />
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="relative z-10">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="8.5" cy="7" r="4" />
+                            <line x1="20" y1="8" x2="20" y2="14" />
+                            <line x1="23" y1="11" x2="17" y2="11" />
+                        </svg>
+                        <span className="relative z-10">Criar Minha Conta</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="relative z-10 group-hover:translate-x-1 transition-transform">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </motion.div>
+            )}
 
             {/* Test Mode Button (Development Only) */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="mt-4 z-10"
-            >
-                <button
-                    onClick={() => navigate(activeTab === 'admin' ? '/admin' : '/')}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-neo-bg rounded-neo shadow-neo-in hover:shadow-neo-out transition-all text-neo-text-secondary font-medium text-sm"
+            {authMode === 'login' && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="mt-4 z-10"
                 >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    </svg>
-                    Entrar sem Login (Teste)
-                </button>
-            </motion.div>
+                    <button
+                        onClick={() => navigate(activeTab === 'admin' ? '/admin' : '/')}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-neo-bg rounded-neo shadow-neo-in hover:shadow-neo-out transition-all text-neo-text-secondary font-medium text-sm"
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                        Entrar sem Login (Teste)
+                    </button>
+                </motion.div>
+            )}
 
             {/* Admin Demo Credentials */}
             {activeTab === 'admin' && (
