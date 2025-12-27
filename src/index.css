@@ -1,0 +1,454 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 340 60% 77%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 340 60% 77%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 340 60% 77%;
+    --radius: 24px;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply text-neo-text font-body;
+    background-image:
+      linear-gradient(to bottom, rgba(18, 18, 23, 0.8), rgba(18, 18, 23, 0.9)),
+      url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  /* ============================================
+     PREMIUM GLASSMORPHISM BUTTON SYSTEM
+     High-end 3D glass effect with realistic lighting
+     Reference: User-provided polished glass toggle
+     ============================================ */
+
+  /* Rose Pink Accent for LED glow */
+  :root {
+    --rose-accent: #E8A0B8;
+    --rose-light: #F5CED8;
+    --rose-dark: #C67A94;
+  }
+
+  /* Base Glass Button - The Full Recipe */
+  /* Exclude: toggles, form elements, navigation items, icon-only buttons */
+  .neo-button:not(.toggle-inner),
+  .btn-glass,
+  .btn-glass-glow {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+
+    /* 1. Shape & Base - rounded-full for smooth glass look */
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.30);
+
+    /* 2. The Blur - Crucial for premium feel */
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+
+    /* 3. The 3D Lighting & Reflection (Secret Sauce) */
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.7),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.1);
+
+    /* 4. Border Definition */
+    border: 1px solid rgba(255, 255, 255, 0.20);
+
+    /* Text styling */
+    color: #3C4150;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    overflow: visible;
+  }
+
+  /* Top edge light highlight reflection */
+  .neo-button:not(.toggle-inner)::before,
+  .btn-glass::before,
+  .btn-glass-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15%;
+    right: 15%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+    pointer-events: none;
+    border-radius: 100%;
+  }
+
+  /* LED Indicator (bottom glow line) - Rose colored, dim by default */
+  .neo-button:not(.toggle-inner)::after,
+  .btn-glass::after,
+  .btn-glass-glow::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30%;
+    height: 2px;
+    background: rgba(232, 160, 184, 0.25);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+
+  /* Hover state - More opaque, lifted */
+  .neo-button:not(.toggle-inner):hover,
+  .btn-glass:hover,
+  .btn-glass-glow:hover {
+    background: rgba(255, 255, 255, 0.50);
+    transform: translateY(-2px);
+    box-shadow:
+      0 8px 12px -2px rgba(0, 0, 0, 0.12),
+      0 4px 6px -1px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.85),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.08);
+  }
+
+  /* Pressed/Pushed state */
+  .neo-button:not(.toggle-inner):active,
+  .btn-glass:active,
+  .btn-glass-glow:active {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(0);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.08),
+      inset 0 2px 4px rgba(0, 0, 0, 0.06),
+      inset 0 -1px 0 0 rgba(255, 255, 255, 0.5);
+  }
+
+  /* Active state with LED ON (Rose Pink glow) */
+  .neo-button.active::after,
+  .btn-glass.active::after,
+  .btn-glass-glow.active::after {
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(232, 160, 184, 0.8) 15%,
+        rgba(245, 206, 216, 1) 50%,
+        rgba(232, 160, 184, 0.8) 85%,
+        transparent 100%);
+    box-shadow:
+      0 0 8px rgba(232, 160, 184, 0.7),
+      0 0 16px rgba(232, 160, 184, 0.4),
+      0 0 24px rgba(232, 160, 184, 0.2);
+    animation: led-pulse 2.5s ease-in-out infinite;
+    width: 40%;
+  }
+
+  /* Primary/Accent button variant */
+  .neo-button-primary,
+  .btn-primary {
+    color: var(--rose-dark);
+    background: linear-gradient(135deg, rgba(245, 206, 216, 0.4) 0%, rgba(255, 255, 255, 0.35) 100%);
+  }
+
+  .neo-button-primary::after,
+  .btn-primary::after {
+    background: rgba(232, 160, 184, 0.4);
+  }
+
+  /* Button Sizes */
+  .neo-button-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+
+  .neo-button-md {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+  }
+
+  .neo-button-lg {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+  }
+
+  /* LED Pulse Animation */
+  @keyframes led-pulse {
+
+    0%,
+    100% {
+      opacity: 0.85;
+      transform: translateX(-50%) scaleX(1);
+    }
+
+    50% {
+      opacity: 1;
+      transform: translateX(-50%) scaleX(1.05);
+    }
+  }
+
+  /* Scale In Animation */
+  @keyframes scale-in-center {
+    0% {
+      transform: scale(0);
+      opacity: 1;
+    }
+
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .scale-in-center {
+    animation: scale-in-center 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+  }
+
+  /* Neomorphic Card */
+  .neo-card {
+    @apply bg-neo-bg rounded-neo shadow-neo-out;
+  }
+
+  .neo-input {
+    @apply bg-neo-bg rounded-neo shadow-neo-in px-4 py-3 text-neo-text placeholder:text-neo-text-secondary outline-none focus:ring-2 focus:ring-neo-accent/20 transition-all duration-200;
+  }
+
+  .neo-select {
+    @apply bg-neo-bg rounded-neo shadow-neo-in px-4 py-3 text-neo-text outline-none cursor-pointer appearance-none focus:ring-2 focus:ring-neo-accent/20 transition-all duration-200;
+  }
+
+  .neo-tab {
+    @apply bg-neo-bg rounded-neo shadow-neo-out px-4 py-2 text-neo-text-secondary font-medium transition-all duration-200 cursor-pointer;
+  }
+
+  .neo-tab-active {
+    @apply bg-neo-bg rounded-neo shadow-neo-pressed text-neo-accent font-semibold;
+  }
+
+  .neo-badge {
+    @apply px-3 py-1 rounded-full text-xs font-semibold;
+  }
+
+  .neo-badge-success {
+    @apply bg-neo-success/10 text-neo-success;
+  }
+
+  .neo-badge-warning {
+    @apply bg-neo-warning/10 text-neo-warning;
+  }
+
+  .neo-badge-danger {
+    @apply bg-neo-danger/10 text-neo-danger;
+  }
+
+  .neo-badge-info {
+    @apply bg-neo-info/10 text-neo-info;
+  }
+
+  /* Floating Action Button */
+  .neo-fab {
+    @apply fixed bottom-24 right-6 w-14 h-14 rounded-full bg-neo-accent shadow-neo-out-lg flex items-center justify-center text-white active:shadow-neo-pressed transition-all duration-200 z-50;
+  }
+
+  /* Bottom Navigation */
+  .neo-bottom-nav {
+    @apply fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-neo-bg rounded-t-neo-lg shadow-neo-out-lg z-40 pb-safe;
+  }
+
+  .neo-bottom-nav-item {
+    @apply flex flex-col items-center justify-center py-3 px-4 text-neo-text-secondary transition-all duration-200 relative;
+  }
+
+  .neo-bottom-nav-item.active {
+    @apply text-neo-accent;
+  }
+
+  .neo-bottom-nav-item.active::after {
+    content: '';
+    @apply absolute bottom-1 w-8 h-1 bg-neo-accent rounded-full;
+  }
+
+  /* Calendar Slot Styles */
+  .neo-slot {
+    @apply bg-neo-bg rounded-neo shadow-neo-out p-3 cursor-pointer transition-all duration-200 hover:shadow-neo-out-lg;
+  }
+
+  .neo-slot-booked {
+    @apply bg-neo-bg rounded-neo shadow-neo-in p-3 cursor-pointer;
+  }
+
+  .neo-slot-available {
+    @apply bg-neo-bg rounded-neo shadow-neo-out p-3 cursor-pointer hover:shadow-neo-out-lg hover:-translate-y-0.5;
+  }
+
+  /* Progress Bar */
+  .neo-progress {
+    @apply bg-neo-bg rounded-full shadow-neo-in overflow-hidden;
+  }
+
+  .neo-progress-fill {
+    @apply h-full bg-neo-accent rounded-full transition-all duration-500;
+  }
+
+  /* Bottom Sheet */
+  .neo-bottom-sheet {
+    @apply fixed inset-x-0 bottom-0 bg-neo-bg rounded-t-neo-lg shadow-neo-out-lg z-50 transform transition-transform duration-300 ease-out;
+  }
+
+  .neo-bottom-sheet-handle {
+    @apply w-12 h-1 bg-neo-text-secondary/30 rounded-full mx-auto my-3;
+  }
+
+  /* Service Card */
+  .neo-service-card {
+    @apply bg-neo-bg rounded-neo shadow-neo-out p-4 transition-all duration-200 cursor-pointer hover:shadow-neo-out-lg;
+  }
+
+  .neo-service-card-selected {
+    @apply bg-neo-bg rounded-neo shadow-neo-pressed transition-all duration-200 border-2 border-neo-accent;
+  }
+
+  /* Avatar */
+  .neo-avatar {
+    @apply bg-neo-bg rounded-full shadow-neo-out flex items-center justify-center overflow-hidden;
+  }
+
+  /* Toggle Switch */
+  .neo-toggle {
+    @apply w-12 h-6 bg-neo-bg rounded-full shadow-neo-in cursor-pointer relative transition-all duration-200;
+  }
+
+  .neo-toggle-active {
+    @apply bg-neo-accent;
+  }
+
+  .neo-toggle-knob {
+    @apply absolute w-5 h-5 bg-neo-bg rounded-full shadow-neo-out top-0.5 left-0.5 transition-all duration-200;
+  }
+
+  .neo-toggle-knob-active {
+    @apply left-6.5;
+  }
+
+  /* Divider */
+  .neo-divider {
+    @apply h-px bg-neo-text-secondary/20 my-4;
+  }
+
+  /* Text Utilities */
+  .text-display {
+    @apply font-display text-2xl font-semibold text-neo-text;
+  }
+
+  .text-title {
+    @apply font-display text-xl font-semibold text-neo-text;
+  }
+
+  .text-subtitle {
+    @apply font-display text-lg font-medium text-neo-text;
+  }
+
+  .text-body {
+    @apply font-body text-base text-neo-text;
+  }
+
+  .text-caption {
+    @apply font-body text-sm text-neo-text-secondary;
+  }
+}
+
+@layer utilities {
+
+  /* Safe Area Padding */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Hide Scrollbar */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Touch Action */
+  .touch-none {
+    touch-action: none;
+  }
+
+  /* Backdrop Blur */
+  .backdrop-blur-neo {
+    backdrop-filter: blur(8px);
+    background: rgba(240, 240, 243, 0.8);
+  }
+
+  /* Custom Scrollbar for Glass Modals */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* iOS-style Scroll Behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection Color */
+::selection {
+  @apply bg-neo-accent/20 text-neo-accent;
+}
+
+/* Focus Visible */
+:focus-visible {
+  @apply outline-none ring-2 ring-neo-accent/50;
+}

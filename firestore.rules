@@ -1,0 +1,112 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function getUserOrgId() {
+      return getUserData().orgId;
+    }
+    
+    function isOrgOwner(orgId) {
+      return getUserData().role == 'owner' && getUserData().orgId == orgId;
+    }
+    
+    function isOrgMember(orgId) {
+      return getUserData().orgId == orgId;
+    }
+    
+    function hasPermission(permission) {
+      let userData = getUserData();
+      return userData.role == 'owner' || userData.permissions[permission] == true;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Users can read their own profile
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      
+      // Users can update their own profile (limited fields)
+      allow update: if isSignedIn() && request.auth.uid == userId
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'orgId', 'permissions']));
+      
+      // Owners can read/write employees in their org
+      allow read: if isSignedIn() && resource.data.orgId == getUserOrgId();
+      allow write: if isSignedIn() && hasPermission('canManageTeam') 
+        && request.resource.data.orgId == getUserOrgId();
+      
+      // Allow creation during registration
+      allow create: if isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // Organizations collection
+    match /organizations/{orgId} {
+      // Members can read their org
+      allow read: if isSignedIn() && isOrgMember(orgId);
+      
+      // Only owners can update org settings
+      allow update: if isSignedIn() && isOrgOwner(orgId);
+      
+      // Allow creation during business registration
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+    }
+    
+    // Appointments - isolated by orgId
+    match /appointments/{docId} {
+      allow read: if isSignedIn() && (
+        resource.data.orgId == getUserOrgId() ||
+        resource.data.clientId == request.auth.uid
+      );
+      
+      allow create: if isSignedIn() && (
+        request.resource.data.orgId == getUserOrgId() ||
+        hasPermission('canManageAppointments')
+      );
+      
+      allow update, delete: if isSignedIn() 
+        && resource.data.orgId == getUserOrgId()
+        && hasPermission('canManageAppointments');
+    }
+    
+    // Services - isolated by orgId
+    match /services/{docId} {
+      allow read: if isSignedIn() && resource.data.orgId == getUserOrgId();
+      
+      allow create, update, delete: if isSignedIn() 
+        && request.resource.data.orgId == getUserOrgId()
+        && hasPermission('canEditServices');
+    }
+    
+    // Clients - isolated by orgId
+    match /clients/{docId} {
+      allow read: if isSignedIn() 
+        && resource.data.orgId == getUserOrgId()
+        && hasPermission('canViewClients');
+      
+      allow create, update: if isSignedIn() 
+        && request.resource.data.orgId == getUserOrgId()
+        && hasPermission('canViewClients');
+        
+      allow delete: if isSignedIn() 
+        && resource.data.orgId == getUserOrgId()
+        && hasPermission('canManageTeam');
+    }
+    
+    // Portfolio - isolated by orgId
+    match /portfolio/{docId} {
+      allow read: if true; // Public for clients
+      
+      allow create, update, delete: if isSignedIn() 
+        && request.resource.data.orgId == getUserOrgId()
+        && hasPermission('canEditServices');
+    }
+  }
+}
