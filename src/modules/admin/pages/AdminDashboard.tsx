@@ -24,7 +24,7 @@ import {
 import { cn, formatCurrency, getStatusColor } from '../../../shared/lib/utils';
 import { Service, Appointment, Staff, STATS_INITIAL } from '../../../shared/types/types';
 import { SERVICES_DATA } from '../../../shared/types/types';
-import { Card, Button, Badge, Avatar, Toggle, Progress, Input } from '../../../shared/components/ui/NeoComponents';
+import { Card, Button, Badge, Avatar, Toggle, Progress, Input, Skeleton } from '../../../shared/components/ui/NeoComponents';
 import { Calendar, DaySchedule } from '../../booking/components/Calendar';
 import { StaffScheduler } from '../components/StaffScheduler';
 import { AgendaView } from '../components/AgendaView';
@@ -201,9 +201,12 @@ const ProStatsPanel: React.FC = () => {
 import { useBranding } from '../../organization/context/BrandingContext';
 // ... props
 
+import { useAppointments, useAppointmentMutations } from '../../booking/hooks/useAppointments';
+import { useStaff } from '../hooks/useStaff';
+import { useServices } from '../hooks/useServices';
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 'schedule' }) => {
   const { organization } = useBranding();
-  // ... state
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'calendar' | 'schedule'>(initialView);
   const [showAddAppointment, setShowAddAppointment] = useState(false);
@@ -211,25 +214,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
   const [showActions, setShowActions] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
-  // Data State
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [staff, setStaff] = useState<Staff[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
+  // TanStack Query Hooks
+  const { data: appointments = [], isLoading: isLoadingAppointments } = useAppointments(organization?.id);
+  const { data: staff = [], isLoading: isLoadingStaff } = useStaff(organization?.id);
+  const { data: services = [], isLoading: isLoadingServices } = useServices(organization?.id);
 
-  // Subscribe to Real-time Data
-  React.useEffect(() => {
-    if (!organization?.id) return;
+  const { updateAppointment: updateAppt, deleteAppointment: deleteAppt } = useAppointmentMutations(organization?.id);
 
-    const unsubAppointments = subscribeToAppointments(organization.id, setAppointments);
-    const unsubStaff = subscribeToStaff(organization.id, setStaff);
-    const unsubServices = subscribeToServices(organization.id, setServices);
-
-    return () => {
-      unsubAppointments();
-      unsubStaff();
-      unsubServices();
-    };
-  }, [organization?.id]);
+  const isLoading = isLoadingAppointments || isLoadingStaff || isLoadingServices;
 
   // View State for Calendar Mode
   const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('day');
@@ -257,14 +249,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
   };
 
   return (
-    <div className="min-h-screen bg-neo-bg pb-24">
+    <div className="min-h-screen bg-neo-bg pb-24 relative">
       {/* Header */}
       <header className="p-6">
-        {/* Header Content */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-display font-bold text-neo-text">
-              {organization?.name || (initialView === 'schedule' ? 'Dashboard' : 'Agenda')}
+              {isLoading ? <Skeleton className="w-32 h-8" /> : (organization?.name || (initialView === 'schedule' ? 'Dashboard' : 'Agenda'))}
             </h2>
             <p className="text-neo-text-secondary">
               {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
@@ -284,8 +275,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
         {initialView === 'schedule' ? (
           /* DASHBOARD VIEW - Stats Only */
           <div className="flex flex-col gap-6 animate-in slide-in-from-bottom-4 duration-500">
-            <StatsPanel />
-            <ProStatsPanel />
+            {isLoading ? (
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 w-full" />)}
+              </div>
+            ) : (
+              <>
+                <StatsPanel />
+                <ProStatsPanel />
+              </>
+            )}
 
             {/* Recent Activity / Simplified List could go here */}
             <div className="bg-neo-bg rounded-neo shadow-neo-out p-6 border border-white/40">
@@ -377,8 +376,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
           setShowAddAppointment(true);
         }}
         onDelete={() => {
-          setShowActions(false);
-          // Handle delete
+          if (confirm('Tem certeza que deseja excluir este agendamento?')) {
+            deleteAppt(selectedAppointment!.id);
+            setShowActions(false);
+          }
         }}
         onWhatsApp={() => {
           if (selectedAppointment) {
@@ -388,12 +389,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
         }}
         onStatusConfirm={() => {
           if (selectedAppointment) {
-            // Handle confirm
+            updateAppt({ id: selectedAppointment.id, updates: { status: 'confirmed' } });
+            setShowActions(false);
           }
         }}
         onStatusComplete={() => {
           if (selectedAppointment) {
-            // Handle complete
+            updateAppt({ id: selectedAppointment.id, updates: { status: 'completed' } });
+            setShowActions(false);
           }
         }}
       />

@@ -7,38 +7,52 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Shared Components
 import { AppLayout, PageWrapper } from './shared/components/ui/AppLayout';
+import { Skeleton } from './shared/components/ui/NeoComponents';
 
 // Auth Module
 import { AuthProvider } from './modules/auth/context/AuthContext';
 import { ProtectedRoute } from './modules/auth/components/ProtectedRoute';
-import { LoginPage } from './modules/auth/pages/LoginPage';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Toaster } from 'sonner';
+import { queryClient } from './shared/lib/QueryClient';
 
 // Organization Module
 import { BrandingProvider } from './modules/organization/context/BrandingContext';
-import { RegisterBusinessPage } from './modules/organization/pages/RegisterBusinessPage';
 
-// Booking Module
-import { ClientBooking } from './modules/booking/pages/ClientBooking';
-import { OnlineBookingPage } from './modules/booking/pages/OnlineBookingPage';
-import { BookingSuccessPage } from './modules/booking/pages/BookingSuccessPage';
-import { CheckoutPage } from './modules/booking/pages/CheckoutPage';
+// Lazy Loaded Pages
+const LoginPage = React.lazy(() => import('./modules/auth/pages/LoginPage').then(m => ({ default: m.LoginPage })));
+const RegisterBusinessPage = React.lazy(() => import('./modules/organization/pages/RegisterBusinessPage').then(m => ({ default: m.RegisterBusinessPage })));
+const ClientBooking = React.lazy(() => import('./modules/booking/pages/ClientBooking').then(m => ({ default: m.ClientBooking })));
+const OnlineBookingPage = React.lazy(() => import('./modules/booking/pages/OnlineBookingPage').then(m => ({ default: m.OnlineBookingPage })));
+const BookingSuccessPage = React.lazy(() => import('./modules/booking/pages/BookingSuccessPage').then(m => ({ default: m.BookingSuccessPage })));
+const CheckoutPage = React.lazy(() => import('./modules/booking/pages/CheckoutPage').then(m => ({ default: m.CheckoutPage })));
+const Portfolio = React.lazy(() => import('./modules/portfolio/pages/Portfolio').then(m => ({ default: m.Portfolio })));
+const BridePortalPage = React.lazy(() => import('./modules/bride/pages/BridePortalPage').then(m => ({ default: m.BridePortalPage })));
+const BrideSelfOnboardingPage = React.lazy(() => import('./modules/bride/pages/BrideSelfOnboardingPage').then(m => ({ default: m.BrideSelfOnboardingPage })));
+const BrideCollectionPage = React.lazy(() => import('./modules/bride/pages/BrideCollectionPage').then(m => ({ default: m.BrideCollectionPage })));
+const AdminDashboard = React.lazy(() => import('./modules/admin/pages/AdminDashboard'));
+const ServicesManagement = React.lazy(() => import('./modules/admin/pages/ServicesManagement').then(m => ({ default: m.ServicesManagement })));
+const TeamManagementPage = React.lazy(() => import('./modules/admin/pages/TeamManagementPage').then(m => ({ default: m.TeamManagementPage })));
+const CommissionDashboard = React.lazy(() => import('./modules/admin/pages/CommissionDashboard').then(m => ({ default: m.CommissionDashboard })));
+const FinancialDashboard = React.lazy(() => import('./modules/admin/pages/FinancialDashboard').then(m => ({ default: m.FinancialDashboard })));
+const AnalyticsDashboard = React.lazy(() => import('./modules/admin/pages/AnalyticsDashboard').then(m => ({ default: m.AnalyticsDashboard })));
+const BrideCommandCenter = React.lazy(() => import('./modules/bride/pages/BrideCommandCenter').then(m => ({ default: m.BrideCommandCenter })));
+const SalonSettingsPage = React.lazy(() => import('./modules/admin/pages/SalonSettingsPage'));
 
-// Portfolio Module
-import { Portfolio } from './modules/portfolio/pages/Portfolio';
-
-// Bride Module
-import { BridePortalPage } from './modules/bride/pages/BridePortalPage';
-import { BrideCommandCenter } from './modules/bride/pages/BrideCommandCenter';
-import { BrideCollectionPage } from './modules/bride/pages/BrideCollectionPage';
-import { BrideSelfOnboardingPage } from './modules/bride/pages/BrideSelfOnboardingPage';
-
-// Admin Module
-import AdminDashboard from './modules/admin/pages/AdminDashboard';
-import SalonSettingsPage from './modules/admin/pages/SalonSettingsPage';
-import { ServicesManagement } from './modules/admin/pages/ServicesManagement';
-import { TeamManagementPage } from './modules/admin/pages/TeamManagementPage';
-import { CommissionDashboard } from './modules/admin/pages/CommissionDashboard';
-import { FinancialDashboard } from './modules/admin/pages/FinancialDashboard';
+// Fallback Loader
+const PageLoader = () => (
+  <PageWrapper>
+    <div className="p-8 space-y-6">
+      <Skeleton className="h-12 w-48 mb-6" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Skeleton className="h-48 rounded-neo" />
+        <Skeleton className="h-48 rounded-neo" />
+        <Skeleton className="h-64 md:col-span-2 rounded-neo" />
+      </div>
+    </div>
+  </PageWrapper>
+);
 
 
 // Home Page (Landing)
@@ -109,13 +123,15 @@ const HomePage: React.FC = () => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
+            whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+            whileTap={{ scale: 0.98 }}
             href="/noiva"
             className="block mb-6 relative overflow-hidden bg-neo-bg rounded-neo shadow-neo-out p-6 active:shadow-neo-pressed transition-all border border-[#D4AF37]/10 group"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/10 blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
             <div className="flex items-center gap-5 relative z-10">
               <div
-                className="w-16 h-16 rounded-neo shadow-neo-out flex items-center justify-center flex-shrink-0 border-2 border-white/50 group-hover:scale-105 transition-transform"
+                className="w-16 h-16 rounded-neo shadow-neo-out flex items-center justify-center flex-shrink-0 border-2 border-white/50 group-hover:shadow-neo-out-lg transition-all"
                 style={{ backgroundColor: '#FAF6E9' }}
               >
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="1.5">
@@ -134,11 +150,15 @@ const HomePage: React.FC = () => {
                   Moodboard, timeline e planejamento exclusivo
                 </p>
               </div>
-              <div className="w-8 h-8 rounded-neo shadow-neo-out flex items-center justify-center">
+              <motion.div
+                animate={{ x: [0, 5, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="w-8 h-8 rounded-neo shadow-neo-out flex items-center justify-center"
+              >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2">
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
-              </div>
+              </motion.div>
             </div>
           </motion.a>
 
@@ -253,65 +273,75 @@ const ProfilePage: React.FC = () => {
 // Main App with animated routes
 const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <AppLayout>
-        <Routes>
-          {/* Auth Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register-business" element={<RegisterBusinessPage />} />
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <BrandingProvider>
+            <AppLayout>
+              <React.Suspense fallback={<PageLoader />}>
+                <Routes>
+                  {/* Auth Routes */}
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register-business" element={<RegisterBusinessPage />} />
 
-          {/* Client Routes */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/booking" element={<ClientBooking />} />
-          <Route path="/booking/online" element={<OnlineBookingPage />} />
-          <Route path="/booking/success" element={<BookingSuccessPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/portfolio" element={<Portfolio />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/noiva" element={<BridePortalPage />} />
-          <Route path="/noiva/cadastro" element={<BrideSelfOnboardingPage />} />
-          <Route path="/noiva/colecao" element={<BrideCollectionPage />} />
-          <Route path="/bride-portal" element={<BridePortalPage />} /> {/* Legacy alias */}
+                  {/* Client Routes */}
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/booking" element={<ClientBooking />} />
+                  <Route path="/booking/online" element={<OnlineBookingPage />} />
+                  <Route path="/booking/success" element={<BookingSuccessPage />} />
+                  <Route path="/checkout" element={<CheckoutPage />} />
+                  <Route path="/portfolio" element={<Portfolio />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/noiva" element={<BridePortalPage />} />
+                  <Route path="/noiva/cadastro" element={<BrideSelfOnboardingPage />} />
+                  <Route path="/noiva/colecao" element={<BrideCollectionPage />} />
+                  <Route path="/bride-portal" element={<BridePortalPage />} /> {/* Legacy alias */}
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/calendar" element={<AdminDashboard initialView="calendar" />} />
-          <Route path="/admin/clients" element={
-            <PageWrapper>
-              <div className="p-6">
-                <h1 className="text-display">Clientes</h1>
-              </div>
-            </PageWrapper>
-          } />
-          <Route path="/admin/services" element={<ServicesManagement />} />
-          <Route path="/admin/portfolio" element={<Portfolio />} />
-          <Route path="/admin/analytics" element={<FinancialDashboard />} />
-          <Route path="/admin/team" element={<TeamManagementPage />} />
-          <Route path="/admin/brides" element={<BrideCommandCenter />} />
-          <Route path="/admin/brides/:brideId" element={<BrideCommandCenter />} />
-          <Route path="/admin/commissions" element={<CommissionDashboard />} />
-          <Route path="/admin/online-booking" element={
-            <PageWrapper>
-              <div className="p-6">
-                <h1 className="text-display">Link de Agendamento</h1>
-                <p className="text-caption mt-2">Configure seu link de agendamento online</p>
-              </div>
-            </PageWrapper>
-          } />
-          <Route path="/admin/reports" element={
-            <PageWrapper>
-              <div className="p-6">
-                <h1 className="text-display">Relatórios</h1>
-                <p className="text-caption mt-2">Comandas e receitas</p>
-              </div>
-            </PageWrapper>
-          } />
+                  {/* Admin Routes */}
+                  <Route path="/admin" element={<AdminDashboard />} />
+                  <Route path="/admin/calendar" element={<AdminDashboard initialView="calendar" />} />
+                  <Route path="/admin/clients" element={
+                    <PageWrapper>
+                      <div className="p-6">
+                        <h1 className="text-display">Clientes</h1>
+                      </div>
+                    </PageWrapper>
+                  } />
+                  <Route path="/admin/services" element={<ServicesManagement />} />
+                  <Route path="/admin/portfolio" element={<Portfolio />} />
+                  <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
+                  <Route path="/admin/team" element={<TeamManagementPage />} />
+                  <Route path="/admin/brides" element={<BrideCommandCenter />} />
+                  <Route path="/admin/brides/:brideId" element={<BrideCommandCenter />} />
+                  <Route path="/admin/commissions" element={<CommissionDashboard />} />
+                  <Route path="/admin/online-booking" element={
+                    <PageWrapper>
+                      <div className="p-6">
+                        <h1 className="text-display">Link de Agendamento</h1>
+                        <p className="text-caption mt-2">Configure seu link de agendamento online</p>
+                      </div>
+                    </PageWrapper>
+                  } />
+                  <Route path="/admin/reports" element={
+                    <PageWrapper>
+                      <div className="p-6">
+                        <h1 className="text-display">Relatórios</h1>
+                        <p className="text-caption mt-2">Comandas e receitas</p>
+                      </div>
+                    </PageWrapper>
+                  } />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AppLayout>
-    </BrowserRouter>
+                  {/* Fallback */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </React.Suspense>
+              <Toaster position="top-center" richColors />
+              <ReactQueryDevtools initialIsOpen={false} />
+            </AppLayout>
+          </BrandingProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 };
 

@@ -6,7 +6,8 @@ import {
     addDoc,
     updateDoc,
     deleteDoc,
-    doc
+    doc,
+    getDocs
 } from 'firebase/firestore';
 import { db } from '../../../shared/lib/firebase';
 import { Service } from '../../../shared/types/types';
@@ -19,6 +20,12 @@ export const subscribeToServices = (orgId: string, onUpdate: (data: Service[]) =
         const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
         onUpdate(items);
     });
+};
+
+export const getServices = async (orgId: string): Promise<Service[]> => {
+    const q = query(collection(db, COLLECTION), where('orgId', '==', orgId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
 };
 
 export const createService = async (data: Omit<Service, 'id'>) => {

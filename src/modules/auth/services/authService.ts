@@ -14,7 +14,7 @@ import {
     updateProfile
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp, collection } from 'firebase/firestore';
-import { auth, db, googleProvider } from '../../../shared/lib/firebase';
+import { auth, db, googleProvider } from '@/shared/lib/firebase';
 import {
     UserProfile,
     UserRole,
@@ -22,7 +22,7 @@ import {
     Organization,
     DEFAULT_EMPLOYEE_PERMISSIONS,
     OWNER_PERMISSIONS
-} from '../../../shared/types/types';
+} from '@/shared/types/types';
 
 // Re-export types for convenience
 export type { UserProfile, UserRole, UserPermissions };

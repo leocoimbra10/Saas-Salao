@@ -69,11 +69,32 @@ service cloud.firestore {
       allow create: if isSignedIn() && (
         request.resource.data.orgId == getUserOrgId() ||
         hasPermission('canManageAppointments')
-      );
+      ) && (request.resource.data.orgId != null);
       
       allow update, delete: if isSignedIn() 
         && resource.data.orgId == getUserOrgId()
         && hasPermission('canManageAppointments');
+    }
+
+    // Bridal Packages - isolated by orgId
+    match /bridal_packages/{pkgId} {
+      allow read: if isSignedIn() && (
+        resource.data.orgId == getUserOrgId() ||
+        resource.data.clientId == request.auth.uid
+      );
+      
+      allow write: if isSignedIn() && (
+        request.resource.data.orgId == getUserOrgId() ||
+        hasPermission('canManageAppointments')
+      );
+
+      // Sub-collections
+      match /{allSubcollections=**} {
+        allow read, write: if isSignedIn() && (
+          get(/databases/$(database)/documents/bridal_packages/$(pkgId)).data.orgId == getUserOrgId() ||
+          get(/databases/$(database)/documents/bridal_packages/$(pkgId)).data.clientId == request.auth.uid
+        );
+      }
     }
     
     // Services - isolated by orgId

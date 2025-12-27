@@ -11,13 +11,13 @@ import { getAnalytics } from 'firebase/analytics';
 
 // Firebase configuration for Marcela Makeup project
 const firebaseConfig = {
-  apiKey: "AIzaSyDJEmYizD6g9mztCpcCr2vBVc0wjK_Ubxg",
-  authDomain: "marcela-makeup.firebaseapp.com",
-  projectId: "marcela-makeup",
-  storageBucket: "marcela-makeup.firebasestorage.app",
-  messagingSenderId: "126198636482",
-  appId: "1:126198636482:web:58834f801659d1dc7f005b",
-  measurementId: "G-9XEEDQ97TR"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || import.meta.env.VITE_GA_TRACKING_ID
 };
 
 // Initialize Firebase

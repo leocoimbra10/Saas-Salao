@@ -34,13 +34,19 @@ const convertTimestamp = (timestamp: any): Date => {
 };
 
 // Create a new bridal package
-export const createBridalPackage = async (
-    clientId: string,
-    clientName: string,
-    clientPhone: string,
-    orgId: string,
-    weddingDate: Date
-): Promise<string> => {
+export const createBridalPackage = async ({
+    clientId,
+    clientName,
+    clientPhone,
+    orgId,
+    weddingDate
+}: {
+    clientId: string;
+    clientName: string;
+    clientPhone: string;
+    orgId: string;
+    weddingDate: Date;
+}): Promise<string> => {
     const newPackage: Omit<BridalPackage, 'id'> = {
         clientId,
         clientName,
@@ -48,13 +54,8 @@ export const createBridalPackage = async (
         orgId,
         weddingDate,
         status: 'lead',
-        timeline: [
-            { id: 'trial', type: 'trial', date: null, status: 'pending' },
-            { id: 'pre_wedding', type: 'pre_wedding', date: null, status: 'pending' },
-            { id: 'wedding_day', type: 'wedding_day', date: weddingDate, status: 'pending' },
-        ],
+        // Timeline and Moodboard are handled via sub-collections
         attendants: [],
-        moodboardPhotos: [],
         packageValue: 0,
         depositPaid: 0,
         balanceDue: 0,
@@ -69,6 +70,21 @@ export const createBridalPackage = async (
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
     });
+
+    // Initialize sub-collections with default milestones
+    const timelineRef = collection(db, BRIDAL_PACKAGES_COLLECTION, docRef.id, 'timeline');
+    const defaultMilestones = [
+        { id: 'trial', type: 'trial', date: null, status: 'pending' },
+        { id: 'pre_wedding', type: 'pre_wedding', date: null, status: 'pending' },
+        { id: 'wedding_day', type: 'wedding_day', date: weddingDate, status: 'pending' },
+    ];
+
+    for (const milestone of defaultMilestones) {
+        await addDoc(timelineRef, {
+            ...milestone,
+            date: milestone.date ? Timestamp.fromDate(milestone.date) : null
+        });
+    }
 
     return docRef.id;
 };
@@ -88,6 +104,23 @@ export const getBridalPackage = async (packageId: string): Promise<BridalPackage
         createdAt: convertTimestamp(data.createdAt),
         updatedAt: convertTimestamp(data.updatedAt),
     } as BridalPackage;
+};
+
+// Get full bride data (Consolidated package + sub-collections)
+export const getFullBrideData = async (packageId: string): Promise<BridalPackage | null> => {
+    const pkg = await getBridalPackage(packageId);
+    if (!pkg) return null;
+
+    const [timeline, moodboard] = await Promise.all([
+        getTimeline(packageId),
+        getMoodboard(packageId)
+    ]);
+
+    return {
+        ...pkg,
+        timeline,
+        moodboardPhotos: moodboard
+    };
 };
 
 // Get all bridal packages for an organization
@@ -183,64 +216,71 @@ export const removeAttendant = async (packageId: string, attendantId: string): P
     });
 };
 
-// Upload moodboard photo
+// Get timeline milestones
+export const getTimeline = async (packageId: string): Promise<TimelineMilestone[]> => {
+    const q = query(
+        collection(db, BRIDAL_PACKAGES_COLLECTION, packageId, 'timeline'),
+        orderBy('date', 'asc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TimelineMilestone));
+};
+
+// Update timeline milestone in sub-collection
+export const updateTimelineMilestone = async (
+    packageId: string,
+    milestoneId: string,
+    updates: Partial<TimelineMilestone>
+): Promise<void> => {
+    const docRef = doc(db, BRIDAL_PACKAGES_COLLECTION, packageId, 'timeline', milestoneId);
+    await updateDoc(docRef, { ...updates });
+};
+
+// Get moodboard photos
+export const getMoodboard = async (packageId: string): Promise<MoodboardPhoto[]> => {
+    const q = query(
+        collection(db, BRIDAL_PACKAGES_COLLECTION, packageId, 'moodboard'),
+        orderBy('uploadDate', 'desc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        uploadDate: convertTimestamp(doc.data().uploadDate)
+    } as MoodboardPhoto));
+};
+
+// Upload moodboard photo to sub-collection
 export const uploadMoodboardPhoto = async (
     packageId: string,
     file: File,
     category: MoodboardPhoto['category'],
     notes?: string
 ): Promise<string> => {
-    // Upload to Firebase Storage
     const fileName = `moodboards/${packageId}/${Date.now()}_${file.name}`;
     const storageRef = ref(storage, fileName);
     await uploadBytes(storageRef, file);
     const imageUrl = await getDownloadURL(storageRef);
 
-    // Add to package
-    const pkg = await getBridalPackage(packageId);
-    if (!pkg) throw new Error('Package not found');
-
-    const newPhoto: MoodboardPhoto = {
-        id: Date.now().toString(),
+    const newPhoto: Omit<MoodboardPhoto, 'id'> = {
         imageUrl,
         category,
         uploadDate: new Date(),
         notes,
     };
 
-    await updateBridalPackage(packageId, {
-        moodboardPhotos: [...pkg.moodboardPhotos, newPhoto],
+    await addDoc(collection(db, BRIDAL_PACKAGES_COLLECTION, packageId, 'moodboard'), {
+        ...newPhoto,
+        uploadDate: Timestamp.now()
     });
 
     return imageUrl;
 };
 
-// Delete moodboard photo
+// Delete moodboard photo from sub-collection
 export const deleteMoodboardPhoto = async (packageId: string, photoId: string): Promise<void> => {
-    const pkg = await getBridalPackage(packageId);
-    if (!pkg) throw new Error('Package not found');
-
-    await updateBridalPackage(packageId, {
-        moodboardPhotos: pkg.moodboardPhotos.filter(p => p.id !== photoId),
-    });
-};
-
-// Update timeline milestone
-export const updateTimelineMilestone = async (
-    packageId: string,
-    milestoneId: string,
-    updates: Partial<TimelineMilestone>
-): Promise<void> => {
-    const pkg = await getBridalPackage(packageId);
-    if (!pkg) throw new Error('Package not found');
-
-    const updatedTimeline = pkg.timeline.map(m =>
-        m.id === milestoneId ? { ...m, ...updates } : m
-    );
-
-    await updateBridalPackage(packageId, {
-        timeline: updatedTimeline,
-    });
+    const docRef = doc(db, BRIDAL_PACKAGES_COLLECTION, packageId, 'moodboard', photoId);
+    await deleteDoc(docRef);
 };
 
 // Calculate attendant price based on services

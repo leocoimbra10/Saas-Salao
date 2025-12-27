@@ -33,82 +33,13 @@ const ROSE_LIGHT = '#F5CED8';
 const GOLD = ROSE; // Legacy alias
 const GOLD_LIGHT = ROSE_LIGHT; // Legacy alias
 
-// Mock data
-const MOCK_BRIDES: BridalPackage[] = [
-    {
-        id: '1',
-        clientId: 'c1',
-        clientName: 'Mariana Santos',
-        clientPhone: '11999999999',
-        clientEmail: 'mariana@email.com',
-        orgId: 'org1',
-        weddingDate: new Date('2024-06-15'),
-        weddingVenue: 'Espaço Villa Real',
-        status: 'confirmed',
-        timeline: [
-            { id: 'trial', type: 'trial', date: new Date('2024-05-01'), status: 'scheduled' },
-            { id: 'wedding_day', type: 'wedding_day', date: new Date('2024-06-15'), status: 'pending' },
-        ],
-        attendants: [
-            { id: '1', name: 'Ana', relation: 'bridesmaid', services: ['combo-attendant'], totalPrice: 280, isPaid: true },
-            { id: '2', name: 'Dona Maria', relation: 'mother', services: ['makeup-attendant'], totalPrice: 160, isPaid: false },
-        ],
-        moodboardPhotos: [],
-        packageValue: 1390,
-        depositPaid: 500,
-        balanceDue: 890,
-        brideServices: ['bride-combo'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-    {
-        id: '2',
-        clientId: 'c2',
-        clientName: 'Juliana Ferreira',
-        clientPhone: '11988887777',
-        clientEmail: 'juliana@email.com',
-        orgId: 'org1',
-        weddingDate: new Date('2024-08-20'),
-        weddingVenue: 'Fazenda Santa Clara',
-        status: 'lead',
-        timeline: [
-            { id: 'trial', type: 'trial', date: null, status: 'pending' },
-            { id: 'wedding_day', type: 'wedding_day', date: new Date('2024-08-20'), status: 'pending' },
-        ],
-        attendants: [],
-        moodboardPhotos: [],
-        packageValue: 950,
-        depositPaid: 0,
-        balanceDue: 950,
-        brideServices: ['bride-makeup'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-    {
-        id: '3',
-        clientId: 'c3',
-        clientName: 'Beatriz Oliveira',
-        clientPhone: '11977776666',
-        clientEmail: 'beatriz@email.com',
-        orgId: 'org1',
-        weddingDate: new Date('2024-04-10'),
-        status: 'trial_done',
-        timeline: [
-            { id: 'trial', type: 'trial', date: new Date('2024-03-15'), status: 'completed' },
-            { id: 'wedding_day', type: 'wedding_day', date: new Date('2024-04-10'), status: 'pending' },
-        ],
-        attendants: [
-            { id: '1', name: 'Carla', relation: 'bridesmaid', services: ['makeup-attendant'], totalPrice: 160, isPaid: true },
-        ],
-        moodboardPhotos: [],
-        packageValue: 1110,
-        depositPaid: 750,
-        balanceDue: 360,
-        brideServices: ['bride-combo'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    },
-];
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getBridalPackagesByOrg, createBridalPackage, updateBridalPackage } from '../../bride/services/brideService';
+import { useBranding } from '../../organization/context/BrandingContext';
+import { notificationService } from '../../../shared/services/notificationService';
+import { toast } from 'sonner';
+import { useBrideTimeline } from '../../bride/hooks/useBrideTimeline';
+
 
 // Status Badge Component
 const StatusBadge: React.FC<{ status: BridalStatus }> = ({ status }) => {
@@ -275,10 +206,62 @@ const StatsCard: React.FC<{ icon: React.ReactNode; label: string; value: string;
     </div>
 );
 
+// Timeline Section component
+const TimelineSection: React.FC<{ packageId: string }> = ({ packageId }) => {
+    const { timeline, isLoading } = useBrideTimeline(packageId);
+
+    if (isLoading) return <div className="animate-pulse space-y-2"><div className="h-10 bg-neo-bg shadow-neo-in rounded-neo" /><div className="h-10 bg-neo-bg shadow-neo-in rounded-neo" /></div>;
+
+    return (
+        <div className="space-y-3">
+            {timeline?.map(milestone => (
+                <div key={milestone.id} className="flex items-center justify-between p-3 rounded-neo-sm shadow-neo-in">
+                    <div className="flex items-center gap-3">
+                        <div className={cn(
+                            "w-8 h-8 rounded-full flex items-center justify-center text-xs",
+                            milestone.status === 'completed' ? "bg-green-100 text-green-600" : "bg-neo-bg shadow-neo-out text-neo-text-secondary"
+                        )}>
+                            {milestone.status === 'completed' ? <CheckCircle size={14} /> : <Clock size={14} />}
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-neo-text">
+                                {milestone.type === 'trial' ? 'Prova' : milestone.type === 'pre_wedding' ? 'Pré-Wedding' : 'Casamento'}
+                            </p>
+                            <p className="text-[10px] text-neo-text-secondary">
+                                {milestone.date ? milestone.date.toLocaleDateString('pt-BR') : 'Data a definir'}
+                            </p>
+                        </div>
+                    </div>
+                    <Badge variant={milestone.status === 'completed' ? 'success' : 'warning'}>
+                        {milestone.status === 'scheduled' ? 'Agendado' : milestone.status === 'completed' ? 'OK' : 'Pendente'}
+                    </Badge>
+                </div>
+            ))}
+        </div>
+    );
+};
+
 // Main Component
 export const BrideCommandCenter: React.FC = () => {
     const navigate = useNavigate();
-    const [brides, setBrides] = useState<BridalPackage[]>(MOCK_BRIDES);
+    const { organization: org } = useBranding();
+    const queryClient = useQueryClient();
+
+    const { data: brides = [], isLoading: loadingBrides } = useQuery({
+        queryKey: ['bridal_packages', org?.id],
+        queryFn: () => (org?.id ? getBridalPackagesByOrg(org.id) : Promise.resolve([])),
+        enabled: !!org?.id,
+    });
+
+    const createBrideMutation = useMutation({
+        mutationFn: createBridalPackage,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['bridal_packages'] });
+            setShowAddBride(false);
+            toast.success('Noiva cadastrada com sucesso!');
+        }
+    });
+
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<BridalStatus | 'all'>('all');
     const [selectedBride, setSelectedBride] = useState<BridalPackage | null>(null);
@@ -307,7 +290,14 @@ export const BrideCommandCenter: React.FC = () => {
         return matchesSearch && matchesStatus;
     });
 
-    const handleWhatsApp = (bride: BridalPackage) => {
+    const handleWhatsApp = async (bride: BridalPackage) => {
+        await notificationService.sendManualAlert({
+            to: bride.clientPhone,
+            message: `Olá ${bride.clientName}! Passando para confirmar se está tudo pronto para o seu grande dia! 💍`,
+            type: 'whatsapp'
+        });
+
+        // Also open WA link manually for immediate interaction
         const message = encodeURIComponent(`Olá ${bride.clientName}! Tudo bem? 💍`);
         window.open(`https://wa.me/55${bride.clientPhone}?text=${message}`, '_blank');
     };
@@ -533,6 +523,12 @@ export const BrideCommandCenter: React.FC = () => {
                                         )}
                                     </div>
 
+                                    {/* Timeline */}
+                                    <div className="bg-neo-bg rounded-neo shadow-neo-in p-4 mb-4">
+                                        <h3 className="font-semibold text-neo-text mb-3" style={{ color: GOLD }}>📅 Cronograma</h3>
+                                        <TimelineSection packageId={selectedBride.id} />
+                                    </div>
+
                                     {/* Financial Summary */}
                                     <div className="bg-neo-bg rounded-neo shadow-neo-in p-4 mb-4">
                                         <h3 className="font-semibold text-neo-text mb-3" style={{ color: GOLD }}>💰 Financeiro</h3>
@@ -571,17 +567,32 @@ export const BrideCommandCenter: React.FC = () => {
                                     )}
 
                                     {/* Actions */}
-                                    <div className="flex gap-3 mt-6">
-                                        <button
-                                            onClick={() => handleWhatsApp(selectedBride)}
-                                            className="flex-1 py-3 rounded-neo shadow-neo-out bg-neo-bg border-2 border-green-500 text-green-600 font-semibold flex items-center justify-center gap-2 active:shadow-neo-pressed"
-                                        >
-                                            <MessageCircle size={18} />
-                                            WhatsApp
-                                        </button>
+                                    <div className="flex flex-col gap-3 mt-6">
+                                        <div className="flex gap-3">
+                                            <button
+                                                onClick={() => handleWhatsApp(selectedBride)}
+                                                className="flex-1 py-3 rounded-neo shadow-neo-out bg-neo-bg border-2 border-green-500 text-green-600 font-semibold flex items-center justify-center gap-2 active:shadow-neo-pressed"
+                                            >
+                                                <MessageCircle size={18} />
+                                                Confirmar WhatsApp
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    notificationService.sendMilestoneAlert(
+                                                        selectedBride.clientName,
+                                                        selectedBride.clientPhone,
+                                                        "Sua prova está chegando!"
+                                                    );
+                                                }}
+                                                className="flex-1 py-3 rounded-neo shadow-neo-out bg-neo-bg border-2 border-neo-accent text-neo-accent font-semibold flex items-center justify-center gap-2 active:shadow-neo-pressed"
+                                            >
+                                                <Sparkles size={18} />
+                                                Lembrete Mágico
+                                            </button>
+                                        </div>
                                         <button
                                             onClick={() => setSelectedBride(null)}
-                                            className="flex-1 py-3 rounded-neo shadow-neo-out text-neo-text-secondary font-semibold"
+                                            className="w-full py-3 rounded-neo shadow-neo-out text-neo-text-secondary font-semibold"
                                         >
                                             Fechar
                                         </button>
@@ -775,28 +786,13 @@ export const BrideCommandCenter: React.FC = () => {
                                                     .filter(s => newBride.selectedServices.includes(s.id))
                                                     .reduce((sum, s) => sum + s.price, 0);
 
-                                                const newBrideData: BridalPackage = {
-                                                    id: `bride-${Date.now()}`,
+                                                createBrideMutation.mutate({
                                                     clientId: `client-${Date.now()}`,
-                                                    orgId: 'org1',
                                                     clientName: newBride.name,
                                                     clientPhone: newBride.phone,
-                                                    clientEmail: newBride.email || undefined,
+                                                    orgId: org?.id || 'default',
                                                     weddingDate: new Date(newBride.weddingDate),
-                                                    status: 'lead',
-                                                    packageValue: totalValue,
-                                                    depositPaid: 0,
-                                                    balanceDue: totalValue,
-                                                    attendants: [],
-                                                    timeline: [
-                                                        { id: 't1', type: 'trial', date: new Date(), status: 'pending' }
-                                                    ],
-                                                    moodboardPhotos: [],
-                                                    brideServices: newBride.selectedServices,
-                                                    createdAt: new Date(),
-                                                    updatedAt: new Date(),
-                                                };
-                                                setBrides([newBrideData, ...brides]);
+                                                });
                                                 setNewBride({ name: '', phone: '', email: '', weddingDate: '', selectedServices: [] });
                                                 setShowAddBride(false);
                                             }}

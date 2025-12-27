@@ -22,6 +22,7 @@ export interface Service {
 
 export interface Appointment {
   id: string;
+  orgId: string;
   clientId: string;
   clientName: string;
   clientPhone: string;

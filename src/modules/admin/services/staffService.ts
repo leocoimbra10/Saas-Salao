@@ -6,7 +6,8 @@ import {
     addDoc,
     updateDoc,
     deleteDoc,
-    doc
+    doc,
+    getDocs
 } from 'firebase/firestore';
 import { db } from '../../../shared/lib/firebase';
 import { Staff } from '../../../shared/types/types';
@@ -19,6 +20,12 @@ export const subscribeToStaff = (orgId: string, onUpdate: (data: Staff[]) => voi
         const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Staff));
         onUpdate(items);
     });
+};
+
+export const getStaff = async (orgId: string): Promise<Staff[]> => {
+    const q = query(collection(db, COLLECTION), where('orgId', '==', orgId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Staff));
 };
 
 export const createStaff = async (data: Omit<Staff, 'id'>) => {

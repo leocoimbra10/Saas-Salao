@@ -53,13 +53,13 @@ export interface BridalPackage {
 
     // Status & Timeline
     status: BridalStatus;
-    timeline: TimelineMilestone[];
+    timeline?: TimelineMilestone[]; // Moving to sub-collection
 
     // Attendants
     attendants: Attendant[];
 
     // Moodboard
-    moodboardPhotos: MoodboardPhoto[];
+    moodboardPhotos?: MoodboardPhoto[]; // Moving to sub-collection
 
     // Financials
     packageValue: number;

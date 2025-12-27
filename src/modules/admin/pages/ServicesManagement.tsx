@@ -19,7 +19,7 @@ import {
 import { cn, formatCurrency } from '../../../shared/lib/utils';
 import { Service } from '../../../shared/types/types';
 import { SERVICES_DATA } from '../../../shared/types/types';
-import { Card, Button, Badge, Input, Toggle } from '../../../shared/components/ui/NeoComponents';
+import { Card, Button, Badge, Input, Toggle, Skeleton } from '../../../shared/components/ui/NeoComponents';
 import { ActionBottomSheet } from '../../../shared/components/ui/BottomSheet';
 
 // Service Editor Modal
@@ -349,46 +349,41 @@ const ServiceStats: React.FC<{ services: Service[] }> = ({ services }) => {
   );
 };
 
+import { useBranding } from '../../organization/context/BrandingContext';
+import { useServices, useServiceMutations } from '../hooks/useServices';
+
 // Main Services Management Page
 export const ServicesManagement: React.FC = () => {
-  const [services, setServices] = useState<Service[]>(SERVICES_DATA);
+  const { organization } = useBranding();
+  const { data: services = [], isLoading } = useServices(organization?.id);
+  const { createService, updateService, deleteService } = useServiceMutations(organization?.id);
+
   const [editingService, setEditingService] = useState<Service | undefined>();
   const [showEditor, setShowEditor] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<Service | undefined>();
 
   const handleSave = (data: Partial<Service>) => {
     if (editingService) {
-      // Update existing
-      setServices(prev => prev.map(s =>
-        s.id === editingService.id ? { ...s, ...data } : s
-      ));
+      updateService({ id: editingService.id, data });
     } else {
-      // Create new
-      const newService: Service = {
-        id: `service-${Date.now()}`,
-        name: data.name!,
-        price: data.price!,
-        duration: data.duration!,
-        category: data.category as 'makeup' | 'hairstyle',
-        description: data.description,
+      createService({
+        ...data,
         active: data.active ?? true,
-      };
-      setServices(prev => [...prev, newService]);
+        orgId: organization?.id || '',
+      } as any);
     }
     setEditingService(undefined);
   };
 
   const handleDelete = () => {
     if (showDeleteConfirm) {
-      setServices(prev => prev.filter(s => s.id !== showDeleteConfirm.id));
+      deleteService(showDeleteConfirm.id);
       setShowDeleteConfirm(undefined);
     }
   };
 
   const handleToggle = (service: Service) => {
-    setServices(prev => prev.map(s =>
-      s.id === service.id ? { ...s, active: !s.active } : s
-    ));
+    updateService({ id: service.id, data: { active: !service.active } });
   };
 
   return (
@@ -417,24 +412,28 @@ export const ServicesManagement: React.FC = () => {
       {/* Content */}
       <main className="px-6">
         <div className="space-y-4">
-          {services.map((service, idx) => (
-            <motion.div
-              key={service.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-            >
-              <ServiceListItem
-                service={service}
-                onEdit={() => {
-                  setEditingService(service);
-                  setShowEditor(true);
-                }}
-                onDelete={() => setShowDeleteConfirm(service)}
-                onToggle={() => handleToggle(service)}
-              />
-            </motion.div>
-          ))}
+          {isLoading ? (
+            [1, 2, 3].map(i => <Skeleton key={i} className="h-32 w-full" />)
+          ) : (
+            services.map((service, idx) => (
+              <motion.div
+                key={service.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+              >
+                <ServiceListItem
+                  service={service}
+                  onEdit={() => {
+                    setEditingService(service);
+                    setShowEditor(true);
+                  }}
+                  onDelete={() => setShowDeleteConfirm(service)}
+                  onToggle={() => handleToggle(service)}
+                />
+              </motion.div>
+            ))
+          )}
         </div>
 
         {services.length === 0 && (

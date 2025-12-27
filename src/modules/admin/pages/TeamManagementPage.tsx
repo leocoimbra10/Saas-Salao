@@ -6,12 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserProfile, UserPermissions } from '../../../shared/types/types';
-import {
-    subscribeToOrgEmployees,
-    updateUserPermissions,
-    updateUserCommission,
-    removeEmployee
-} from '../../organization/services/organizationService';
+import { Skeleton } from '../../../shared/components/ui/NeoComponents';
 import { addEmployee, getUserProfile, onAuthChange } from '../../auth/services/authService';
 
 // Permission labels in Portuguese
@@ -359,52 +354,44 @@ const AddEmployeeModal: React.FC<{
 };
 
 // Main Page Component
+import { useEmployees, useEmployeeMutations } from '../../organization/hooks/useEmployees';
+
 export const TeamManagementPage: React.FC = () => {
     const navigate = useNavigate();
-    const [employees, setEmployees] = useState<UserProfile[]>([]);
     const [selectedEmployee, setSelectedEmployee] = useState<UserProfile | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
-    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const unsubscribeAuth = onAuthChange(async (user) => {
             if (!user) {
-                setLoading(false);
                 navigate('/login');
                 return;
             }
 
             const profile = await getUserProfile(user.uid);
             if (!profile || !profile.orgId) {
-                setLoading(false);
                 navigate('/login');
                 return;
             }
 
             setCurrentUser(profile);
-
-            // Subscribe to employees
-            const unsubscribe = subscribeToOrgEmployees(profile.orgId, (emps) => {
-                setEmployees(emps);
-                setLoading(false);
-            });
-
-            // Store unsubscribe in a ref or cleanup
-            return () => unsubscribe?.();
         });
 
         return () => unsubscribeAuth();
     }, [navigate]);
 
+    const { data: employees = [], isLoading: loading } = useEmployees(currentUser?.orgId);
+    const { updatePermissions, updateCommission } = useEmployeeMutations(currentUser?.orgId);
+
     const handleUpdatePermissions = async (permissions: Partial<UserPermissions>) => {
         if (!selectedEmployee) return;
-        await updateUserPermissions(selectedEmployee.uid, permissions);
+        updatePermissions({ userId: selectedEmployee.uid, permissions });
     };
 
     const handleUpdateCommission = async (rate: number) => {
         if (!selectedEmployee) return;
-        await updateUserCommission(selectedEmployee.uid, rate);
+        updateCommission({ userId: selectedEmployee.uid, rate });
     };
 
     const handleAddEmployee = async (data: { name: string; email: string; password: string; specialty: string }) => {

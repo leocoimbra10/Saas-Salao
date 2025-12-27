@@ -12,10 +12,12 @@ import {
     updateDoc,
     doc,
     deleteDoc,
-    where
+    where,
+    getDocs,
+    QuerySnapshot
 } from 'firebase/firestore';
-import { db } from '../../../shared/lib/firebase';
-import { Appointment } from '../../../shared/types/types';
+import { db } from '@/shared/lib/firebase';
+import { Appointment } from '@/shared/types/types';
 
 const APPOINTMENTS_COLLECTION = 'appointments';
 
@@ -50,10 +52,47 @@ export const subscribeToAppointments = (orgId: string, onUpdate: (appointments: 
 };
 
 /**
- * Create a new appointment
+ * Get appointments once (for TanStack Query)
+ */
+export const getAppointments = async (orgId: string): Promise<Appointment[]> => {
+    const q = query(
+        collection(db, APPOINTMENTS_COLLECTION),
+        where('orgId', '==', orgId),
+        orderBy('date', 'asc'),
+        orderBy('time', 'asc')
+    );
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(data.createdAt),
+            updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : new Date(data.updatedAt),
+        } as Appointment;
+    });
+};
+
+/**
+ * Create a new appointment with availability check
  */
 export const createAppointment = async (appointment: Omit<Appointment, 'id'>) => {
     try {
+        // Pre-check for availability (Simplified, real atomicity would need a transaction or separate slot collection)
+        const q = query(
+            collection(db, APPOINTMENTS_COLLECTION),
+            where('orgId', '==', appointment.orgId),
+            where('date', '==', appointment.date),
+            where('time', '==', appointment.time),
+            where('staffId', '==', appointment.staffId)
+        );
+
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+            throw new Error('Este horário já está ocupado para este profissional.');
+        }
+
         const docRef = await addDoc(collection(db, APPOINTMENTS_COLLECTION), {
             ...appointment,
             createdAt: Timestamp.now(),

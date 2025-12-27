@@ -4,8 +4,8 @@
  */
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { doc, onSnapshot, getDocs, collection, limit, query } from 'firebase/firestore';
-import { db } from '../../../shared/lib/firebase';
-import { Organization } from '../../../shared/types/types';
+import { db } from '@/shared/lib/firebase';
+import { Organization } from '@/shared/types/types';
 
 interface BrandingContextType {
     organization: Organization | null;

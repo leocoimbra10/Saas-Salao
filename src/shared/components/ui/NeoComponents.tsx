@@ -487,3 +487,15 @@ export const Spinner: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }
   );
 };
 Spinner.displayName = 'Spinner';
+// Skeleton Component
+export const Skeleton: React.FC<{ className?: string }> = ({ className }) => {
+  return (
+    <div
+      className={cn(
+        'animate-pulse bg-neo-text-secondary/10 rounded-neo',
+        className
+      )}
+    />
+  );
+};
+Skeleton.displayName = 'Skeleton';

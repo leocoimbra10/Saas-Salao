@@ -24,7 +24,11 @@ import { Service, Staff, Appointment } from '../../../shared/types/types';
 import { Avatar, Badge, Button, Toggle } from '../../../shared/components/ui/NeoComponents';
 import { db } from '../../../shared/lib/firebase';
 import { useBranding } from '../../organization/context/BrandingContext';
-import { collection, query, where, getDocs, addDoc, Timestamp } from 'firebase/firestore';
+import { useAppointmentMutations } from '../../booking/hooks/useAppointments';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { CheckoutView } from '../../booking/components/CheckoutView';
+import { BrideOnboarding } from '../../bride/components/BrideOnboarding';
+import { updateBridalPackage, createBridalPackage } from '../../bride/services/brideService';
 
 interface NewBookingModalProps {
     isOpen: boolean;
@@ -76,7 +80,9 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
     const [selectedTime, setSelectedTime] = useState<string>(initialAppointment?.time || initialTime || '');
 
     const [depositPaid, setDepositPaid] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showCheckout, setShowCheckout] = useState(false);
+    const [showBrideOnboarding, setShowBrideOnboarding] = useState(false);
+    const { createAppointment: createAppt, isPending: isSubmitting } = useAppointmentMutations(organization?.id);
     const [showSuccess, setShowSuccess] = useState(false);
 
     // --- Real Client Search ---
@@ -91,8 +97,6 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
 
             setIsSearching(true);
             try {
-                // Simple search by name prefix (Note: Firestore requires specific indexing for text search, 
-                // using a basic startAt/endAt or client-side filtering approach for this demo size is acceptable)
                 const q = query(
                     collection(db, 'clients'),
                     where('orgId', '==', organization.id)
@@ -139,45 +143,81 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
         );
     };
 
+    const handleConfirm = () => {
+        if (!selectedClient || selectedServices.length === 0) return;
+        setShowCheckout(true);
+    };
+
     const handleSubmit = async () => {
         if (!organization || !selectedClient) return;
-        setIsSubmitting(true);
 
-        try {
-            const appointmentData = {
-                orgId: organization.id,
-                clientId: selectedClient.id,
-                clientName: selectedClient.name,
-                clientPhone: selectedClient.phone,
-                date: format(selectedDate, 'yyyy-MM-dd'),
-                time: selectedTime,
-                staffId: selectedStaffId,
-                services: selectedServices, // Array of IDs
-                totalAmount,
-                depositPaid: depositPaid ? depositAmount : 0,
-                status: 'confirmed',
-                createdAt: Timestamp.now()
-            };
+        createAppt({
+            orgId: organization.id,
+            clientId: selectedClient.id,
+            clientName: selectedClient.name,
+            clientPhone: selectedClient.phone,
+            date: format(selectedDate, 'yyyy-MM-dd'),
+            time: selectedTime,
+            staffId: selectedStaffId,
+            services: selectedServices,
+            totalAmount,
+            depositPaid: depositPaid ? depositAmount : 0,
+            status: 'confirmed',
+        } as any);
 
-            await addDoc(collection(db, 'appointments'), appointmentData);
+        const isBrideService = selectedServiceObjects.some(s => s.category === 'makeup' && s.name.toLowerCase().includes('noiva'));
 
+        if (isBrideService) {
+            setShowBrideOnboarding(true);
+        } else {
             setShowSuccess(true);
             setTimeout(() => {
                 onSuccess();
                 onClose();
-                // Reset state
                 setShowSuccess(false);
                 setStep(1);
                 setSelectedClient(null);
                 setSelectedServices([]);
                 setClientSearch('');
             }, 2000);
-        } catch (error) {
-            console.error("Error booking:", error);
-            alert("Erro ao criar agendamento.");
-        } finally {
-            setIsSubmitting(false);
         }
+    };
+
+    const handleBrideComplete = async (brideData: any) => {
+        if (!organization || !selectedClient) return;
+
+        try {
+            // 1. Check if bride package already exists
+            const existingPkg = await updateBridalPackage(selectedClient.id, {
+                weddingDate: new Date(brideData.weddingDate),
+                organizationId: organization.id
+            } as any);
+
+            // 2. Or create new if service detected
+            await createBridalPackage({
+                clientId: selectedClient.id,
+                clientName: selectedClient.name,
+                clientPhone: selectedClient.phone,
+                orgId: organization.id,
+                weddingDate: new Date(brideData.weddingDate)
+            });
+
+            console.log("Bride Journey created/updated successfully");
+        } catch (error) {
+            console.error("Error updating bride journey:", error);
+        }
+
+        setShowBrideOnboarding(false);
+        setShowSuccess(true);
+        setTimeout(() => {
+            onSuccess();
+            onClose();
+            setShowSuccess(false);
+            setStep(1);
+            setSelectedClient(null);
+            setSelectedServices([]);
+            setClientSearch('');
+        }, 2000);
     };
 
     if (!isOpen) return null;
@@ -400,16 +440,36 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                         <div className="p-6 bg-white/5 border-t border-white/10">
                             <Button
                                 className="w-full h-14 text-base font-medium tracking-wide shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)]"
-                                variant="primary" // Assuming primary is configured to be gold/accent
+                                variant="primary"
                                 disabled={(!selectedClient || selectedServices.length === 0) && step === 1}
                                 onClick={() => {
                                     if (step === 1) setStep(2);
-                                    else handleSubmit();
+                                    else handleConfirm();
                                 }}
                             >
                                 {step === 1 ? 'Continuar' : isSubmitting ? 'Confirmando...' : 'Confirmar Agendamento'}
                             </Button>
                         </div>
+
+                        {/* Checkout View Overlay */}
+                        <CheckoutView
+                            isOpen={showCheckout}
+                            onClose={() => setShowCheckout(false)}
+                            amount={totalAmount}
+                            appointmentId="" // Will generate ID in service if needed
+                            onSuccess={() => {
+                                setShowCheckout(false);
+                                handleSubmit();
+                            }}
+                        />
+
+                        {/* Bride Onboarding Overlay */}
+                        <BrideOnboarding
+                            isOpen={showBrideOnboarding}
+                            onClose={() => setShowBrideOnboarding(false)}
+                            clientId={selectedClient?.id || ''}
+                            onComplete={handleBrideComplete}
+                        />
 
                         {/* Loading Overlay */}
                         {isSubmitting && (

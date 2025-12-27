@@ -36,12 +36,69 @@ import {
     Scissors
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
-import { Card, Button, Badge, Progress } from '../../../shared/components/ui/NeoComponents';
+import { Card, Button, Badge, Progress, Skeleton } from '../../../shared/components/ui/NeoComponents';
 
 // Brand Colors
 const ROSE = '#E8A0B8';
 const GOLD = ROSE; // Legacy alias
-const GOLD_LIGHT = '#F5E6B3';
+const GOLD_LIGHT = '#FDF2F5'; // Lighter version for backgrounds
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
+import { getFullBrideData, updateBridalPackage } from '../services/brideService';
+import { toast } from 'sonner';
+
+// ============================================
+// SKELETON LOADER
+// ============================================
+const BridePortalSkeleton = () => (
+    <div className="w-full max-w-[480px] mx-auto p-4 space-y-6">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between py-4">
+            <Skeleton className="w-10 h-10 rounded-neo shadow-neo-out" />
+            <Skeleton className="h-6 w-32 rounded-full" />
+            <div className="w-10 text-neo-accent" />
+        </div>
+
+        {/* Countdown Skeleton */}
+        <Skeleton className="h-24 w-full rounded-neo shadow-neo-out" />
+
+        {/* Timeline Skeleton */}
+        <div className="bg-neo-bg rounded-neo shadow-neo-out p-4 space-y-4">
+            <Skeleton className="h-5 w-40" />
+            <div className="flex justify-between items-center px-2">
+                {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="flex flex-col items-center gap-2">
+                        <Skeleton className="w-6 h-6 rounded-full" />
+                        <Skeleton className="h-3 w-12" />
+                    </div>
+                ))}
+            </div>
+        </div>
+
+        {/* Moodboard Skeleton */}
+        <div className="space-y-4">
+            <div className="flex justify-between items-center">
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-8 w-24 rounded-neo" />
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+                {[1, 2, 3].map(i => (
+                    <Skeleton key={i} className="aspect-square rounded-neo shadow-neo-out" />
+                ))}
+            </div>
+        </div>
+
+        {/* Attendants Skeleton */}
+        <div className="space-y-4">
+            <div className="flex justify-between items-center">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-10 w-32 rounded-full" />
+            </div>
+            <Skeleton className="h-32 w-full rounded-2xl" />
+        </div>
+    </div>
+);
 
 // ============================================
 // TYPES
@@ -672,82 +729,23 @@ const ContactSpecialist: React.FC = () => (
 // ============================================
 export const BridePortalPage: React.FC = () => {
     const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
 
-    // State
-    const [weddingDate, setWeddingDate] = useState<Date | null>(new Date('2025-06-15'));
-    const [showDatePicker, setShowDatePicker] = useState(false);
-    const [isAdmin] = useState(false);
+    const { data: bride, isLoading } = useQuery({
+        queryKey: ['bride_full_data', id],
+        queryFn: () => (id ? getFullBrideData(id) : Promise.reject('No ID')),
+        enabled: !!id,
+    });
 
-    const [timeline] = useState<TimelineStep[]>([
-        { id: 'contract', title: 'Contrato', status: 'completed', date: new Date('2024-12-01') },
-        { id: 'trial', title: 'Teste Beleza', status: 'scheduled', date: new Date('2025-05-01') },
-        { id: 'prewedding', title: 'Pré-Wedding', status: 'pending' },
-        { id: 'wedding', title: 'Grande Dia', status: 'pending', date: new Date('2025-06-15') },
-    ]);
+    if (isLoading) return <BridePortalSkeleton />;
+    if (!bride) return <div className="p-8 text-center">Noiva não encontrada</div>;
 
-    const [moodboardPhotos] = useState<MoodboardPhoto[]>([
-        { id: '1', url: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=200', category: 'vestido' },
-        { id: '2', url: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=200', category: 'maquiagem' },
-        { id: '3', url: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=200', category: 'penteado' },
-    ]);
-
-    const [attendants, setAttendants] = useState<Attendant[]>([
-        {
-            id: '1',
-            name: 'Ana Carolina',
-            relation: 'Madrinha',
-            services: [
-                { id: 'combo-glam', name: 'Combo Glamour', price: 380 }
-            ],
-            depositPaid: 200,
-            totalPrice: 380,
-        },
-        {
-            id: '2',
-            name: 'Maria Helena',
-            relation: 'Mãe da Noiva',
-            services: [
-                { id: 'makeup-glam', name: 'Maquiagem Glamour', price: 220 },
-                { id: 'coque', name: 'Penteado Coque', price: 140 }
-            ],
-            depositPaid: 360,
-            totalPrice: 360,
-        },
-    ]);
-
-    const [showAddAttendant, setShowAddAttendant] = useState(false);
-    const [newAttendantName, setNewAttendantName] = useState('');
-    const [newAttendantRelation, setNewAttendantRelation] = useState('');
-    const [selectedServices, setSelectedServices] = useState<string[]>([]);
+    const timeline = bride.timeline || [];
+    const moodboardPhotos = bride.moodboardPhotos || [];
+    const attendants = bride.attendants || [];
 
     const handleAddPhoto = (category: string) => {
-        // TODO: Implement photo upload
-        alert(`Upload de foto para categoria: ${category}`);
-    };
-
-    const handleRemoveAttendant = (id: string) => {
-        setAttendants(prev => prev.filter(a => a.id !== id));
-    };
-
-    const handleAddAttendant = () => {
-        if (!newAttendantName.trim()) return;
-
-        const services = AVAILABLE_SERVICES.filter(s => selectedServices.includes(s.id));
-        const totalPrice = services.reduce((sum, s) => sum + s.price, 0);
-
-        setAttendants(prev => [...prev, {
-            id: Date.now().toString(),
-            name: newAttendantName,
-            relation: newAttendantRelation || 'Convidada',
-            services,
-            depositPaid: 0,
-            totalPrice,
-        }]);
-
-        setNewAttendantName('');
-        setNewAttendantRelation('');
-        setSelectedServices([]);
-        setShowAddAttendant(false);
+        toast.info(`Upload de foto para ${category} em breve!`);
     };
 
     const handleViewContract = () => {
@@ -760,270 +758,105 @@ export const BridePortalPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-neo-bg pb-24 overflow-x-hidden">
-            <div className="w-full max-w-[480px] mx-auto">
-                {/* Header */}
-                <header className="p-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <button
-                            onClick={() => navigate(-1)}
-                            className="w-10 h-10 bg-neo-bg rounded-neo shadow-neo-out flex items-center justify-center active:shadow-neo-pressed"
-                        >
-                            <ArrowLeft size={20} className="text-neo-text-secondary" />
-                        </button>
-                        <div className="flex items-center gap-2">
-                            <Crown size={20} style={{ color: GOLD }} />
-                            <h1 className="font-display font-semibold text-neo-text">Área da Noiva</h1>
-                        </div>
-                        <div className="w-10" />
-                    </div>
-                </header>
-
-                {/* Content */}
-                <main className="px-4">
-                    {/* Countdown */}
-                    <CountdownWidget weddingDate={weddingDate} onEditDate={() => setShowDatePicker(true)} />
-
-                    {/* Journey Timeline */}
-                    <JourneyTimeline steps={timeline} />
-
-                    {/* Moodboard */}
-                    <MoodboardSection
-                        photos={moodboardPhotos}
-                        onAddPhoto={handleAddPhoto}
-                        isAdmin={isAdmin}
-                        proNotes=""
-                    />
-
-                    {/* Attendant Manager */}
-                    <AttendantManager
-                        attendants={attendants}
-                        onAdd={() => setShowAddAttendant(true)}
-                        onEdit={(id) => alert(`Editando: ${id}`)}
-                        onRemove={handleRemoveAttendant}
-                    />
-
-
-                    {/* === NEW: Service Selection Entry Card (Glassmorphic) === */}
-                    <motion.button
-                        onClick={() => navigate('/noiva/colecao')}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={cn(
-                            "w-full p-6 mb-6 rounded-[1.5rem] text-left group overflow-hidden relative",
-                            // Glassmorphism Recipe
-                            "bg-white/10 backdrop-blur-2xl border border-white/20",
-                            "shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.4),0_10px_20px_-5px_rgba(0,0,0,0.2)]"
-                        )}
+            <header className="p-4 bg-neo-bg/80 backdrop-blur-md sticky top-0 z-30">
+                <div className="w-full max-w-[480px] mx-auto flex items-center justify-between">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="w-10 h-10 bg-neo-bg rounded-neo shadow-neo-out flex items-center justify-center active:shadow-neo-pressed"
                     >
-                        {/* Inner Glow */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-50 pointer-events-none" />
+                        <ArrowLeft size={20} className="text-neo-text-secondary" />
+                    </button>
+                    <div className="flex items-center gap-2">
+                        <Crown size={20} style={{ color: GOLD }} />
+                        <h1 className="font-display font-semibold text-neo-text">Área da Noiva</h1>
+                    </div>
+                    <div className="w-10" />
+                </div>
+            </header>
 
-                        <div className="relative flex items-center gap-4">
-                            <div
-                                className="w-14 h-14 rounded-full flex items-center justify-center shadow-neo-out"
-                                style={{ background: `linear-gradient(135deg, ${GOLD_LIGHT} 0%, ${GOLD} 100%)` }}
-                            >
-                                <Package size={24} className="text-white" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="text-lg font-semibold text-neo-text">Selecionar Meus Serviços</h3>
-                                <p className="text-sm text-neo-text-secondary">Escolha seus pacotes e adicionais</p>
-                            </div>
-                            <ChevronRight size={24} className="text-neo-accent group-hover:translate-x-1 transition-transform" />
+            <main className="w-full max-w-[480px] mx-auto p-4 pb-12">
+                {/* Header Welcome */}
+                <div className="mb-8 p-4">
+                    <h1 className="text-3xl font-serif font-bold text-neo-text mb-1">Olá, {bride.clientName}</h1>
+                    <p className="text-neo-text-secondary italic">Seu grande sonho está sendo preparado com carinho.</p>
+                </div>
+
+                {/* Countdown */}
+                <CountdownWidget
+                    weddingDate={bride.weddingDate}
+                    onEditDate={() => { }}
+                />
+
+                {/* Timeline */}
+                <JourneyTimeline steps={timeline.map(m => ({
+                    id: m.id,
+                    title: m.type === 'trial' ? 'Prova' : m.type === 'pre_wedding' ? 'Pré-Wedding' : 'Grande Dia',
+                    status: m.status,
+                    date: m.date
+                }))} />
+
+                {/* Moodboard */}
+                <MoodboardSection
+                    photos={moodboardPhotos.map(p => ({
+                        id: p.id,
+                        url: p.url,
+                        category: p.category as any
+                    }))}
+                    onAddPhoto={handleAddPhoto}
+                    isAdmin={false}
+                />
+
+                {/* Attendant Manager */}
+                <AttendantManager
+                    attendants={attendants.map(a => ({
+                        id: a.id,
+                        name: a.name,
+                        relation: a.relation === 'bridesmaid' ? 'Madrinha' : a.relation === 'mother' ? 'Mãe' : 'Convidada',
+                        services: Array.isArray(a.services) ? a.services.map(s => ({ id: s, name: s, price: 0 })) : [],
+                        depositPaid: a.isPaid ? 100 : 0,
+                        totalPrice: 100
+                    }))}
+                    onAdd={() => { }}
+                    onEdit={() => { }}
+                    onRemove={() => { }}
+                />
+
+                {/* Service Selection Card */}
+                <motion.button
+                    onClick={() => navigate(`/noiva/${id}/colecao`)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={cn(
+                        "w-full p-6 mb-6 rounded-[1.5rem] text-left group overflow-hidden relative",
+                        "bg-white/10 backdrop-blur-2xl border border-white/20",
+                        "shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.4),0_10px_20px_-5px_rgba(0,0,0,0.2)]"
+                    )}
+                >
+                    <div className="relative flex items-center gap-4">
+                        <div
+                            className="w-14 h-14 rounded-full flex items-center justify-center shadow-neo-out"
+                            style={{ background: `linear-gradient(135deg, ${GOLD_LIGHT} 0%, ${GOLD} 100%)` }}
+                        >
+                            <Package size={24} className="text-white" />
                         </div>
-                    </motion.button>
+                        <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-neo-text">Meus Serviços</h3>
+                            <p className="text-sm text-neo-text-secondary">Personalize seu pacote especial</p>
+                        </div>
+                        <ChevronRight size={24} className="text-neo-accent" />
+                    </div>
+                </motion.button>
 
-                    {/* Documents Hub */}
-                    <DocumentsHub
-                        hasContract={true}
-                        onViewContract={handleViewContract}
-                        onGenerateReceipt={handleGenerateReceipt}
-                    />
+                {/* Documents Hub */}
+                <DocumentsHub
+                    hasContract={true}
+                    onViewContract={handleViewContract}
+                    onGenerateReceipt={handleGenerateReceipt}
+                />
 
-                    {/* Contact Specialist */}
-                    <ContactSpecialist />
-                </main>
-
-                {/* Add Attendant Modal - Glassmorphic */}
-                <AnimatePresence>
-                    {showAddAttendant && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center"
-                            onClick={() => setShowAddAttendant(false)}
-                        >
-                            <motion.div
-                                initial={{ y: '100%' }}
-                                animate={{ y: 0 }}
-                                exit={{ y: '100%' }}
-                                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                                className={cn(
-                                    "w-full max-w-lg rounded-t-3xl p-6 max-h-[85vh] overflow-y-auto",
-                                    "bg-white/10 backdrop-blur-2xl border-t border-white/20",
-                                    "shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.4)]"
-                                )}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <div className="flex items-center justify-between mb-6">
-                                    <div className="flex items-center gap-3">
-                                        <div
-                                            className="w-10 h-10 rounded-full flex items-center justify-center"
-                                            style={{ background: `linear-gradient(135deg, ${GOLD_LIGHT} 0%, ${GOLD} 100%)` }}
-                                        >
-                                            <Users size={18} className="text-white" />
-                                        </div>
-                                        <h2 className="font-serif text-xl text-neo-text">Adicionar Convidada</h2>
-                                    </div>
-                                    <button
-                                        onClick={() => setShowAddAttendant(false)}
-                                        className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                                    >
-                                        <X size={20} className="text-neo-text-secondary" />
-                                    </button>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-neo-text-secondary mb-2">Nome</label>
-                                        <input
-                                            type="text"
-                                            value={newAttendantName}
-                                            onChange={(e) => setNewAttendantName(e.target.value)}
-                                            placeholder="Ex: Ana"
-                                            className="w-full px-4 py-3 bg-neo-bg rounded-neo shadow-neo-in text-neo-text"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-neo-text-secondary mb-2">Relação</label>
-                                        <input
-                                            type="text"
-                                            value={newAttendantRelation}
-                                            onChange={(e) => setNewAttendantRelation(e.target.value)}
-                                            placeholder="Ex: Madrinha, Mãe da Noiva..."
-                                            className="w-full px-4 py-3 bg-neo-bg rounded-neo shadow-neo-in text-neo-text"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-neo-text-secondary mb-2">Serviços</label>
-                                        <div className="space-y-2">
-                                            {AVAILABLE_SERVICES.map((service) => (
-                                                <button
-                                                    key={service.id}
-                                                    onClick={() => {
-                                                        setSelectedServices(prev =>
-                                                            prev.includes(service.id)
-                                                                ? prev.filter(id => id !== service.id)
-                                                                : [...prev, service.id]
-                                                        );
-                                                    }}
-                                                    className={cn(
-                                                        'w-full p-3 rounded-neo flex items-center justify-between transition-all',
-                                                        selectedServices.includes(service.id)
-                                                            ? 'shadow-neo-pressed text-neo-accent'
-                                                            : 'shadow-neo-out text-neo-text'
-                                                    )}
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <div className={cn(
-                                                            'w-5 h-5 rounded border-2 flex items-center justify-center',
-                                                            selectedServices.includes(service.id)
-                                                                ? 'bg-neo-accent border-neo-accent'
-                                                                : 'border-neo-text-secondary/30'
-                                                        )}>
-                                                            {selectedServices.includes(service.id) && (
-                                                                <Check size={12} className="text-white" />
-                                                            )}
-                                                        </div>
-                                                        <span>{service.name}</span>
-                                                    </div>
-                                                    <span className="font-semibold">{formatCurrency(service.price)}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <Button
-                                        variant="primary"
-                                        className="w-full"
-                                        onClick={handleAddAttendant}
-                                        disabled={!newAttendantName.trim() || selectedServices.length === 0}
-                                    >
-                                        <Plus size={18} />
-                                        Adicionar ao Pacote
-                                    </Button>
-                                </div>
-                            </motion.div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                {/* === DATE PICKER MODAL (Glassmorphic) === */}
-                <AnimatePresence>
-                    {showDatePicker && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6"
-                            onClick={() => setShowDatePicker(false)}
-                        >
-                            <motion.div
-                                initial={{ scale: 0.9, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0.9, opacity: 0 }}
-                                className={cn(
-                                    "w-full max-w-sm p-6 rounded-2xl",
-                                    // Glassmorphism Recipe
-                                    "bg-white/10 backdrop-blur-xl border border-white/20",
-                                    "shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.4),0_20px_40px_-10px_rgba(0,0,0,0.3)]"
-                                )}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div
-                                        className="w-12 h-12 rounded-full flex items-center justify-center"
-                                        style={{ background: `linear-gradient(135deg, ${GOLD_LIGHT} 0%, ${GOLD} 100%)` }}
-                                    >
-                                        <Calendar size={20} className="text-white" />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-lg font-semibold text-neo-text">Data do Grande Dia</h2>
-                                        <p className="text-xs text-neo-text-secondary">Qual a data do seu casamento?</p>
-                                    </div>
-                                </div>
-
-                                <input
-                                    type="date"
-                                    defaultValue={weddingDate ? weddingDate.toISOString().split('T')[0] : ''}
-                                    className={cn(
-                                        "w-full px-4 py-4 mb-6 rounded-xl text-neo-text text-lg font-medium text-center",
-                                        "bg-white/10 backdrop-blur-xl border border-white/20",
-                                        "shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]",
-                                        "focus:outline-none focus:ring-2 focus:ring-neo-accent/50"
-                                    )}
-                                    onChange={(e) => {
-                                        if (e.target.value) {
-                                            setWeddingDate(new Date(e.target.value + 'T12:00:00'));
-                                        }
-                                    }}
-                                />
-
-                                <Button
-                                    variant="primary"
-                                    className="w-full"
-                                    onClick={() => setShowDatePicker(false)}
-                                >
-                                    Confirmar Data
-                                </Button>
-                            </motion.div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+                {/* Contact */}
+                <ContactSpecialist />
+            </main>
         </div>
     );
 };

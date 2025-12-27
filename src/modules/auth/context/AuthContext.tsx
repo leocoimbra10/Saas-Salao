@@ -4,7 +4,7 @@
  */
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../../shared/lib/firebase';
+import { auth } from '@/shared/lib/firebase';
 
 interface AuthContextType {
     user: User | null;
@@ -23,12 +23,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        console.log("AuthProvider: useEffect triggered, subcribing to auth state change...");
         const unsubscribe = onAuthStateChanged(auth, (user) => {
+            console.log("AuthProvider: onAuthStateChanged fired. User:", user ? user.uid : "null");
             setUser(user);
             setLoading(false);
         });
 
-        return () => unsubscribe();
+        return () => {
+            console.log("AuthProvider: unsubscribing...");
+            unsubscribe();
+        };
     }, []);
 
     return (
