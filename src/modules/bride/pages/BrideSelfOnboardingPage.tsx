@@ -6,17 +6,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-    Crown,
-    ArrowLeft,
-    ArrowRight,
-    Calendar,
-    MapPin,
-    Users,
-    Check,
-    Sparkles,
-    Heart
-} from 'lucide-react';
+import { Check, Calendar, Users, Crown, MapPin, ArrowRight, ArrowLeft, PartyPopper, Heart, Sparkles } from 'lucide-react';
+import { Typography, NeoButton, NeoCard } from '../../../shared/components/ui';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '../../../shared/lib/utils';
@@ -425,7 +416,7 @@ export const BrideSelfOnboardingPage: React.FC = () => {
                             {currentStep === 3 && (
                                 <>
                                     <div className="text-center mb-6">
-                                        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] flex items-center justify-center shadow-lg">
+                                        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-brand-gradient flex items-center justify-center shadow-lg">
                                             <Heart className="text-white" size={32} />
                                         </div>
                                         <h2 className="text-2xl font-serif text-neo-text mb-2">Quase lá!</h2>
@@ -495,7 +486,7 @@ export const BrideSelfOnboardingPage: React.FC = () => {
                                 }
                                 className={cn(
                                     "flex-1 py-4 rounded-neo font-semibold transition-all flex items-center justify-center gap-2",
-                                    "bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] text-white shadow-neo-out hover:shadow-neo-in",
+                                    "bg-brand-gradient text-white shadow-neo-out hover:shadow-neo-in",
                                     "disabled:opacity-50 disabled:cursor-not-allowed"
                                 )}
                             >

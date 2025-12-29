@@ -1,122 +1,124 @@
 /**
- * BEAUTY SALON NEOMORPHIC APP - Neomorphic UI Components
+ * ENTERPRISE DESIGN SYSTEM - Unified Neomorphic Components
+ * Single source of truth for all UI elements
  */
 import React from 'react';
 import { cn } from '../../lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Check } from 'lucide-react';
 
-// Button Component
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'glass';
+// ===== BUTTON COMPONENT =====
+interface NeoButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'neu' | 'glass' | 'glow' | 'ghost' | 'gradient' | 'outline';
   size?: 'sm' | 'md' | 'lg';
+  fullWidth?: boolean;
   loading?: boolean;
-  active?: boolean;
-  children: React.ReactNode;
+  icon?: React.ReactNode;
+  iconPosition?: 'left' | 'right';
 }
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'secondary', size = 'md', loading, active, children, disabled, ...props }, ref) => {
-    const variants = {
-      primary: 'text-neo-accent',
-      secondary: 'text-neo-text',
-      danger: 'text-neo-danger',
-      ghost: 'text-neo-text-secondary bg-transparent shadow-none',
-      glass: 'btn-glass-glow',
+export const NeoButton = React.forwardRef<HTMLButtonElement, NeoButtonProps>(
+  ({
+    className,
+    variant = 'neu',
+    size = 'md',
+    fullWidth = false,
+    loading = false,
+    icon,
+    iconPosition = 'left',
+    disabled,
+    children,
+    ...props
+  }, ref) => {
+    const baseClasses = "rounded-neo font-semibold transition-all duration-200 inline-flex items-center justify-center gap-2";
+
+    const variantClasses = {
+      neu: "bg-neo-bg shadow-neo-out hover:shadow-neo-pressed active:shadow-neo-in text-neo-text",
+      glass: "bg-white/30 backdrop-blur-xl shadow-glass border border-white/20 text-neo-text hover:bg-white/40",
+      glow: "bg-brand-gradient text-white shadow-glow-brand hover:shadow-glow-intense",
+      ghost: "bg-transparent hover:bg-brand-primary/10 text-brand-primary",
+      gradient: "bg-brand-gradient text-white shadow-neo-out hover:shadow-neo-in",
+      outline: "border-2 border-brand-primary bg-transparent text-brand-primary hover:bg-brand-primary hover:text-white"
     };
 
-    const sizes = {
-      sm: 'px-4 py-2 text-sm',
-      md: 'px-6 py-3 text-base',
-      lg: 'px-8 py-4 text-lg',
+    const sizeClasses = {
+      sm: "px-4 py-2 text-sm",
+      md: "px-6 py-3 text-base",
+      lg: "px-8 py-4 text-lg"
     };
-
-    // Determine if this should use glass style or neo style
-    const isGlass = variant === 'glass';
 
     return (
       <button
         ref={ref}
+        disabled={disabled || loading}
         className={cn(
-          // Base neu-glass-light styles (applied to all non-ghost buttons)
-          !isGlass && variant !== 'ghost' && 'btn-neu-glass-light',
-          isGlass && 'btn-glass-glow',
-          // Active state
-          active && 'active',
-          // Common properties
-          'rounded-neo font-semibold transition-all duration-200',
-          'flex items-center justify-center gap-2',
-          'disabled:opacity-50 disabled:cursor-not-allowed',
-          variants[variant],
-          sizes[size],
+          baseClasses,
+          variantClasses[variant],
+          sizeClasses[size],
+          fullWidth && 'w-full',
+          (disabled || loading) && 'opacity-50 cursor-not-allowed',
           className
         )}
-        disabled={disabled || loading}
-        aria-pressed={active}
         {...props}
       >
         {loading && (
-          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-              fill="none"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-            />
-          </svg>
+          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
         )}
+        {!loading && icon && iconPosition === 'left' && icon}
         {children}
+        {!loading && icon && iconPosition === 'right' && icon}
       </button>
     );
   }
 );
-Button.displayName = 'Button';
+NeoButton.displayName = 'NeoButton';
 
-// Card Component
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+// ===== TYPOGRAPHY COMPONENT =====
+interface TypographyProps {
+  variant: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'body' | 'caption' | 'label';
   children: React.ReactNode;
-  pressed?: boolean;
+  className?: string;
+  as?: React.ElementType;
 }
 
-export const Card: React.FC<CardProps> = ({ className, children, pressed, ...props }) => {
-  return (
-    <div
-      className={cn(
-        'bg-neo-bg rounded-neo transition-all duration-200',
-        pressed ? 'shadow-neo-pressed' : 'shadow-neo-out',
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-};
-Card.displayName = 'Card';
+export const Typography: React.FC<TypographyProps> = ({
+  variant,
+  children,
+  className,
+  as
+}) => {
+  const variants = {
+    h1: { tag: 'h1', class: 'text-4xl md:text-5xl font-display font-bold text-neo-text' },
+    h2: { tag: 'h2', class: 'text-3xl md:text-4xl font-display font-semibold text-neo-text' },
+    h3: { tag: 'h3', class: 'text-2xl md:text-3xl font-display font-semibold text-neo-text' },
+    h4: { tag: 'h4', class: 'text-xl md:text-2xl font-display font-medium text-neo-text' },
+    h5: { tag: 'h5', class: 'text-lg md:text-xl font-display font-medium text-neo-text' },
+    h6: { tag: 'h6', class: 'text-base md:text-lg font-display font-medium text-neo-text' },
+    body: { tag: 'p', class: 'text-base font-body text-neo-text' },
+    caption: { tag: 'p', class: 'text-sm font-body text-neo-text-secondary' },
+    label: { tag: 'label', class: 'text-sm font-body font-medium text-neo-text' }
+  };
 
-// Input Component
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  const { tag: Tag, class: variantClass } = variants[variant];
+  const Component = as || Tag;
+
+  return <Component className={cn(variantClass, className)}>{children}</Component>;
+};
+
+// ===== INPUT COMPONENT =====
+interface NeoInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
+  helperText?: string;
   icon?: React.ReactNode;
 }
 
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, icon, ...props }, ref) => {
+export const NeoInput = React.forwardRef<HTMLInputElement, NeoInputProps>(
+  ({ className, label, error, helperText, icon, ...props }, ref) => {
     return (
       <div className="w-full">
-        {label && (
-          <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-            {label}
-          </label>
-        )}
+        {label && <Typography variant="label" className="mb-2">{label}</Typography>}
+        {helperText && <Typography variant="caption" className="mb-2 italic">{helperText}</Typography>}
+
         <div className="relative">
           {icon && (
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neo-text-secondary">
@@ -126,47 +128,43 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             className={cn(
-              'bg-neo-bg rounded-neo shadow-neo-in px-4 py-3 text-neo-text',
-              'placeholder:text-neo-text-secondary outline-none',
-              'focus:ring-2 focus:ring-neo-accent/20 transition-all duration-200',
-              'w-full',
-              icon && 'pl-12',
+              "w-full rounded-neo bg-neo-bg shadow-neo-in text-neo-text placeholder:text-neo-text-secondary",
+              "focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all",
+              icon ? "pl-12 pr-4 py-3" : "px-4 py-3",
+              error && "ring-2 ring-neo-danger",
               className
             )}
             {...props}
           />
         </div>
-        {error && (
-          <p className="mt-1 text-sm text-neo-danger">{error}</p>
-        )}
+
+        {error && <Typography variant="caption" className="mt-1 text-neo-danger">{error}</Typography>}
       </div>
     );
   }
 );
-Input.displayName = 'Input';
+NeoInput.displayName = 'NeoInput';
 
-// Select Component
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+// ===== SELECT COMPONENT =====
+interface NeoSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
+  error?: string;
   options: { value: string; label: string }[];
 }
 
-export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, label, options, ...props }, ref) => {
+export const NeoSelect = React.forwardRef<HTMLSelectElement, NeoSelectProps>(
+  ({ className, label, error, options, ...props }, ref) => {
     return (
       <div className="w-full">
-        {label && (
-          <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-            {label}
-          </label>
-        )}
+        {label && <Typography variant="label" className="mb-2">{label}</Typography>}
+
         <select
           ref={ref}
           className={cn(
-            'bg-neo-bg rounded-neo shadow-neo-in px-4 py-3 text-neo-text',
-            'outline-none cursor-pointer appearance-none',
-            'focus:ring-2 focus:ring-neo-accent/20 transition-all duration-200',
-            'w-full',
+            "w-full rounded-neo bg-neo-bg shadow-neo-in px-4 py-3 text-neo-text",
+            "focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all",
+            "cursor-pointer appearance-none",
+            error && "ring-2 ring-neo-danger",
             className
           )}
           {...props}
@@ -177,31 +175,77 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             </option>
           ))}
         </select>
+
+        {error && <Typography variant="caption" className="mt-1 text-neo-danger">{error}</Typography>}
       </div>
     );
   }
 );
-Select.displayName = 'Select';
+NeoSelect.displayName = 'NeoSelect';
 
-// Badge Component
-interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: 'success' | 'warning' | 'danger' | 'info' | 'neutral';
-  children: React.ReactNode;
+// ===== CARD COMPONENT =====
+interface NeoCardProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: 'flat' | 'raised' | 'inset';
+  padding?: 'none' | 'sm' | 'md' | 'lg';
 }
 
-export const Badge: React.FC<BadgeProps> = ({ className, variant = 'neutral', children, ...props }) => {
+export const NeoCard = React.forwardRef<HTMLDivElement, NeoCardProps>(
+  ({ className, variant = 'raised', padding = 'md', children, ...props }, ref) => {
+    const variantClasses = {
+      flat: "bg-neo-bg",
+      raised: "bg-neo-bg shadow-neo-out",
+      inset: "bg-neo-bg shadow-neo-in"
+    };
+
+    const paddingClasses = {
+      none: "p-0",
+      sm: "p-4",
+      md: "p-6",
+      lg: "p-8"
+    };
+
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          "rounded-neo",
+          variantClasses[variant],
+          paddingClasses[padding],
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+NeoCard.displayName = 'NeoCard';
+
+// ===== BADGE COMPONENT =====
+interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  variant?: 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'brand';
+}
+
+export const Badge: React.FC<BadgeProps> = ({
+  className,
+  variant = 'neutral',
+  children,
+  ...props
+}) => {
   const variants = {
     success: 'bg-neo-success/10 text-neo-success',
     warning: 'bg-neo-warning/10 text-neo-warning',
     danger: 'bg-neo-danger/10 text-neo-danger',
     info: 'bg-neo-info/10 text-neo-info',
-    neutral: 'bg-neo-bg shadow-neo-out text-neo-text',
+    neutral: 'bg-neo-bg shadow-neo-in text-neo-text',
+    brand: 'bg-brand-primary/10 text-brand-primary'
   };
 
   return (
     <span
       className={cn(
-        'px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1',
+        "px-3 py-1 rounded-full text-xs font-semibold",
         variants[variant],
         className
       )}
@@ -213,12 +257,79 @@ export const Badge: React.FC<BadgeProps> = ({ className, variant = 'neutral', ch
 };
 Badge.displayName = 'Badge';
 
-// Avatar Component
+// ===== CHECKBOX COMPONENT =====
+interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+  label?: string;
+}
+
+export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
+  ({ className, label, ...props }, ref) => {
+    return (
+      <label className="flex items-center gap-3 cursor-pointer">
+        <div className="relative">
+          <input
+            ref={ref}
+            type="checkbox"
+            className="peer sr-only"
+            {...props}
+          />
+          <div className={cn(
+            "w-6 h-6 rounded-neo bg-neo-bg shadow-neo-in",
+            "peer-checked:shadow-neo-out peer-checked:bg-brand-primary",
+            "peer-focus:ring-2 peer-focus:ring-brand-primary/20",
+            "transition-all flex items-center justify-center",
+            className
+          )}>
+            <Check size={14} className="text-white opacity-0 peer-checked:opacity-100" />
+          </div>
+        </div>
+        {label && <Typography variant="body">{label}</Typography>}
+      </label>
+    );
+  }
+);
+Checkbox.displayName = 'Checkbox';
+
+// ===== PROGRESS COMPONENT =====
+interface ProgressProps {
+  value: number;
+  max?: number;
+  showLabel?: boolean;
+  className?: string;
+}
+
+export const Progress: React.FC<ProgressProps> = ({
+  value,
+  max = 100,
+  showLabel,
+  className
+}) => {
+  const percentage = Math.round((value / max) * 100);
+
+  return (
+    <div className={cn("w-full", className)}>
+      <div className="flex justify-between items-center mb-2">
+        {showLabel && (
+          <Typography variant="caption">{percentage}%</Typography>
+        )}
+      </div>
+      <div className="h-3 bg-neo-bg rounded-full shadow-neo-in overflow-hidden">
+        <div
+          className="h-full bg-brand-gradient rounded-full transition-all duration-500"
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+    </div>
+  );
+};
+Progress.displayName = 'Progress';
+
+// ===== AVATAR COMPONENT =====
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   src?: string;
   alt?: string;
   name?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export const Avatar: React.FC<AvatarProps> = ({
@@ -230,9 +341,10 @@ export const Avatar: React.FC<AvatarProps> = ({
   ...props
 }) => {
   const sizes = {
-    sm: 'w-10 h-10 text-sm',
-    md: 'w-14 h-14 text-base',
-    lg: 'w-20 h-20 text-xl',
+    sm: 'w-8 h-8 text-xs',
+    md: 'w-12 h-12 text-sm',
+    lg: 'w-16 h-16 text-base',
+    xl: 'w-24 h-24 text-xl'
   };
 
   const getInitials = (name: string) => {
@@ -247,8 +359,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   return (
     <div
       className={cn(
-        'bg-neo-bg rounded-full shadow-neo-out flex items-center justify-center',
-        'overflow-hidden',
+        "rounded-full bg-neo-bg shadow-neo-out flex items-center justify-center overflow-hidden font-semibold text-brand-primary",
         sizes[size],
         className
       )}
@@ -256,176 +367,48 @@ export const Avatar: React.FC<AvatarProps> = ({
     >
       {src ? (
         <img src={src} alt={alt || name} className="w-full h-full object-cover" />
+      ) : name ? (
+        getInitials(name)
       ) : (
-        <span className="text-neo-accent font-semibold">
-          {name ? getInitials(name) : '?'}
-        </span>
+        <div className="w-full h-full bg-brand-primary/10" />
       )}
     </div>
   );
 };
 Avatar.displayName = 'Avatar';
 
-// Toggle Component - LED Glass Effect
-interface ToggleProps {
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  label?: string;
-  disabled?: boolean;
-}
+// ===== DIVIDER COMPONENT =====
+export const Divider: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className }) => (
+  <div className={cn("h-px bg-neo-text-secondary/20 my-4", className)} />
+);
+Divider.displayName = 'Divider';
 
-const ROSE = '#E8A0B8';
-const GOLD = ROSE;
-
-export const Toggle: React.FC<ToggleProps> = ({
-  checked,
-  onChange,
-  label,
-  disabled
-}) => {
-  return (
-    <label className="flex items-center gap-3 cursor-pointer">
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => !disabled && onChange(!checked)}
-        className={cn(
-          // Base Track Styling
-          'w-14 h-7 rounded-full cursor-pointer relative',
-          'transition-all duration-300 ease-in-out',
-          // Neomorphic Recessed Track
-          checked
-            ? 'shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]'
-            : 'shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]',
-          disabled && 'opacity-50 cursor-not-allowed'
-        )}
-        style={{
-          background: checked
-            ? `linear-gradient(135deg, #FF69B4 0%, ${GOLD} 100%)`
-            : 'rgba(148, 163, 184, 0.2)'
-        }}
-        disabled={disabled}
-      >
-        {/* Sliding Knob with LED Glow */}
-        <motion.span
-          layout
-          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-          className={cn(
-            'absolute w-6 h-6 rounded-full top-0.5',
-            // 3D Glass Glint
-            'bg-white shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.2)]',
-            'transition-shadow duration-300'
-          )}
-          style={{
-            left: checked ? 'calc(100% - 1.625rem)' : '0.125rem',
-            // LED Neon Glow when active - MAXIMUM INTENSITY
-            boxShadow: checked
-              ? `inset 0 1px 1px 0 rgba(255,255,255,0.9), 0 0 8px #FF69B4, 0 0 16px #FF69B4, 0 0 24px ${GOLD}, 0 0 40px ${GOLD}CC, 0 0 60px ${GOLD}80`
-              : 'inset 0 1px 1px 0 rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.2)'
-          }}
-        />
-      </button>
-      {label && (
-        <span className="text-neo-text font-medium">{label}</span>
-      )}
-    </label>
-  );
-};
-Toggle.displayName = 'Toggle';
-
-// Checkbox Component
-interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-}
-
-export const Checkbox: React.FC<CheckboxProps> = ({
-  className,
-  label,
-  ...props
-}) => {
-  return (
-    <label className={cn('flex items-center gap-3 cursor-pointer', className)}>
-      <div className="relative">
-        <input
-          type="checkbox"
-          className="sr-only"
-          {...props}
-        />
-        <div className={cn(
-          'w-6 h-6 rounded-neo-sm transition-all duration-200',
-          props.checked
-            ? 'bg-neo-accent shadow-neo-pressed'
-            : 'bg-neo-bg shadow-neo-in'
-        )}>
-          {props.checked && (
-            <svg
-              className="w-full h-full text-white p-0.5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clipRule="evenodd"
-              />
-            </svg>
-          )}
-        </div>
-      </div>
-      {label && (
-        <span className="text-neo-text text-sm">{label}</span>
-      )}
-    </label>
-  );
-};
-
-// Progress Component
-interface ProgressProps {
-  value: number;
-  max?: number;
-  showLabel?: boolean;
+// ===== SPINNER COMPONENT =====
+interface SpinnerProps {
+  size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
 
-export const Progress: React.FC<ProgressProps> = ({
-  value,
-  max = 100,
-  showLabel,
-  className
-}) => {
-  const percentage = Math.min(100, Math.max(0, (value / max) * 100));
+export const Spinner: React.FC<SpinnerProps> = ({ size = 'md', className }) => {
+  const sizes = {
+    sm: 'w-4 h-4 border-2',
+    md: 'w-8 h-8 border-3',
+    lg: 'w-12 h-12 border-4'
+  };
 
   return (
-    <div className={cn('w-full', className)}>
-      {showLabel && (
-        <div className="flex justify-between mb-1">
-          <span className="text-sm text-neo-text-secondary">Progresso</span>
-          <span className="text-sm text-neo-accent font-semibold">{Math.round(percentage)}%</span>
-        </div>
+    <div
+      className={cn(
+        "border-brand-primary border-t-transparent rounded-full animate-spin",
+        sizes[size],
+        className
       )}
-      <div className="bg-neo-bg rounded-full shadow-neo-in overflow-hidden h-3">
-        <motion.div
-          className="h-full bg-neo-accent rounded-full"
-          initial={{ width: 0 }}
-          animate={{ width: `${percentage}%` }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-        />
-      </div>
-    </div>
+    />
   );
 };
-Progress.displayName = 'Progress';
+Spinner.displayName = 'Spinner';
 
-// Divider Component
-export const Divider: React.FC<{ className?: string }> = ({ className }) => {
-  return (
-    <div className={cn('h-px bg-neo-text-secondary/20 my-4', className)} />
-  );
-};
-Divider.displayName = 'Divider';
-
-// Empty State Component
+// ===== EMPTY STATE COMPONENT =====
 interface EmptyStateProps {
   icon?: React.ReactNode;
   title: string;
@@ -440,158 +423,20 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   action
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-center">
+    <div className="flex flex-col items-center justify-center py-12 text-center">
       {icon && (
-        <div className="w-20 h-20 bg-neo-bg rounded-full shadow-neo-out flex items-center justify-center mb-4 text-neo-text-secondary">
+        <div className="mb-4 text-neo-text-secondary">
           {icon}
         </div>
       )}
-      <h3 className="text-lg font-semibold text-neo-text mb-2">{title}</h3>
+      <Typography variant="h4" className="mb-2">{title}</Typography>
       {description && (
-        <p className="text-neo-text-secondary mb-4 max-w-xs">{description}</p>
+        <Typography variant="caption" className="mb-6 max-w-md">
+          {description}
+        </Typography>
       )}
-      {action}
+      {action && <div>{action}</div>}
     </div>
   );
 };
 EmptyState.displayName = 'EmptyState';
-
-// Loading Spinner
-export const Spinner: React.FC<{ size?: 'sm' | 'md' | 'lg' }> = ({ size = 'md' }) => {
-  const sizes = {
-    sm: 'w-5 h-5',
-    md: 'w-8 h-8',
-    lg: 'w-12 h-12',
-  };
-
-  return (
-    <svg
-      className={cn('animate-spin text-neo-accent', sizes[size])}
-      viewBox="0 0 24 24"
-    >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-        fill="none"
-      />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-      />
-    </svg>
-  );
-};
-Spinner.displayName = 'Spinner';
-// Skeleton Component
-export const Skeleton: React.FC<{ className?: string }> = ({ className }) => {
-  return (
-    <div
-      className={cn(
-        'animate-pulse bg-neo-text-secondary/10 rounded-neo',
-        className
-      )}
-    />
-  );
-};
-Skeleton.displayName = 'Skeleton';
-
-// Custom Neomorphic Select (Custom Dropdown)
-export interface NeoSelectProps {
-  value: string;
-  onChange: (value: string) => void;
-  options: { value: string; label: string }[];
-  label?: string;
-  placeholder?: string;
-  className?: string;
-}
-
-export const NeoSelect: React.FC<NeoSelectProps> = ({
-  value,
-  onChange,
-  options,
-  label,
-  placeholder = 'Selecione...',
-  className
-}) => {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const containerRef = React.useRef<HTMLDivElement>(null);
-
-  // Close on click outside
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const selectedLabel = options.find(opt => opt.value === value)?.label || placeholder;
-
-  return (
-    <div className={cn("relative w-full", className)} ref={containerRef}>
-      {label && (
-        <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-          {label}
-        </label>
-      )}
-
-      {/* Trigger */}
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          "w-full flex items-center justify-between",
-          "bg-neo-bg rounded-neo px-4 py-3 text-neo-text text-left",
-          isOpen ? "shadow-neo-pressed" : "shadow-neo-out", // Pressed effect when open
-          "transition-all duration-200 outline-none"
-        )}
-      >
-        <span className={!value ? "text-neo-text-secondary" : ""}>{selectedLabel}</span>
-        <svg
-          width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-          className={cn("text-neo-text-secondary transition-transform duration-200", isOpen && "rotate-180")}
-        >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
-      </button>
-
-      {/* Dropdown Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scaleY: 0.95 }}
-            animate={{ opacity: 1, y: 0, scaleY: 1 }}
-            exit={{ opacity: 0, y: -10, scaleY: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 right-0 mt-2 z-50 overflow-hidden bg-neo-bg rounded-neo shadow-neo-out border border-white/40 p-2 max-h-60 overflow-y-auto"
-          >
-            {options.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => {
-                  onChange(opt.value);
-                  setIsOpen(false);
-                }}
-                className={cn(
-                  "w-full text-left px-3 py-2 rounded-neo-sm text-sm font-medium transition-colors mb-1 last:mb-0",
-                  value === opt.value
-                    ? "bg-neo-accent text-white shadow-neo-out"
-                    : "text-neo-text hover:bg-neo-text-secondary/10"
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
