@@ -151,25 +151,25 @@ const HomePage: React.FC = () => {
         </Typography>
 
         <div className="grid gap-4 w-full">
-          <Link to={ROUTES.LOGIN} className="w-full">
-            <NeoButton
-              variant="glow"
-              className="w-full py-4 text-lg"
-              icon={<User size={18} />}
-            >
-              {APP_TEXTS.HOME_BUTTON_LOGIN}
-            </NeoButton>
-          </Link>
+          <NeoButton
+            as={Link}
+            to={ROUTES.LOGIN}
+            variant="glow"
+            className="w-full py-4 text-lg"
+            icon={<User size={18} />}
+          >
+            {APP_TEXTS.HOME_BUTTON_LOGIN}
+          </NeoButton>
 
-          <Link to={ROUTES.REGISTER_BUSINESS} className="w-full">
-            <NeoButton
-              variant="glass"
-              className="w-full"
-              icon={<Briefcase size={18} />}
-            >
-              {APP_TEXTS.HOME_BUTTON_REGISTER_BUSINESS}
-            </NeoButton>
-          </Link>
+          <NeoButton
+            as={Link}
+            to={ROUTES.REGISTER_BUSINESS}
+            variant="glass"
+            className="w-full"
+            icon={<Briefcase size={18} />}
+          >
+            {APP_TEXTS.HOME_BUTTON_REGISTER_BUSINESS}
+          </NeoButton>
         </div>
 
         <div className="mt-8 grid grid-cols-3 gap-4">

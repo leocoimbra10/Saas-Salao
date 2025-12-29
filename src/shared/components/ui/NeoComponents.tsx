@@ -14,9 +14,12 @@ interface NeoButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
+  as?: React.ElementType;
+  to?: string;
+  href?: string;
 }
 
-export const NeoButton = React.forwardRef<HTMLButtonElement, NeoButtonProps>(
+export const NeoButton = React.forwardRef<HTMLElement, NeoButtonProps>(
   ({
     className,
     variant = 'neu',
@@ -27,6 +30,7 @@ export const NeoButton = React.forwardRef<HTMLButtonElement, NeoButtonProps>(
     iconPosition = 'left',
     disabled,
     children,
+    as: Component = 'button',
     ...props
   }, ref) => {
     const baseClasses = "rounded-neo font-semibold transition-all duration-200 inline-flex items-center justify-center gap-2";
@@ -48,9 +52,9 @@ export const NeoButton = React.forwardRef<HTMLButtonElement, NeoButtonProps>(
     };
 
     return (
-      <button
-        ref={ref}
-        disabled={disabled || loading}
+      <Component
+        ref={ref as any}
+        disabled={Component === 'button' ? (disabled || loading) : undefined}
         className={cn(
           baseClasses,
           variantClasses[variant],
@@ -67,7 +71,7 @@ export const NeoButton = React.forwardRef<HTMLButtonElement, NeoButtonProps>(
         {!loading && icon && iconPosition === 'left' && icon}
         {children}
         {!loading && icon && iconPosition === 'right' && icon}
-      </button>
+      </Component>
     );
   }
 );
@@ -475,14 +479,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     </div>
   );
 };
-// ===== SKELETON COMPONENT =====
-export const Skeleton: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, ...props }) => (
+// ===== SKELETON COMPONENT (MISSING FIX) =====
+export const Skeleton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn("animate-pulse rounded-neo bg-neo-text-secondary/10", className)}
     {...props}
   />
 );
-Skeleton.displayName = 'Skeleton';
 
 EmptyState.displayName = 'EmptyState';
 
