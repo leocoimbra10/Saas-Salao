@@ -191,7 +191,7 @@ const PermissionEditor: React.FC<{
                                 disabled={isOwner}
                                 className="flex-1 h-2 bg-neo-bg rounded-full shadow-neo-in appearance-none cursor-pointer"
                                 style={{
-                                    background: `linear-gradient(to right, #D4AF37 ${commission}%, #e8e8ed ${commission}%)`
+                                    background: `linear-gradient(to right, var(--color-brand-gold) ${commission}%, #e8e8ed ${commission}%)`
                                 }}
                             />
                             <span className="w-16 text-center font-semibold text-neo-accent">
@@ -469,7 +469,7 @@ export const TeamManagementPage: React.FC = () => {
                     className={cn(
                         "fixed bottom-24 right-6 z-40",
                         "w-14 h-14 rounded-full",
-                        "bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37]",
+                        "bg-gradient-to-br from-brand-primary to-brand-gold",
                         "text-white shadow-[0_8px_32px_rgba(232,160,184,0.5)]",
                         "flex items-center justify-center",
                         "hover:scale-110 hover:shadow-[0_12px_40px_rgba(232,160,184,0.6)] active:scale-95",

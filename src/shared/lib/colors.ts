@@ -4,7 +4,7 @@
  */
 
 // Primary Accent - Soft Rose Pink (feminine, light)
-export const ACCENT = '#E8A0B8';
+export const ACCENT = 'var(--color-brand-primary)';
 export const ACCENT_LIGHT = '#F5CED8';
 export const ACCENT_DARK = '#C67A94';
 

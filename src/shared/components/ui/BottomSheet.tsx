@@ -114,7 +114,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               <div className="px-6 pb-4">
                 <div className="flex items-center gap-3">
                   {headerIcon && (
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] flex items-center justify-center shadow-lg shrink-0">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-primary to-brand-gold flex items-center justify-center shadow-lg shrink-0">
                       {headerIcon}
                     </div>
                   )}

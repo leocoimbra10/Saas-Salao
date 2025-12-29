@@ -229,7 +229,7 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                 >
                     {/* Header */}
                     <div className="relative flex items-center gap-3 p-6 pb-4 border-b border-neo-text-secondary/10">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] flex items-center justify-center shadow-lg shrink-0">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-primary to-brand-gold flex items-center justify-center shadow-lg shrink-0">
                             <CalendarIcon className="text-white" size={20} />
                         </div>
 
@@ -272,7 +272,7 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                             className={cn(
                                                 "p-6 rounded-neo transition-all duration-300 flex flex-col items-center gap-3",
                                                 clientType === 'bride'
-                                                    ? "shadow-neo-in bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] text-white"
+                                                    ? "shadow-neo-in bg-gradient-to-br from-brand-primary to-brand-gold text-white"
                                                     : "shadow-neo-out hover:shadow-neo-in"
                                             )}
                                         >
@@ -289,7 +289,7 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                             className={cn(
                                                 "p-6 rounded-neo transition-all duration-300 flex flex-col items-center gap-3",
                                                 clientType === 'regular'
-                                                    ? "shadow-neo-in bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] text-white"
+                                                    ? "shadow-neo-in bg-gradient-to-br from-brand-primary to-brand-gold text-white"
                                                     : "shadow-neo-out hover:shadow-neo-in"
                                             )}
                                         >
@@ -411,7 +411,7 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
 
                                     {/* Total */}
                                     {selectedServices.length > 0 && (
-                                        <div className="p-4 rounded-neo bg-gradient-to-br from-[#E8A0B8]/10 to-[#D4AF37]/10 shadow-neo-out border border-neo-accent/20">
+                                        <div className="p-4 rounded-neo bg-gradient-to-br from-[var(--color-brand-primary)]/10 to-[var(--color-brand-gold)]/10 shadow-neo-out border border-neo-accent/20">
                                             <div className="flex justify-between items-center mb-2">
                                                 <span className="text-sm text-neo-text-secondary">Total</span>
                                                 <span className="text-2xl font-bold text-neo-text">R$ {totalAmount.toFixed(2)}</span>
@@ -447,7 +447,7 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                     animate={{ opacity: 1, scale: 1 }}
                                     className="space-y-6 text-center"
                                 >
-                                    <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] flex items-center justify-center shadow-lg">
+                                    <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-brand-primary to-brand-gold flex items-center justify-center shadow-lg">
                                         <Check size={40} className="text-white" />
                                     </div>
 
@@ -467,7 +467,7 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                                 "w-full py-3 rounded-neo font-medium transition-all flex items-center justify-center gap-2",
                                                 linkCopied
                                                     ? "bg-green-500 text-white shadow-neo-in"
-                                                    : "bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] text-white shadow-neo-out hover:shadow-neo-in"
+                                                    : "bg-gradient-to-br from-brand-primary to-brand-gold text-white shadow-neo-out hover:shadow-neo-in"
                                             )}
                                         >
                                             {linkCopied ? (
@@ -515,7 +515,7 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                 }
                                 className={cn(
                                     "flex-1 py-3 rounded-neo font-medium transition-all",
-                                    "bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] text-white",
+                                    "bg-gradient-to-br from-brand-primary to-brand-gold text-white",
                                     "shadow-neo-out hover:shadow-neo-in",
                                     "disabled:opacity-50 disabled:cursor-not-allowed"
                                 )}
@@ -532,7 +532,7 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                     onSuccess();
                                     onClose();
                                 }}
-                                className="w-full py-3 rounded-neo bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] text-white font-medium shadow-neo-out hover:shadow-neo-in transition-all"
+                                className="w-full py-3 rounded-neo bg-gradient-to-br from-brand-primary to-brand-gold text-white font-medium shadow-neo-out hover:shadow-neo-in transition-all"
                             >
                                 Concluir
                             </button>

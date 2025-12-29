@@ -153,7 +153,7 @@ export const Calendar: React.FC<CalendarProps> = ({
 
                 {/* Event Indicators (Mini - Gold Dot) */}
                 {isMini && appointmentCount > 0 && !isSelected && (
-                  <span className="absolute -bottom-1 w-[4px] h-[4px] rounded-full bg-[#D4AF37]" />
+                  <span className="absolute -bottom-1 w-[4px] h-[4px] rounded-full bg-[var(--color-brand-gold)]" />
                 )}
 
                 {/* Event Indicators (Default) */}

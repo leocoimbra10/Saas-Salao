@@ -558,7 +558,7 @@ export const LoginPage: React.FC = () => {
                         }}
                         className="relative inline-flex items-center gap-3 px-8 py-4 rounded-neo font-semibold text-white transition-all group overflow-hidden w-full justify-center"
                         style={{
-                            background: 'linear-gradient(135deg, #E8A0B8 0%, #D4AF37 100%)',
+                            background: 'linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-brand-gold) 100%)',
                             boxShadow: '0 8px 32px -4px rgba(232, 160, 184, 0.4), inset 0 1px 1px 0 rgba(255,255,255,0.3)'
                         }}
                     >

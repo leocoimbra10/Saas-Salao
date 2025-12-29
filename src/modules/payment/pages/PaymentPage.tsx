@@ -117,7 +117,7 @@ export const PaymentPage: React.FC = () => {
                     <div className={cn(
                         "w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg",
                         isBride
-                            ? "bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37]"
+                            ? "bg-gradient-to-br from-brand-primary to-brand-gold"
                             : "bg-gradient-to-br from-purple-400 to-pink-400"
                     )}>
                         {isBride ? (
@@ -231,7 +231,7 @@ export const PaymentPage: React.FC = () => {
                 </div>
 
                 {/* Payment Summary */}
-                <div className="mb-6 p-6 rounded-neo bg-gradient-to-br from-[#E8A0B8]/10 to-[#D4AF37]/10 shadow-neo-out border border-neo-accent/20">
+                <div className="mb-6 p-6 rounded-neo bg-gradient-to-br from-[var(--color-brand-primary)]/10 to-[var(--color-brand-gold)]/10 shadow-neo-out border border-neo-accent/20">
                     <h3 className="text-lg font-serif text-neo-text mb-4">Resumo do Pagamento</h3>
                     <div className="space-y-3">
                         <div className="flex justify-between items-center">
@@ -259,7 +259,7 @@ export const PaymentPage: React.FC = () => {
                         disabled={isProcessing}
                         className={cn(
                             "w-full py-4 rounded-neo font-semibold text-white transition-all",
-                            "bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37]",
+                            "bg-gradient-to-br from-brand-primary to-brand-gold",
                             "shadow-neo-out hover:shadow-neo-in",
                             "disabled:opacity-50 disabled:cursor-not-allowed",
                             "flex items-center justify-center gap-2"

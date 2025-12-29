@@ -22,7 +22,7 @@ const revenueData = [
 ];
 
 const categoryData = [
-    { name: 'Cabelo', value: 40, color: '#E8A0B8' },
+    { name: 'Cabelo', value: 40, color: 'var(--color-brand-primary)' },
     { name: 'Maquiagem', value: 30, color: '#B8A0E8' },
     { name: 'Noivas', value: 20, color: '#A0E8D0' },
     { name: 'Outros', value: 10, color: '#E8D0A0' },
@@ -106,8 +106,8 @@ export const AnalyticsDashboard: React.FC = () => {
                                 <AreaChart data={revenueData}>
                                     <defs>
                                         <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#E8A0B8" stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor="#E8A0B8" stopOpacity={0} />
+                                            <stop offset="5%" stopColor="var(--color-brand-primary)" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="var(--color-brand-primary)" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
@@ -129,7 +129,7 @@ export const AnalyticsDashboard: React.FC = () => {
                                     <Area
                                         type="monotone"
                                         dataKey="value"
-                                        stroke="#E8A0B8"
+                                        stroke="var(--color-brand-primary)"
                                         strokeWidth={3}
                                         fillOpacity={1}
                                         fill="url(#colorRev)"

@@ -20,7 +20,7 @@ import { useAuth } from '../../auth/context/AuthContext';
 import { signOutUser, getUserProfile } from '../../auth/services/authService';
 import { UserProfile } from '../../../shared/types/types';
 
-const ROSE = '#E8A0B8';
+const ROSE = 'var(--color-brand-primary)';
 const ROSE_LIGHT = '#F5CED8';
 
 export const ClientDashboard: React.FC = () => {
@@ -180,21 +180,21 @@ export const ClientDashboard: React.FC = () => {
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             href="/noiva"
-                            className="block relative overflow-hidden bg-neo-bg rounded-neo shadow-neo-out p-6 active:shadow-neo-pressed transition-all border border-[#D4AF37]/20 group"
+                            className="block relative overflow-hidden bg-neo-bg rounded-neo shadow-neo-out p-6 active:shadow-neo-pressed transition-all border border-[var(--color-brand-gold)]/20 group"
                         >
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/10 blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-brand-gold)]/10 blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                             <div className="flex items-center gap-5 relative z-10">
                                 <div
                                     className="w-14 h-14 rounded-neo shadow-neo-out flex items-center justify-center flex-shrink-0 border-2 border-white/50 group-hover:shadow-neo-out-lg transition-all"
                                     style={{ backgroundColor: '#FAF6E9' }}
                                 >
-                                    <Crown size={28} style={{ color: '#D4AF37' }} />
+                                    <Crown size={28} style={{ color: 'var(--color-brand-gold)' }} />
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="font-display font-bold text-neo-text text-lg">Portal da Noiva</h3>
                                     <p className="text-xs text-neo-text-secondary">Seu planejamento exclusivo em um só lugar</p>
                                 </div>
-                                <ChevronRight size={20} style={{ color: '#D4AF37' }} />
+                                <ChevronRight size={20} style={{ color: 'var(--color-brand-gold)' }} />
                             </div>
                         </motion.a>
                     </section>

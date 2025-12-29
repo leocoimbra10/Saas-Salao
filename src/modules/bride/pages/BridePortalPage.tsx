@@ -40,7 +40,7 @@ import { Card, Button, Badge, Progress, Skeleton } from '../../../shared/compone
 import { BridalIntakeForm } from '../components/BridalIntakeForm';
 
 // Brand Colors
-const ROSE = '#E8A0B8';
+const ROSE = 'var(--color-brand-primary)';
 const GOLD = ROSE; // Legacy alias
 const GOLD_LIGHT = '#FDF2F5'; // Lighter version for backgrounds
 

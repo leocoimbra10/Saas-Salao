@@ -9,7 +9,7 @@ import { cn } from '../../lib/utils';
 import { Home, Calendar, Image, User, Settings } from 'lucide-react';
 
 // Feminine Rose Accent Color
-const ROSE = '#E8A0B8';
+const ROSE = 'var(--color-brand-primary)';
 const ROSE_LIGHT = '#F5CED8';
 
 // Client Bottom Navigation - Premium Glassmorphism Pill Style

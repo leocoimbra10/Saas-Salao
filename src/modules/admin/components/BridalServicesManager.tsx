@@ -28,7 +28,7 @@ import { cn, formatCurrency } from '../../../shared/lib/utils';
 import { Card, Badge, Toggle } from '../../../shared/components/ui/NeoComponents';
 
 // Brand Colors
-const ROSE = '#E8A0B8';
+const ROSE = 'var(--color-brand-primary)';
 const GOLD = ROSE; // Legacy alias
 const GOLD_LIGHT = '#F5E6B3';
 

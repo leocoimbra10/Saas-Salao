@@ -228,10 +228,10 @@ export const StaffScheduler: React.FC<StaffSchedulerProps> = ({
                         {/* Current Time Indicator */}
                         {timeIndicatorPos !== -1 && (
                             <div
-                                className="absolute left-0 right-0 h-[2px] bg-[#D4AF37] z-30 pointer-events-none shadow-[0_0_10px_rgba(212,175,55,0.5)]"
+                                className="absolute left-0 right-0 h-[2px] bg-[var(--color-brand-gold)] z-30 pointer-events-none shadow-[0_0_10px_rgba(212,175,55,0.5)]"
                                 style={{ top: `${timeIndicatorPos + 64}px` }} // +64 for staff header
                             >
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#D4AF37]" />
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[var(--color-brand-gold)]" />
                             </div>
                         )}
                     </div>

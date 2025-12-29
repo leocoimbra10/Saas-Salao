@@ -16,8 +16,8 @@ import {
 import { cn } from '../../../shared/lib/utils';
 
 // Brand Colors
-const ROSE = '#E8A0B8';
-const GOLD = '#D4AF37';
+const ROSE = 'var(--color-brand-primary)';
+const GOLD = 'var(--color-brand-gold)';
 
 interface BrideOnboardingModalProps {
     isOpen: boolean;

@@ -21,7 +21,7 @@ const SalonSettingsPage: React.FC = () => {
         address: '',
         logoUrl: '',
         backgroundUrl: '',
-        primaryColor: '#D4AF37'
+        primaryColor: 'var(--color-brand-gold)'
     });
 
     const handleFileUpload = async (file: File, type: 'logo' | 'bg') => {
@@ -51,7 +51,7 @@ const SalonSettingsPage: React.FC = () => {
                 address: organization.settings.address || '',
                 logoUrl: organization.settings.logo || '',
                 backgroundUrl: organization.settings.backgroundUrl || '',
-                primaryColor: organization.settings.primaryColor || '#D4AF37'
+                primaryColor: organization.settings.primaryColor || 'var(--color-brand-gold)'
             });
         }
     }, [organization]);

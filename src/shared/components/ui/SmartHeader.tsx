@@ -24,7 +24,7 @@ import { cn } from '../../lib/utils';
 
 // Brand Colors - Rose Pink
 const PURPLE = '#8A2BE2';
-const ROSE = '#E8A0B8';
+const ROSE = 'var(--color-brand-primary)';
 const GOLD = ROSE; // Legacy alias
 
 interface NavIconProps {

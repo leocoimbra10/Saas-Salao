@@ -27,7 +27,7 @@ import { WaitlistButton } from '../components/WaitlistButton';
 import { paymentService } from '../services/paymentService';
 
 // Brand Colors - Rose Pink
-const ROSE = '#E8A0B8';
+const ROSE = 'var(--color-brand-primary)';
 const ROSE_LIGHT = '#F5CED8';
 const GOLD = ROSE; // Legacy alias
 const GOLD_LIGHT = ROSE_LIGHT; // Legacy alias
@@ -728,7 +728,7 @@ export const OnlineBookingPage: React.FC = () => {
                                     className="px-6 py-3 rounded-full font-semibold flex items-center justify-center gap-2 transition-all no-glass"
                                     style={{
                                         background: canProceed()
-                                            ? 'linear-gradient(135deg, #E8A0B8 0%, #C67A94 100%)'
+                                            ? 'linear-gradient(135deg, var(--color-brand-primary) 0%, #C67A94 100%)'
                                             : 'rgba(180, 180, 190, 0.5)',
                                         color: canProceed() ? 'white' : 'rgba(100, 100, 110, 0.6)',
                                         boxShadow: canProceed()

@@ -499,7 +499,7 @@ export const BrideSelfOnboardingPage: React.FC = () => {
                                 disabled={!formData.acceptTerms || isLoading}
                                 className={cn(
                                     "flex-1 py-4 rounded-neo font-semibold transition-all flex items-center justify-center gap-2",
-                                    "bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] text-white shadow-neo-out hover:shadow-neo-in",
+                                    "bg-gradient-to-br from-[var(--color-brand-primary)] to-[var(--color-brand-gold)] text-white shadow-neo-out hover:shadow-neo-in",
                                     "disabled:opacity-50 disabled:cursor-not-allowed"
                                 )}
                             >

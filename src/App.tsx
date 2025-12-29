@@ -145,22 +145,22 @@ const HomePage: React.FC = () => {
             whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
             whileTap={{ scale: 0.98 }}
             href="/noiva"
-            className="block mb-6 relative overflow-hidden bg-neo-bg rounded-neo shadow-neo-out p-6 active:shadow-neo-pressed transition-all border border-[#D4AF37]/10 group"
+            className="block mb-6 relative overflow-hidden bg-neo-bg rounded-neo shadow-neo-out p-6 active:shadow-neo-pressed transition-all border border-[var(--color-brand-gold)]/10 group"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/10 blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-brand-gold)]/10 blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
             <div className="flex items-center gap-5 relative z-10">
               <div
                 className="w-16 h-16 rounded-neo shadow-neo-out flex items-center justify-center flex-shrink-0 border-2 border-white/50 group-hover:shadow-neo-out-lg transition-all"
                 style={{ backgroundColor: '#FAF6E9' }}
               >
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="1.5">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-gold)" strokeWidth="1.5">
                   <path d="M2 8l4 12h12l4-12-5 4-5-8-5 8-5-4z" />
                   <path d="M6 20h12" />
                 </svg>
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#D4AF37]/10" style={{ color: '#D4AF37' }}>
+                  <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[var(--color-brand-gold)]/10" style={{ color: 'var(--color-brand-gold)' }}>
                     Exclusivo Noivas
                   </span>
                 </div>
@@ -174,7 +174,7 @@ const HomePage: React.FC = () => {
                 transition={{ duration: 1.5, repeat: Infinity }}
                 className="w-8 h-8 rounded-neo shadow-neo-out flex items-center justify-center"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-gold)" strokeWidth="2">
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
               </motion.div>

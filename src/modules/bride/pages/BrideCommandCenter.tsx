@@ -28,7 +28,7 @@ import { Badge, Button, Input } from '../../../shared/components/ui/NeoComponent
 import BridalServicesManager from '../../admin/components/BridalServicesManager';
 
 // Brand Colors - Rose Pink
-const ROSE = '#E8A0B8';
+const ROSE = 'var(--color-brand-primary)';
 const ROSE_LIGHT = '#F5CED8';
 const GOLD = ROSE; // Legacy alias
 const GOLD_LIGHT = ROSE_LIGHT; // Legacy alias

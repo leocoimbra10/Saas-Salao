@@ -16,7 +16,7 @@ interface AgendaCardProps {
 const SERVICE_COLORS: Record<string, { bg: string; border: string; text: string; badge: string }> = {
     'maquiagem': {
         bg: 'bg-pink-50',
-        border: 'border-l-[#E8A0B8]',
+        border: 'border-l-[var(--color-brand-primary)]',
         text: 'text-pink-700',
         badge: 'bg-pink-100 border-pink-300 text-pink-700'
     },
@@ -28,7 +28,7 @@ const SERVICE_COLORS: Record<string, { bg: string; border: string; text: string;
     },
     'noiva': {
         bg: 'bg-amber-50',
-        border: 'border-l-[#D4AF37]',
+        border: 'border-l-[var(--color-brand-gold)]',
         text: 'text-amber-700',
         badge: 'bg-amber-100 border-amber-300 text-amber-700'
     },

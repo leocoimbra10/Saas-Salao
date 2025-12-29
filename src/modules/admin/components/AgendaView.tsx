@@ -121,7 +121,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                 className={cn(
                     "absolute top-4 right-6 z-30",
                     "w-14 h-14 rounded-full",
-                    "bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37]",
+                    "bg-gradient-to-br from-brand-primary to-brand-gold",
                     "text-white shadow-[0_8px_32px_rgba(232,160,184,0.5)]",
                     "flex items-center justify-center",
                     "hover:scale-110 hover:shadow-[0_12px_40px_rgba(232,160,184,0.6)] active:scale-95",

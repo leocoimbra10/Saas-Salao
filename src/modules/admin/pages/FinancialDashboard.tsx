@@ -23,7 +23,7 @@ import { cn, formatCurrency } from '../../../shared/lib/utils';
 import { Card, Button, Badge, Progress } from '../../../shared/components/ui/NeoComponents';
 
 // Brand Colors - Rose Pink
-const ROSE = '#E8A0B8';
+const ROSE = 'var(--color-brand-primary)';
 const ROSE_LIGHT = '#F5CED8';
 const GOLD = ROSE; // Legacy alias
 const GOLD_LIGHT = ROSE_LIGHT; // Legacy alias

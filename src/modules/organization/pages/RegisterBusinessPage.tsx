@@ -22,7 +22,7 @@ import { registerBusiness } from '../../auth/services/authService';
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
-const ROSE = '#E8A0B8';
+const ROSE = 'var(--color-brand-primary)';
 const GOLD = ROSE; // Legacy alias
 
 export const RegisterBusinessPage: React.FC = () => {

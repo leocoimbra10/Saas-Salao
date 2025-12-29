@@ -21,7 +21,7 @@ import { collection, getDocs, doc, updateDoc, Timestamp } from 'firebase/firesto
 import { useBranding } from '../../organization/context/BrandingContext';
 
 // Brand Colors
-const ROSE = '#E8A0B8';
+const ROSE = 'var(--color-brand-primary)';
 const GOLD = ROSE;
 const GOLD_LIGHT = '#F5CED8';
 
