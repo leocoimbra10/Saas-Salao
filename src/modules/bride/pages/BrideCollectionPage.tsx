@@ -15,10 +15,10 @@ import {
     Plus
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
-import { Card, Button, Badge } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, NeoButton, Badge } from '../../../shared/components/ui/NeoComponents';
 import { db } from '../../../shared/lib/firebase';
 import { collection, getDocs, doc, updateDoc, Timestamp } from 'firebase/firestore';
-import { useBranding } from '../../organization/context/BrandingContext';
+import { useBranding } from '../../../shared/context/BrandingContext';
 
 // Brand Colors
 const ROSE = 'var(--color-brand-primary)';
@@ -334,14 +334,14 @@ export const BrideCollectionPage: React.FC = () => {
                             <span className="text-sm text-neo-text-secondary">Sinal para Reserva (30%):</span>
                             <span className="text-lg font-semibold" style={{ color: GOLD }}>{formatCurrency(depositAmount)}</span>
                         </div>
-                        <Button
-                            variant="primary"
+                        <NeoButton
+                            variant="gradient"
                             className="w-full h-14 text-base font-semibold"
                             onClick={handleConfirmSelection}
                             disabled={!selectedPackageId || isSubmitting}
                         >
                             {isSubmitting ? 'Confirmando...' : 'Confirmar Seleção'}
-                        </Button>
+                        </NeoButton>
                     </div>
                 </div>
             </div>

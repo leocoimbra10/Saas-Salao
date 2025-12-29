@@ -21,10 +21,11 @@ import {
     Star
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
-import { Card, Button, Badge, Progress } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, NeoButton, Badge, Progress } from '../../../shared/components/ui/NeoComponents';
 import { SmartUpsell } from '../../../shared/components/ui/SmartUpsell';
 import { WaitlistButton } from '../components/WaitlistButton';
 import { paymentService } from '../services/paymentService';
+import { useAppointments } from '../hooks/useAppointments';
 
 // Brand Colors - Rose Pink
 const ROSE = 'var(--color-brand-primary)';
@@ -301,15 +302,28 @@ const ProfessionalSelection: React.FC<{
 );
 
 // Step 3: Date & Time Selection
+import { useAvailableSlots } from '../hooks/useAvailableSlots';
+import { Appointment } from '../../../shared/types/types';
+
 const DateTimeSelection: React.FC<{
     selectedDate: Date | null;
     selectedTime: string | null;
     onDateSelect: (date: Date) => void;
     onTimeSelect: (time: string) => void;
     selectedServices: string[];
-}> = ({ selectedDate, selectedTime, onDateSelect, onTimeSelect, selectedServices }) => {
+    appointments: Appointment[];
+    staffId: string | null;
+    serviceDuration: number;
+}> = ({ selectedDate, selectedTime, onDateSelect, onTimeSelect, selectedServices, appointments, staffId, serviceDuration }) => {
     const [currentMonth, setCurrentMonth] = useState(new Date());
-    const timeSlots = useMemo(() => generateTimeSlots(), [selectedDate]);
+
+    // Check if slots are loading or if we have data
+    const timeSlots = useAvailableSlots({
+        date: selectedDate,
+        appointments,
+        staffId,
+        serviceDuration
+    });
 
     // Generate calendar days
     const getDaysInMonth = () => {
@@ -402,23 +416,30 @@ const DateTimeSelection: React.FC<{
                     animate={{ opacity: 1, y: 0 }}
                 >
                     <p className="text-sm font-medium text-neo-text mb-3">Horários disponíveis</p>
-                    <div className="grid grid-cols-4 gap-2">
-                        {timeSlots.map(slot => (
-                            <button
-                                key={slot.time}
-                                disabled={!slot.available}
-                                onClick={() => slot.available && onTimeSelect(slot.time)}
-                                className={cn(
-                                    'py-2 rounded-neo text-sm font-medium transition-all',
-                                    !slot.available && 'opacity-30 cursor-not-allowed line-through',
-                                    selectedTime === slot.time ? 'shadow-neo-pressed text-white' : 'shadow-neo-out'
-                                )}
-                                style={{ backgroundColor: selectedTime === slot.time ? GOLD : undefined }}
-                            >
-                                {slot.time}
-                            </button>
-                        ))}
-                    </div>
+
+                    {timeSlots.length > 0 ? (
+                        <div className="grid grid-cols-4 gap-2">
+                            {timeSlots.map(slot => (
+                                <button
+                                    key={slot.time}
+                                    disabled={!slot.available}
+                                    onClick={() => slot.available && onTimeSelect(slot.time)}
+                                    className={cn(
+                                        'py-2 rounded-neo text-sm font-medium transition-all',
+                                        !slot.available && 'opacity-30 cursor-not-allowed line-through',
+                                        selectedTime === slot.time ? 'shadow-neo-pressed text-white' : 'shadow-neo-out'
+                                    )}
+                                    style={{ backgroundColor: selectedTime === slot.time ? GOLD : undefined }}
+                                >
+                                    {slot.time}
+                                </button>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-6 text-neo-text-secondary">
+                            <p>Selecione um profissional para ver os horários.</p>
+                        </div>
+                    )}
 
                     {/* Waitlist Option if slots are limited */}
                     <WaitlistButton
@@ -479,7 +500,7 @@ const ClientDetails: React.FC<{
         </div>
 
         {/* Payment Summary */}
-        <Card className="p-4" style={{ backgroundColor: GOLD_LIGHT }}>
+        <NeoCard className="p-4" style={{ backgroundColor: GOLD_LIGHT }}>
             <h3 className="font-semibold text-neo-text mb-3 flex items-center gap-2">
                 <DollarSign size={18} style={{ color: GOLD }} />
                 Resumo do Pagamento
@@ -499,10 +520,10 @@ const ClientDetails: React.FC<{
                     <span className="text-neo-text">{formatCurrency(totalAmount - depositAmount)}</span>
                 </div>
             </div>
-        </Card>
+        </NeoCard>
 
         {/* PIX Payment Card */}
-        <Card className="p-4 mt-4">
+        <NeoCard className="p-4 mt-4">
             <h3 className="font-semibold text-neo-text mb-3 flex items-center gap-2">
                 💳 Pagamento via PIX
             </h3>
@@ -525,7 +546,7 @@ const ClientDetails: React.FC<{
             <p className="text-xs text-neo-text-secondary">
                 Pix ou cartão no local. Sinal de 25% para confirmar agendamento.
             </p>
-        </Card>
+        </NeoCard>
     </div>
 );
 
@@ -537,15 +558,24 @@ export const OnlineBookingPage: React.FC = () => {
     const [currentStep, setCurrentStep] = useState(0);
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
     const [selectedProfessional, setSelectedProfessional] = useState<string | null>(null);
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
     const [clientName, setClientName] = useState('');
     const [clientPhone, setClientPhone] = useState('');
 
     const TOTAL_STEPS = 4;
 
-    // Calculate totals
+    // Organization Context (Assuming context or hardcoded for now as per `AdminDashboard`)
+    const { organization } = { organization: { id: 'org-1' } }; // Mock context for now or useBranding() if available
+
+    // Fetch Appointments for Smart Scheduling
+    const { data: appointments = [] } = useAppointments(organization.id);
+
+    // Calculate details
     const selectedServiceDetails = SERVICES.filter(s => selectedServices.includes(s.id));
+    const totalDuration = selectedServiceDetails.reduce((acc, s) => acc + s.duration, 0);
+
+    // Calculate totals
     const today = new Date().getDay();
     const isDiscountDay = today >= 1 && today <= 4;
 
@@ -679,6 +709,9 @@ export const OnlineBookingPage: React.FC = () => {
                                     onDateSelect={setSelectedDate}
                                     onTimeSelect={setSelectedTime}
                                     selectedServices={selectedServices}
+                                    appointments={appointments}
+                                    staffId={selectedProfessional}
+                                    serviceDuration={totalDuration}
                                 />
                             )}
                             {currentStep === 3 && (

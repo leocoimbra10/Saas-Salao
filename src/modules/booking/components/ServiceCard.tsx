@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { cn, formatCurrency, isWeekdayDiscount, getWeekday } from '../../../shared/lib/utils';
 import { Service } from '../../../shared/types/types';
-import { Badge, Checkbox, Button } from '../../../shared/components/ui/NeoComponents';
+import { Badge, Checkbox, NeoButton } from '../../../shared/components/ui/NeoComponents';
 import { Clock, Sparkles } from 'lucide-react';
 
 interface ServiceCardProps {
@@ -275,13 +275,13 @@ export const ServiceSummary: React.FC<ServiceSummaryProps> = ({
 
       {/* Action Button */}
       {onAction && (
-        <Button
-          variant="primary"
+        <NeoButton
+          variant="gradient"
           onClick={onAction}
           className="w-full mt-6 shadow-neo-accent/20"
         >
           {actionLabel}
-        </Button>
+        </NeoButton>
       )}
     </div>
   );

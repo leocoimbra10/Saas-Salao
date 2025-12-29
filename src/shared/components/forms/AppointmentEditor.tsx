@@ -24,7 +24,7 @@ import {
     Save
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../lib/utils';
-import { Card, Button, Badge, Input, Toggle } from '../ui/NeoComponents';
+import { NeoCard, NeoButton, Badge, NeoInput, NeoSelect, Toggle, NeoTextarea } from '../ui/NeoComponents';
 
 // Types
 interface Service {
@@ -111,14 +111,13 @@ const ServiceSelector: React.FC<{
                     </button>
                 </div>
 
-                <div className="relative mb-4">
-                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-neo-text-secondary" />
-                    <input
+                <div className="mb-4">
+                    <NeoInput
                         type="text"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                         placeholder="Buscar serviço..."
-                        className="w-full pl-12 pr-4 py-3 bg-neo-bg rounded-neo shadow-neo-in text-neo-text"
+                        icon={<Search size={18} />}
                     />
                 </div>
 
@@ -267,60 +266,46 @@ export const AppointmentEditor: React.FC<{
                         {/* Date & Time */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs text-neo-text-secondary mb-2">Data</label>
-                                <div className="relative">
-                                    <input
-                                        type="date"
-                                        value={data.date}
-                                        onChange={e => setData(prev => ({ ...prev, date: e.target.value }))}
-                                        className="w-full px-4 py-3 bg-neo-bg rounded-neo shadow-neo-in text-neo-text text-sm"
-                                    />
-                                </div>
-                                <p className="text-xs text-neo-text-secondary mt-1 capitalize">
-                                    {formatDate(data.date).split(',')[0]}
-                                </p>
+                                <NeoInput
+                                    label="Data"
+                                    type="date"
+                                    value={data.date}
+                                    onChange={e => setData(prev => ({ ...prev, date: e.target.value }))}
+                                    className="text-sm"
+                                    helperText={formatDate(data.date).split(',')[0]}
+                                />
                             </div>
                             <div>
-                                <label className="block text-xs text-neo-text-secondary mb-2">Horário</label>
-                                <select
+                                <NeoSelect
+                                    label="Horário"
                                     value={data.time}
                                     onChange={e => setData(prev => ({ ...prev, time: e.target.value }))}
-                                    className="w-full px-4 py-3 bg-neo-bg rounded-neo shadow-neo-in text-neo-text text-sm appearance-none"
-                                >
-                                    {TIME_OPTIONS.map(time => (
-                                        <option key={time} value={time}>{time}</option>
-                                    ))}
-                                </select>
+                                    options={TIME_OPTIONS.map(time => ({ value: time, label: time }))}
+                                    className="text-sm"
+                                />
                             </div>
                         </div>
 
                         {/* Professional */}
                         <div>
-                            <label className="block text-xs text-neo-text-secondary mb-2">Profissional</label>
-                            <select
+                            <NeoSelect
+                                label="Profissional"
                                 value={data.professionalId}
                                 onChange={e => setData(prev => ({ ...prev, professionalId: e.target.value }))}
-                                className="w-full px-4 py-3 bg-neo-bg rounded-neo shadow-neo-in text-neo-text appearance-none"
-                            >
-                                {PROFESSIONALS.map(pro => (
-                                    <option key={pro.id} value={pro.id}>{pro.name}</option>
-                                ))}
-                            </select>
+                                options={PROFESSIONALS.map(pro => ({ value: pro.id, label: pro.name }))}
+                            />
                         </div>
 
                         {/* Client */}
                         <div>
-                            <label className="block text-xs text-neo-text-secondary mb-2">Cliente</label>
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    value={data.clientName}
-                                    onChange={e => setData(prev => ({ ...prev, clientName: e.target.value }))}
-                                    placeholder="Nome do cliente"
-                                    className="w-full pl-4 pr-12 py-3 bg-neo-bg rounded-neo shadow-neo-in text-neo-text"
-                                />
-                                <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-neo-text-secondary" />
-                            </div>
+                            <NeoInput
+                                label="Cliente"
+                                type="text"
+                                value={data.clientName}
+                                onChange={e => setData(prev => ({ ...prev, clientName: e.target.value }))}
+                                placeholder="Nome do cliente"
+                                icon={<Search size={18} />}
+                            />
                         </div>
 
                         {/* Services Section */}
@@ -373,21 +358,19 @@ export const AppointmentEditor: React.FC<{
 
                         {/* Duration */}
                         <div>
-                            <label className="block text-xs text-neo-text-secondary mb-2">
-                                Duração (Valor padrão baseado no serviço)
-                            </label>
-                            <select
+                            <NeoSelect
+                                label="Duração (Valor padrão baseado no serviço)"
                                 value={data.duration}
                                 onChange={e => setData(prev => ({ ...prev, duration: parseInt(e.target.value) }))}
-                                className="w-full px-4 py-3 bg-neo-bg rounded-neo shadow-neo-in text-neo-text appearance-none"
-                            >
-                                <option value={30}>30 min</option>
-                                <option value={60}>1h</option>
-                                <option value={90}>1h30</option>
-                                <option value={120}>2h</option>
-                                <option value={150}>2h30</option>
-                                <option value={180}>3h</option>
-                            </select>
+                                options={[
+                                    { value: '30', label: '30 min' },
+                                    { value: '60', label: '1h' },
+                                    { value: '90', label: '1h30' },
+                                    { value: '120', label: '2h' },
+                                    { value: '150', label: '2h30' },
+                                    { value: '180', label: '3h' },
+                                ]}
+                            />
                         </div>
 
                         {/* More Fields Toggle */}
@@ -407,24 +390,26 @@ export const AppointmentEditor: React.FC<{
                                     className="overflow-hidden space-y-4"
                                 >
                                     <div>
-                                        <label className="block text-xs text-neo-text-secondary mb-2">Telefone</label>
-                                        <input
-                                            type="tel"
-                                            value={data.clientPhone}
-                                            onChange={e => setData(prev => ({ ...prev, clientPhone: e.target.value }))}
-                                            placeholder="(11) 99999-9999"
-                                            className="w-full px-4 py-3 bg-neo-bg rounded-neo shadow-neo-in text-neo-text"
-                                        />
+                                        <div>
+                                            <NeoInput
+                                                label="Telefone"
+                                                type="tel"
+                                                value={data.clientPhone}
+                                                onChange={e => setData(prev => ({ ...prev, clientPhone: e.target.value }))}
+                                                placeholder="(11) 99999-9999"
+                                            />
+                                        </div>
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-neo-text-secondary mb-2">Observações</label>
-                                        <textarea
-                                            value={data.notes}
-                                            onChange={e => setData(prev => ({ ...prev, notes: e.target.value }))}
-                                            placeholder="Observações sobre o atendimento..."
-                                            className="w-full px-4 py-3 bg-neo-bg rounded-neo shadow-neo-in text-neo-text resize-none"
-                                            rows={3}
-                                        />
+                                        <div>
+                                            <NeoTextarea
+                                                label="Observações"
+                                                value={data.notes}
+                                                onChange={e => setData(prev => ({ ...prev, notes: e.target.value }))}
+                                                placeholder="Observações sobre o atendimento..."
+                                                rows={3}
+                                            />
+                                        </div>
                                     </div>
                                 </motion.div>
                             )}
@@ -447,12 +432,12 @@ export const AppointmentEditor: React.FC<{
                                     className="overflow-hidden"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <input
+                                        <NeoInput
                                             type="number"
                                             value={data.discount}
                                             onChange={e => setData(prev => ({ ...prev, discount: parseFloat(e.target.value) || 0 }))}
                                             placeholder="Valor do desconto"
-                                            className="flex-1 px-4 py-3 bg-neo-bg rounded-neo shadow-neo-in text-neo-text"
+                                            className="flex-1"
                                         />
                                         <span className="text-neo-success font-medium">
                                             Total: {formatCurrency(data.totalAmount)}
@@ -465,14 +450,14 @@ export const AppointmentEditor: React.FC<{
 
                     {/* Footer */}
                     <div className="p-4 border-t border-neo-text-secondary/10">
-                        <Button
-                            variant="primary"
+                        <NeoButton
+                            variant="gradient"
                             className="w-full"
                             onClick={handleSave}
                         >
                             <Save size={18} />
                             Salvar
-                        </Button>
+                        </NeoButton>
                     </div>
                 </motion.div>
             </motion.div>

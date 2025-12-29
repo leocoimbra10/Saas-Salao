@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BEAUTY SALON NEOMORPHIC APP - New Booking Modal (Redesigned)
  * Neomorphic style with client type selection and payment link generation
  */
@@ -24,6 +24,15 @@ import { cn } from '../../../shared/lib/utils';
 import { Service } from '../../../shared/types/types';
 import { db } from '../../../shared/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import {
+    NeoButton as NeoButton,
+    NeoInput as NeoInput,
+    NeoSelect as Select,
+    Typography,
+    NeoCard as NeoCard,
+    Badge
+} from '../../../shared/components/ui/NeoComponents';
+import { Staff, Appointment } from '../../../shared/types/types';
 
 interface NewBookingModalProps {
     isOpen: boolean;
@@ -31,6 +40,10 @@ interface NewBookingModalProps {
     selectedDate: Date;
     services: Service[];
     onSuccess: () => void;
+    initialTime?: string;
+    initialStaffId?: string;
+    initialAppointment?: Appointment | null;
+    staff?: Staff[];
 }
 
 type ClientType = 'bride' | 'regular' | null;
@@ -54,17 +67,22 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
     onClose,
     selectedDate,
     services,
-    onSuccess
+    onSuccess,
+    initialTime = '10:00',
+    initialStaffId = '',
+    initialAppointment = null,
+    staff = []
 }) => {
-    const [step, setStep] = useState<Step>(1);
-    const [clientType, setClientType] = useState<ClientType>(null);
+    const [step, setStep] = useState<Step>(initialAppointment ? 2 : 1);
+    const [clientType, setClientType] = useState<ClientType>(initialAppointment ? (initialAppointment.services.some(s => s.toLowerCase().includes('noiva')) ? 'bride' : 'regular') : null);
     const [clientData, setClientData] = useState<ClientData>({
-        name: '',
-        email: '',
-        phone: ''
+        name: initialAppointment?.clientName || '',
+        email: initialAppointment?.clientEmail || '',
+        phone: initialAppointment?.clientPhone || ''
     });
     const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
-    const [selectedTime, setSelectedTime] = useState('10:00');
+    const [selectedTime, setSelectedTime] = useState(initialTime);
+    const [selectedStaffId, setSelectedStaffId] = useState(initialStaffId);
     const [isGenerating, setIsGenerating] = useState(false);
     const [paymentLink, setPaymentLink] = useState('');
     const [linkCopied, setLinkCopied] = useState(false);
@@ -73,16 +91,21 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
     useEffect(() => {
         if (!isOpen) {
             setTimeout(() => {
-                setStep(1);
-                setClientType(null);
-                setClientData({ name: '', email: '', phone: '' });
+                setStep(initialAppointment ? 2 : 1);
+                setClientType(initialAppointment ? (initialAppointment.services.some(s => s.toLowerCase().includes('noiva')) ? 'bride' : 'regular') : null);
+                setClientData({
+                    name: initialAppointment?.clientName || '',
+                    email: initialAppointment?.clientEmail || '',
+                    phone: initialAppointment?.clientPhone || ''
+                });
                 setSelectedServices([]);
-                setSelectedTime('10:00');
+                setSelectedTime(initialTime);
+                setSelectedStaffId(initialStaffId);
                 setPaymentLink('');
                 setLinkCopied(false);
             }, 300);
         }
-    }, [isOpen]);
+    }, [isOpen, initialAppointment, initialTime, initialStaffId]);
 
     // Filter services by client type
     const filteredServices = services.filter(service => {
@@ -175,32 +198,6 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
         }
     };
 
-    // Neomorphic Input Component
-    const NeoInput: React.FC<{
-        icon: React.ReactNode;
-        label: string;
-        type?: string;
-        value: string;
-        onChange: (value: string) => void;
-        placeholder?: string;
-    }> = ({ icon, label, type = 'text', value, onChange, placeholder }) => (
-        <div className="mb-4">
-            <label className="block text-sm text-neo-text font-medium mb-2">{label}</label>
-            <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neo-text-secondary">
-                    {icon}
-                </div>
-                <input
-                    type={type}
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    placeholder={placeholder}
-                    className="w-full pl-12 pr-4 py-3 rounded-neo bg-neo-bg shadow-neo-in text-neo-text placeholder:text-neo-text-secondary focus:outline-none focus:ring-2 focus:ring-neo-accent/20 transition-all"
-                />
-            </div>
-        </div>
-    );
-
     if (!isOpen) return null;
 
     return (
@@ -234,18 +231,20 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                         </div>
 
                         <div className="flex-1">
-                            <h2 className="text-xl font-serif text-neo-text tracking-tight">Novo Agendamento</h2>
-                            <p className="text-xs text-neo-text-secondary mt-0.5">
+                            <Typography variant="h3" className="text-xl tracking-tight">Novo Agendamento</Typography>
+                            <Typography variant="caption" className="mt-0.5">
                                 {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
-                            </p>
+                            </Typography>
                         </div>
 
-                        <button
+                        <NeoButton
+                            variant="ghost"
+                            size="sm"
                             onClick={onClose}
-                            className="p-2 text-neo-text-secondary hover:text-neo-text transition-colors shrink-0 rounded-full hover:bg-neo-bg-secondary"
+                            className="p-2 shrink-0 rounded-full"
                         >
                             <X size={18} />
-                        </button>
+                        </NeoButton>
                     </div>
 
                     {/* Content */}
@@ -261,30 +260,24 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                     className="space-y-6"
                                 >
                                     <div className="text-center mb-6">
-                                        <h3 className="text-lg font-serif text-neo-text mb-2">Tipo de Cliente</h3>
-                                        <p className="text-sm text-neo-text-secondary">Selecione o tipo de atendimento</p>
+                                        <Typography variant="h4" className="mb-2">Tipo de Cliente</Typography>
+                                        <Typography variant="caption">Selecione o tipo de atendimento</Typography>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
-                                        {/* Bride Card */}
-                                        <button
+                                        {/* Bride NeoCard */}
+                                        <NeoButton
+                                            variant={clientType === 'bride' ? 'gradient' : 'neu'}
+                                            fullWidth
+                                            className="h-auto p-6 flex flex-col items-center gap-3"
                                             onClick={() => setClientType('bride')}
-                                            className={cn(
-                                                "p-6 rounded-neo transition-all duration-300 flex flex-col items-center gap-3",
-                                                clientType === 'bride'
-                                                    ? "shadow-neo-in bg-gradient-to-br from-brand-primary to-brand-gold text-white"
-                                                    : "shadow-neo-out hover:shadow-neo-in"
-                                            )}
                                         >
                                             <Crown size={32} className={clientType === 'bride' ? 'text-white' : 'text-neo-accent'} />
-                                            <span className={cn(
-                                                "text-sm font-medium",
-                                                clientType === 'bride' ? 'text-white' : 'text-neo-text'
-                                            )}>Noiva</span>
-                                        </button>
+                                            <Typography variant="h6" className={clientType === 'bride' ? 'text-white' : ''}>Noiva</Typography>
+                                        </NeoButton>
 
-                                        {/* Regular Client Card */}
-                                        <button
+                                        {/* Regular Client NeoCard */}
+                                        <NeoButton
                                             onClick={() => setClientType('regular')}
                                             className={cn(
                                                 "p-6 rounded-neo transition-all duration-300 flex flex-col items-center gap-3",
@@ -298,7 +291,7 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                                 "text-sm font-medium",
                                                 clientType === 'regular' ? 'text-white' : 'text-neo-text'
                                             )}>Cliente Comum</span>
-                                        </button>
+                                        </NeoButton>
                                     </div>
                                 </motion.div>
                             )}
@@ -313,15 +306,18 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                     className="space-y-4"
                                 >
                                     <div className="text-center mb-6">
-                                        <h3 className="text-lg font-serif text-neo-text mb-2">Dados do Cliente</h3>
-                                        <p className="text-sm text-neo-text-secondary">Preencha as informações de contato</p>
+                                        <Typography variant="h4" className="mb-2">Dados do Cliente</Typography>
+                                        <Typography variant="caption">Preencha as informações de contato</Typography>
                                     </div>
 
                                     <NeoInput
                                         icon={<User size={18} />}
                                         label="Nome Completo"
                                         value={clientData.name}
-                                        onChange={(v) => setClientData(prev => ({ ...prev, name: v }))}
+                                        onChange={(e) => {
+                                            const val = (e as React.ChangeEvent<HTMLInputElement>).target.value;
+                                            setClientData(prev => ({ ...prev, name: val }));
+                                        }}
                                         placeholder="Ex: Maria Silva"
                                     />
                                     <NeoInput
@@ -329,14 +325,20 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                         label="E-mail"
                                         type="email"
                                         value={clientData.email}
-                                        onChange={(v) => setClientData(prev => ({ ...prev, email: v }))}
+                                        onChange={(e) => {
+                                            const val = (e as React.ChangeEvent<HTMLInputElement>).target.value;
+                                            setClientData(prev => ({ ...prev, email: val }));
+                                        }}
                                         placeholder="maria@email.com"
                                     />
                                     <NeoInput
                                         icon={<Phone size={18} />}
                                         label="WhatsApp"
                                         value={clientData.phone}
-                                        onChange={(v) => setClientData(prev => ({ ...prev, phone: v }))}
+                                        onChange={(e) => {
+                                            const val = (e as React.ChangeEvent<HTMLInputElement>).target.value;
+                                            setClientData(prev => ({ ...prev, phone: val }));
+                                        }}
                                         placeholder="(11) 99999-9999"
                                     />
                                 </motion.div>
@@ -352,8 +354,8 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                     className="space-y-4"
                                 >
                                     <div className="text-center mb-6">
-                                        <h3 className="text-lg font-serif text-neo-text mb-2">Serviços</h3>
-                                        <p className="text-sm text-neo-text-secondary">Selecione os serviços desejados</p>
+                                        <Typography variant="h4" className="mb-2">Serviços</Typography>
+                                        <Typography variant="caption">Selecione os serviços desejados</Typography>
                                     </div>
 
                                     {/* Service Dropdown */}
@@ -397,12 +399,12 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                                         <span className="text-sm font-semibold text-neo-text">
                                                             R$ {service.price.toFixed(2)}
                                                         </span>
-                                                        <button
+                                                        <NeoButton
                                                             onClick={() => removeService(index)}
                                                             className="p-1.5 rounded-full hover:bg-red-100 text-red-500 transition-colors"
                                                         >
                                                             <Trash2 size={16} />
-                                                        </button>
+                                                        </NeoButton>
                                                     </div>
                                                 </div>
                                             ))}
@@ -428,7 +430,7 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                         <label className="block text-sm text-neo-text font-medium mb-2">Horário</label>
                                         <div className="relative">
                                             <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-neo-text-secondary" size={18} />
-                                            <input
+                                            <NeoInput
                                                 type="time"
                                                 value={selectedTime}
                                                 onChange={(e) => setSelectedTime(e.target.value)}
@@ -452,42 +454,33 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                     </div>
 
                                     <div>
-                                        <h3 className="text-lg font-serif text-neo-text mb-2">Link Gerado!</h3>
-                                        <p className="text-sm text-neo-text-secondary">
+                                        <Typography variant="h3" className="mb-2">Link Gerado!</Typography>
+                                        <Typography variant="caption">
                                             Envie este link para {clientData.name} via WhatsApp
-                                        </p>
+                                        </Typography>
                                     </div>
 
-                                    <div className="p-4 rounded-neo bg-neo-bg shadow-neo-in">
-                                        <p className="text-xs text-neo-text-secondary mb-2">Link de Pagamento</p>
-                                        <p className="text-sm text-neo-text break-all mb-3">{paymentLink}</p>
-                                        <button
+                                    <NeoCard className="p-4 shadow-neo-in">
+                                        <Typography variant="label" className="mb-2 block">Link de Pagamento</Typography>
+                                        <Typography variant="caption" className="break-all mb-3 block">{paymentLink}</Typography>
+                                        <NeoButton
+                                            fullWidth
+                                            variant={linkCopied ? 'neu' : 'gradient'}
                                             onClick={copyLink}
                                             className={cn(
-                                                "w-full py-3 rounded-neo font-medium transition-all flex items-center justify-center gap-2",
-                                                linkCopied
-                                                    ? "bg-green-500 text-white shadow-neo-in"
-                                                    : "bg-gradient-to-br from-brand-primary to-brand-gold text-white shadow-neo-out hover:shadow-neo-in"
+                                                "py-3",
+                                                linkCopied && "bg-green-500 text-white"
                                             )}
+                                            icon={linkCopied ? <Check size={18} /> : <Copy size={18} />}
                                         >
-                                            {linkCopied ? (
-                                                <>
-                                                    <Check size={18} />
-                                                    Copiado!
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Copy size={18} />
-                                                    Copiar Link
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
+                                            {linkCopied ? 'Copiado!' : 'Copiar Link'}
+                                        </NeoButton>
+                                    </NeoCard>
 
                                     <div className="p-3 rounded-neo bg-yellow-50 shadow-neo-in border border-yellow-200">
-                                        <p className="text-xs text-yellow-800">
+                                        <Typography variant="caption" className="text-yellow-800">
                                             ⏱️ O cliente tem <strong>48 horas</strong> para efetuar o pagamento do sinal
-                                        </p>
+                                        </Typography>
                                     </div>
                                 </motion.div>
                             )}
@@ -498,14 +491,14 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                     {step < 4 && (
                         <div className="p-6 pt-4 border-t border-neo-text-secondary/10 flex gap-3">
                             {step > 1 && (
-                                <button
+                                <NeoButton
                                     onClick={() => setStep((step - 1) as Step)}
                                     className="px-6 py-3 rounded-neo bg-neo-bg shadow-neo-out hover:shadow-neo-in text-neo-text font-medium transition-all"
                                 >
                                     Voltar
-                                </button>
+                                </NeoButton>
                             )}
-                            <button
+                            <NeoButton
                                 onClick={handleNext}
                                 disabled={
                                     (step === 1 && !clientType) ||
@@ -521,13 +514,13 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                 )}
                             >
                                 {isGenerating ? 'Gerando...' : step === 3 ? 'Gerar Link de Pagamento' : 'Continuar'}
-                            </button>
+                            </NeoButton>
                         </div>
                     )}
 
                     {step === 4 && (
                         <div className="p-6 pt-4 border-t border-neo-text-secondary/10">
-                            <button
+                            <NeoButton
                                 onClick={() => {
                                     onSuccess();
                                     onClose();
@@ -535,7 +528,7 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
                                 className="w-full py-3 rounded-neo bg-gradient-to-br from-brand-primary to-brand-gold text-white font-medium shadow-neo-out hover:shadow-neo-in transition-all"
                             >
                                 Concluir
-                            </button>
+                            </NeoButton>
                         </div>
                     )}
                 </motion.div>
@@ -543,3 +536,4 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
         </AnimatePresence>
     );
 };
+

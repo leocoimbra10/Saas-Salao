@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Check, Loader2 } from 'lucide-react';
-import { Button, Card, Input } from '../../../shared/components/ui/NeoComponents';
+import { NeoButton, NeoCard, NeoInput } from '../../../shared/components/ui/NeoComponents';
 import { addToWaitlist } from '../services/WaitlistService';
 
 interface WaitlistButtonProps {
@@ -37,13 +37,13 @@ export const WaitlistButton: React.FC<WaitlistButtonProps> = ({ serviceId, date 
 
     return (
         <div className="mt-4">
-            <Button
+            <NeoButton
                 variant="ghost"
                 className="w-full gap-2 text-neo-accent border border-neo-accent/20"
                 onClick={() => setIsOpen(true)}
             >
                 <Bell size={18} /> Entrar na Lista de Espera
-            </Button>
+            </NeoButton>
 
             <AnimatePresence>
                 {isOpen && (
@@ -52,13 +52,13 @@ export const WaitlistButton: React.FC<WaitlistButtonProps> = ({ serviceId, date 
                         animate={{ opacity: 1, scale: 1 }}
                         className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/30 backdrop-blur-sm"
                     >
-                        <Card className="w-full max-w-sm p-6 space-y-4">
+                        <NeoCard className="w-full max-w-sm p-6 space-y-4">
                             <h3 className="text-lg font-bold text-neo-text">Fique sabendo primeiro!</h3>
                             <p className="text-sm text-neo-text-secondary">
                                 Se alguém cancelar no dia {date}, avisaremos você via WhatsApp imediatamente.
                             </p>
 
-                            <Input
+                            <NeoInput
                                 label="Seu WhatsApp"
                                 placeholder="(11) 99999-9999"
                                 value={phone}
@@ -66,17 +66,17 @@ export const WaitlistButton: React.FC<WaitlistButtonProps> = ({ serviceId, date 
                             />
 
                             <div className="flex gap-3 pt-2">
-                                <Button variant="ghost" className="flex-1" onClick={() => setIsOpen(false)}>Cancelar</Button>
-                                <Button
-                                    variant="primary"
+                                <NeoButton variant="ghost" className="flex-1" onClick={() => setIsOpen(false)}>Cancelar</NeoButton>
+                                <NeoButton
+                                    variant="gradient"
                                     className="flex-1"
                                     onClick={handleJoin}
                                     disabled={loading || success || !phone}
                                 >
                                     {loading ? <Loader2 className="animate-spin" /> : success ? <Check /> : 'Confirmar'}
-                                </Button>
+                                </NeoButton>
                             </div>
-                        </Card>
+                        </NeoCard>
                     </motion.div>
                 )}
             </AnimatePresence>

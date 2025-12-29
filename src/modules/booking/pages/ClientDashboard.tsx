@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -14,7 +14,7 @@ import {
     LogOut
 } from 'lucide-react';
 import { PageWrapper } from '../../../shared/components/ui/AppLayout';
-import { Card, Button, Progress, Badge } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, NeoButton, Progress, Badge, Typography } from '../../../shared/components/ui/NeoComponents';
 import { cn } from '../../../shared/lib/utils';
 import { useAuth } from '../../auth/context/AuthContext';
 import { signOutUser, getUserProfile } from '../../auth/services/authService';
@@ -63,14 +63,16 @@ export const ClientDashboard: React.FC = () => {
             <div className="min-h-screen bg-neo-bg pb-24">
                 {/* Header / Hero */}
                 <header className="p-6 pt-12 text-center relative">
-                    {/* Logout Button */}
-                    <button
+                    {/* Logout NeoButton */}
+                    <NeoButton
+                        variant="neu"
+                        size="sm"
                         onClick={handleLogout}
-                        className="absolute top-6 right-6 p-2 rounded-full bg-neo-bg shadow-neo-out hover:shadow-neo-pressed active:shadow-neo-pressed transition-all text-neo-text-secondary hover:text-neo-danger"
+                        className="absolute top-6 right-6 p-2 rounded-full text-neo-text-secondary hover:text-neo-danger shadow-neo-out"
                         title="Sair"
                     >
                         <LogOut size={20} />
-                    </button>
+                    </NeoButton>
 
                     <motion.div
                         initial={{ scale: 0.8, opacity: 0 }}
@@ -81,14 +83,14 @@ export const ClientDashboard: React.FC = () => {
                         <div className="absolute inset-0 bg-neo-accent/20 blur-2xl rounded-full scale-150 -z-10 animate-pulse" />
                         <Crown size={40} className="text-white" />
                     </motion.div>
-                    <h1 className="text-3xl font-display font-bold text-neo-text mb-1">Olá, {displayName}!</h1>
-                    <p className="text-caption italic mb-8">Sua beleza em evidência</p>
+                    <Typography variant="h1" className="mb-1">Olá, {displayName}!</Typography>
+                    <Typography variant="caption" className="italic mb-8">Sua beleza em evidência</Typography>
                 </header>
 
                 <main className="px-6 space-y-8">
-                    {/* Loyalty Card - Gamified */}
+                    {/* Loyalty NeoCard - Gamified */}
                     <section>
-                        <Card className="p-6 relative overflow-hidden border-2 border-neo-accent/10">
+                        <NeoCard className="p-6 relative overflow-hidden border-2 border-neo-accent/10">
                             <div className="absolute -top-12 -right-12 w-32 h-32 bg-neo-accent/10 blur-3xl rounded-full" />
 
                             <div className="flex justify-between items-start mb-6">
@@ -97,90 +99,90 @@ export const ClientDashboard: React.FC = () => {
                                         <Badge variant="info" className="bg-neo-accent/20 text-neo-accent border-neo-accent/20 mb-2 font-bold">
                                             NÍVEL {loyaltyData.tier.toUpperCase()}
                                         </Badge>
-                                        <h3 className="text-xl font-display font-bold text-neo-text">Seus Pontos</h3>
+                                        <Typography variant="h3">Seus Pontos</Typography>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-3xl font-bold text-neo-accent">{loyaltyData.points}</p>
-                                    <p className="text-[10px] text-neo-text-secondary uppercase tracking-widest">Beauty Points</p>
+                                    <Typography variant="h2" className="text-neo-accent">{loyaltyData.points}</Typography>
+                                    <Typography variant="label" className="text-[10px] text-neo-text-secondary uppercase tracking-widest">Beauty Points</Typography>
                                 </div>
                             </div>
 
                             <div className="space-y-3">
                                 <div className="flex justify-between text-xs text-neo-text-secondary">
-                                    <span>Progresso para 50% OFF</span>
-                                    <span>{loyaltyData.points} / {loyaltyData.nextRewardAt}</span>
+                                    <Typography variant="caption">Progresso para 50% OFF</Typography>
+                                    <Typography variant="caption">{loyaltyData.points} / {loyaltyData.nextRewardAt}</Typography>
                                 </div>
                                 <Progress value={progress} className="h-2" />
-                                <p className="text-[10px] text-center text-neo-text-secondary italic">
+                                <Typography variant="caption" className="text-[10px] text-center italic mt-2 block">
                                     Faltam apenas {loyaltyData.nextRewardAt - loyaltyData.points} pontos para sua próxima recompensa!
-                                </p>
+                                </Typography>
                             </div>
 
                             <div className="mt-6 pt-6 border-t border-neo-text-secondary/10 flex justify-around">
                                 <div className="text-center">
-                                    <p className="text-lg font-bold text-neo-text">{loyaltyData.visits}</p>
-                                    <p className="text-[10px] text-neo-text-secondary uppercase">Visitas</p>
+                                    <Typography variant="h4">{loyaltyData.visits}</Typography>
+                                    <Typography variant="label" className="text-[10px] text-neo-text-secondary uppercase">Visitas</Typography>
                                 </div>
                                 <div className="w-[1px] bg-neo-text-secondary/10" />
                                 <div className="text-center">
-                                    <p className="text-lg font-bold text-neo-text">2</p>
-                                    <p className="text-[10px] text-neo-text-secondary uppercase">Mimos Ganhos</p>
+                                    <Typography variant="h4">2</Typography>
+                                    <Typography variant="label" className="text-[10px] text-neo-text-secondary uppercase">Mimos Ganhos</Typography>
                                 </div>
                             </div>
-                        </Card>
+                        </NeoCard>
                     </section>
 
                     {/* Quick Actions */}
                     <section className="grid grid-cols-2 gap-4">
-                        <Button
-                            variant="secondary"
+                        <NeoButton
+                            variant="neu"
                             className="h-auto py-6 flex flex-col gap-3 shadow-neo-out border-2 border-white/40"
-                            onClick={() => window.location.href = '/booking'}
+                            onClick={() => navigate('/booking')}
                         >
                             <Calendar size={24} className="text-neo-info" />
-                            <span className="font-semibold text-sm">Novo Agendamento</span>
-                        </Button>
-                        <Button
-                            variant="secondary"
+                            <Typography variant="label" className="text-sm">Novo Agendamento</Typography>
+                        </NeoButton>
+                        <NeoButton
+                            variant="neu"
                             className="h-auto py-6 flex flex-col gap-3 shadow-neo-out border-2 border-white/40"
-                            onClick={() => window.location.href = '/portfolio'}
+                            onClick={() => navigate('/portfolio')}
                         >
                             <ImageIcon size={24} className="text-neo-accent" />
-                            <span className="font-semibold text-sm">Ver Inspirações</span>
-                        </Button>
+                            <Typography variant="label" className="text-sm">Ver Inspirações</Typography>
+                        </NeoButton>
                     </section>
 
-                    {/* Referral Card */}
+                    {/* Referral NeoCard */}
                     <section>
-                        <Card className="p-5 bg-gradient-to-br from-neo-bg to-neo-accent/5">
+                        <NeoCard className="p-5 bg-gradient-to-br from-neo-bg to-neo-accent/5">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-full bg-white/50 shadow-neo-out flex items-center justify-center text-neo-accent">
                                     <Share2 size={24} />
                                 </div>
                                 <div className="flex-1">
-                                    <h4 className="font-bold text-neo-text">Indique e Ganhe</h4>
-                                    <p className="text-xs text-neo-text-secondary">Ganhe 100 pontos por cada amiga que agendar!</p>
+                                    <Typography variant="h6">Indique e Ganhe</Typography>
+                                    <Typography variant="caption">Ganhe 100 pontos por cada amiga que agendar!</Typography>
                                 </div>
                             </div>
                             <div className="mt-4 flex gap-2">
                                 <div className="flex-1 py-2 px-3 bg-neo-bg rounded-neo shadow-neo-in text-xs font-mono text-neo-text-secondary flex items-center justify-center">
                                     {loyaltyData.referralCode}
                                 </div>
-                                <Button size="sm" className="shadow-neo-out text-[10px]">
+                                <NeoButton size="sm" className="shadow-neo-out text-[10px]">
                                     Copiar
-                                </Button>
+                                </NeoButton>
                             </div>
-                        </Card>
+                        </NeoCard>
                     </section>
 
                     {/* Exclusive Bride Access */}
                     <section>
-                        <motion.a
+                        <motion.div
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            href="/noiva"
-                            className="block relative overflow-hidden bg-neo-bg rounded-neo shadow-neo-out p-6 active:shadow-neo-pressed transition-all border border-[var(--color-brand-gold)]/20 group"
+                            onClick={() => navigate('/noiva')}
+                            className="block relative overflow-hidden bg-neo-bg rounded-neo shadow-neo-out p-6 active:shadow-neo-pressed transition-all border border-[var(--color-brand-gold)]/20 group cursor-pointer"
                         >
                             <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-brand-gold)]/10 blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                             <div className="flex items-center gap-5 relative z-10">
@@ -191,12 +193,12 @@ export const ClientDashboard: React.FC = () => {
                                     <Crown size={28} style={{ color: 'var(--color-brand-gold)' }} />
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="font-display font-bold text-neo-text text-lg">Portal da Noiva</h3>
-                                    <p className="text-xs text-neo-text-secondary">Seu planejamento exclusivo em um só lugar</p>
+                                    <Typography variant="h4" className="text-lg">Portal da Noiva</Typography>
+                                    <Typography variant="caption">Seu planejamento exclusivo em um só lugar</Typography>
                                 </div>
                                 <ChevronRight size={20} style={{ color: 'var(--color-brand-gold)' }} />
                             </div>
-                        </motion.a>
+                        </motion.div>
                     </section>
                 </main>
             </div>
@@ -205,3 +207,4 @@ export const ClientDashboard: React.FC = () => {
 };
 
 export default ClientDashboard;
+

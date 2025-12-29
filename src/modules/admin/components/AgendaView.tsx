@@ -7,12 +7,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Plus } from 'lucide-react';
+import { NeoButton, Typography } from '../../../shared/components/ui/NeoComponents';
 import { Calendar } from '../../booking/components/Calendar';
 import { AgendaCard } from './AgendaCard';
 import { Appointment, Service, Staff } from '../../../shared/types/types';
-import { cn } from '../../../shared/lib/utils';
+import { cn } from '../../../shared/lib/utils'; // Keep cn for custom classes if needed or removal
 
 interface AgendaViewProps {
+    // ... existing interface ...
     selectedDate: Date;
     onDateChange: (date: Date) => void;
     appointments: Appointment[];
@@ -60,17 +62,17 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
             <div className="flex-1 overflow-y-auto px-6 pt-6 pb-24 custom-scrollbar">
                 <div className="max-w-md mx-auto">
                     <div className="flex items-center gap-4 mb-6">
-                        <span className="text-3xl font-serif text-neo-text font-bold">
+                        <Typography variant="h2" className="text-3xl font-bold">
                             {format(selectedDate, 'd', { locale: ptBR })}
-                        </span>
+                        </Typography>
                         <div className="h-8 w-px bg-neo-text/20" />
                         <div className="flex flex-col">
-                            <span className="text-xs uppercase tracking-widest text-neo-accent font-bold">
+                            <Typography variant="caption" className="text-xs uppercase tracking-widest text-neo-accent font-bold">
                                 {format(selectedDate, 'EEEE', { locale: ptBR })}
-                            </span>
-                            <span className="text-sm text-neo-text-secondary font-serif italic">
+                            </Typography>
+                            <Typography variant="body" className="text-sm text-neo-text-secondary italic">
                                 {format(selectedDate, 'MMMM yyyy', { locale: ptBR })}
-                            </span>
+                            </Typography>
                         </div>
                     </div>
 
@@ -101,12 +103,12 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                                 ))
                             ) : (
                                 <div className="flex flex-col items-center justify-center py-20">
-                                    <p className="text-xl font-serif text-neo-text/70 italic text-center">
+                                    <Typography variant="h4" className="text-neo-text/70 italic text-center mb-2">
                                         Agenda livre para hoje
-                                    </p>
-                                    <p className="text-xs text-neo-text-secondary mt-2 tracking-widest uppercase">
+                                    </Typography>
+                                    <Typography variant="caption" className="text-neo-text-secondary tracking-widest uppercase">
                                         Nenhum agendamento
-                                    </p>
+                                    </Typography>
                                 </div>
                             )}
                         </motion.div>
@@ -116,23 +118,23 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
 
 
             {/* Floating Action Button - Repositioned near calendar */}
-            <button
+            <NeoButton
+                variant="gradient"
                 onClick={onAddAppointment}
                 className={cn(
                     "absolute top-4 right-6 z-30",
-                    "w-14 h-14 rounded-full",
-                    "bg-gradient-to-br from-brand-primary to-brand-gold",
-                    "text-white shadow-[0_8px_32px_rgba(232,160,184,0.5)]",
+                    "w-14 h-14 rounded-full p-0",
+                    "shadow-[0_8px_32px_rgba(232,160,184,0.5)]",
                     "flex items-center justify-center",
                     "hover:scale-110 hover:shadow-[0_12px_40px_rgba(232,160,184,0.6)] active:scale-95",
                     "transition-all duration-300",
-                    "group border-2 border-white/30 backdrop-blur-md",
+                    "border-2 border-white/30 backdrop-blur-md",
                     "animate-in fade-in slide-in-from-top-4 duration-500"
                 )}
                 title="Novo Agendamento"
             >
-                <Plus size={26} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform duration-300" />
-            </button>
+                <Plus size={26} strokeWidth={2.5} className="transition-transform duration-300 group-hover:rotate-90" />
+            </NeoButton>
 
         </div>
     );

@@ -1,14 +1,15 @@
-/**
+﻿/**
  * BEAUTY SALON NEOMORPHIC APP - Salon Settings Page
  * Glassmorphic Control Panel for Salon Identity
  */
 import React, { useState, useEffect } from 'react';
 import { updateOrganization } from '../../organization/services/organizationService';
-import { useBranding } from '../../organization/context/BrandingContext';
-import { Card, Button, Input } from '../../../shared/components/ui/NeoComponents';
-import { Save, Upload, Palette, Building } from 'lucide-react';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'; // Assuming Firebase storage is used
-import { storage } from '../../../shared/lib/firebase'; // Assuming Firebase storage instance is imported
+import { useBranding } from '../../../shared/context/BrandingContext';
+import { NeoCard as NeoCard, NeoButton as NeoButton, NeoInput as NeoInput, Typography } from '../../../shared/components/ui';
+import { Save, Upload, Palette, Building, Image as ImageIcon } from 'lucide-react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../../../shared/lib/firebase';
+import { cn } from '../../../shared/lib/utils';
 
 const SalonSettingsPage: React.FC = () => {
     const { organization } = useBranding();
@@ -21,7 +22,8 @@ const SalonSettingsPage: React.FC = () => {
         address: '',
         logoUrl: '',
         backgroundUrl: '',
-        primaryColor: 'var(--color-brand-gold)'
+        primaryColor: '#E8A0B8',
+        goldColor: '#D4AF37'
     });
 
     const handleFileUpload = async (file: File, type: 'logo' | 'bg') => {
@@ -48,16 +50,27 @@ const SalonSettingsPage: React.FC = () => {
         if (organization) {
             setFormData({
                 name: organization.name || '',
-                address: organization.settings.address || '',
-                logoUrl: organization.settings.logo || '',
-                backgroundUrl: organization.settings.backgroundUrl || '',
-                primaryColor: organization.settings.primaryColor || 'var(--color-brand-gold)'
+                address: organization.settings?.address || '',
+                logoUrl: organization.settings?.logo || '',
+                backgroundUrl: organization.settings?.backgroundUrl || '',
+                primaryColor: organization.settings?.brandColors?.primary || organization.settings?.primaryColor || '#E8A0B8',
+                goldColor: organization.settings?.brandColors?.gold || '#D4AF37'
             });
         }
     }, [organization]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+
+        // Instant preview if it's a color
+        if (name === 'primaryColor' && /^#[0-9A-F]{6}$/i.test(value)) {
+            document.documentElement.style.setProperty('--color-brand-primary', value);
+            document.documentElement.style.setProperty('--neo-accent', value);
+        }
+        if (name === 'goldColor' && /^#[0-9A-F]{6}$/i.test(value)) {
+            document.documentElement.style.setProperty('--color-brand-gold', value);
+        }
     };
 
     const handleSave = async () => {
@@ -71,12 +84,21 @@ const SalonSettingsPage: React.FC = () => {
                     address: formData.address,
                     logo: formData.logoUrl,
                     backgroundUrl: formData.backgroundUrl,
-                    primaryColor: formData.primaryColor
+                    primaryColor: formData.primaryColor,
+                    brandColors: {
+                        primary: formData.primaryColor,
+                        primaryLight: formData.primaryColor + '30', // Dummy adjustment
+                        primaryDark: formData.primaryColor,
+                        gold: formData.goldColor,
+                        goldLight: formData.goldColor + '30',
+                        purple: '#8A2BE2'
+                    }
                 }
             });
-            // Toast success here ideally
+            alert("Configurações salvas com sucesso!");
         } catch (error) {
             console.error("Error updating settings:", error);
+            alert("Erro ao salvar configurações.");
         } finally {
             setLoading(false);
         }
@@ -94,7 +116,7 @@ const SalonSettingsPage: React.FC = () => {
             <div className="max-w-2xl mx-auto space-y-6">
 
                 {/* 1. Identity Section */}
-                <Card className="p-6">
+                <NeoCard className="p-6">
                     <div className="flex items-center gap-2 mb-4">
                         <Building className="text-neo-accent" size={20} />
                         <h2 className="text-lg font-bold text-neo-text">Identidade</h2>
@@ -102,7 +124,7 @@ const SalonSettingsPage: React.FC = () => {
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-neo-text-secondary mb-1">Nome do Salão</label>
-                            <Input
+                            <NeoInput
                                 name="name"
                                 value={formData.name}
                                 onChange={handleChange}
@@ -111,7 +133,7 @@ const SalonSettingsPage: React.FC = () => {
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-neo-text-secondary mb-1">Endereço Completo</label>
-                            <Input
+                            <NeoInput
                                 name="address"
                                 value={formData.address}
                                 onChange={handleChange}
@@ -119,95 +141,125 @@ const SalonSettingsPage: React.FC = () => {
                             />
                         </div>
                     </div>
-                </Card>
+                </NeoCard>
 
                 {/* 2. Visual Branding Section */}
-                <Card className="p-6">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Palette className="text-neo-accent" size={20} />
-                        <h2 className="text-lg font-bold text-neo-text">Visual & Branding</h2>
+                <NeoCard className="p-6">
+                    <div className="flex items-center gap-2 mb-6">
+                        <Palette className="text-brand-primary" size={22} />
+                        <Typography variant="h3">Visual & Branding</Typography>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                         {/* Primary Color Picker */}
-                        <div>
-                            <label className="block text-sm font-medium text-neo-text-secondary mb-1">Cor de Destaque (Hex)</label>
-                            <div className="flex items-center gap-3">
-                                <div
-                                    className="w-10 h-10 rounded-full border border-white/20 shadow-neo-out"
-                                    style={{ backgroundColor: formData.primaryColor }}
-                                />
-                                <Input
-                                    name="primaryColor"
-                                    value={formData.primaryColor}
-                                    onChange={handleChange}
-                                    className="font-mono uppercase"
-                                    maxLength={7}
-                                />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-neo-text-secondary mb-2">Cor Principal (Marca)</label>
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className="w-12 h-12 rounded-neo shadow-neo-out shrink-0 border-2 border-white/50"
+                                        style={{ backgroundColor: formData.primaryColor }}
+                                    />
+                                    <NeoInput
+                                        name="primaryColor"
+                                        value={formData.primaryColor}
+                                        onChange={handleChange}
+                                        className="font-mono uppercase"
+                                        maxLength={7}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-neo-text-secondary mb-2">Cor Secundária (Ouro/Destaque)</label>
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className="w-12 h-12 rounded-neo shadow-neo-out shrink-0 border-2 border-white/50"
+                                        style={{ backgroundColor: formData.goldColor }}
+                                    />
+                                    <NeoInput
+                                        name="goldColor"
+                                        value={formData.goldColor}
+                                        onChange={handleChange}
+                                        className="font-mono uppercase"
+                                        maxLength={7}
+                                    />
+                                </div>
                             </div>
                         </div>
 
                         {/* Background & Logo URLs */}
-                        <div>
-                            <label className="block text-sm font-medium text-neo-text-secondary mb-1">Logo do Salão</label>
-                            <div className="flex gap-2">
-                                <Input
-                                    name="logoUrl"
-                                    value={formData.logoUrl}
-                                    onChange={handleChange}
-                                    icon={<Upload size={16} />}
-                                    placeholder="URL ou Upload"
-                                />
-                                <div className="relative overflow-hidden">
-                                    <Button variant="ghost" className="relative">
-                                        {uploading === 'logo' ? '...' : <Upload size={18} />}
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            className="absolute inset-0 opacity-0 cursor-pointer"
-                                            onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'logo')}
-                                        />
-                                    </Button>
-                                </div>
+                        <div className="pt-2">
+                            <NeoInput
+                                label="Logo do Salão (URL)"
+                                name="logoUrl"
+                                value={formData.logoUrl}
+                                onChange={handleChange}
+                                icon={<ImageIcon size={18} />}
+                                placeholder="https://..."
+                            />
+                            <div className="mt-2 flex justify-end">
+                                <label className="cursor-pointer">
+                                    <span className={cn(
+                                        "text-xs font-semibold px-3 py-1.5 rounded-full shadow-neo-out flex items-center gap-2 bg-neo-bg",
+                                        uploading === 'logo' ? "opacity-50" : "hover:bg-brand-primary/10"
+                                    )}>
+                                        <Upload size={14} />
+                                        {uploading === 'logo' ? 'Enviando...' : 'Fazer Upload'}
+                                    </span>
+                                    <NeoInput
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        disabled={uploading !== null}
+                                        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'logo')}
+                                    />
+                                </label>
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-neo-text-secondary mb-1">Foto de Fundo</label>
-                            <div className="flex gap-2">
-                                <Input
-                                    name="backgroundUrl"
-                                    value={formData.backgroundUrl}
-                                    onChange={handleChange}
-                                    icon={<Upload size={16} />}
-                                    placeholder="URL ou Upload"
-                                />
-                                <div className="relative overflow-hidden">
-                                    <Button variant="ghost" className="relative">
-                                        {uploading === 'bg' ? '...' : <Upload size={18} />}
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            className="absolute inset-0 opacity-0 cursor-pointer"
-                                            onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'bg')}
-                                        />
-                                    </Button>
-                                </div>
+                            <NeoInput
+                                label="Foto de Fundo (Global)"
+                                name="backgroundUrl"
+                                value={formData.backgroundUrl}
+                                onChange={handleChange}
+                                icon={<ImageIcon size={18} />}
+                                placeholder="https://..."
+                            />
+                            <div className="mt-2 flex justify-end">
+                                <label className="cursor-pointer">
+                                    <span className={cn(
+                                        "text-xs font-semibold px-3 py-1.5 rounded-full shadow-neo-out flex items-center gap-2 bg-neo-bg",
+                                        uploading === 'bg' ? "opacity-50" : "hover:bg-brand-primary/10"
+                                    )}>
+                                        <Upload size={14} />
+                                        {uploading === 'bg' ? 'Enviando...' : 'Fazer Upload'}
+                                    </span>
+                                    <NeoInput
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        disabled={uploading !== null}
+                                        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'bg')}
+                                    />
+                                </label>
                             </div>
                         </div>
                     </div>
-                </Card>
+                </NeoCard>
 
                 <div className="flex justify-end pt-4">
-                    <Button
+                    <NeoButton
+                        variant="gradient"
                         size="lg"
                         onClick={handleSave}
-                        disabled={loading}
-                        className="w-full sm:w-auto"
+                        loading={loading}
+                        fullWidth
+                        icon={<Save size={20} />}
                     >
-                        {loading ? 'Salvando...' : 'Salvar Alterações'}
-                        <Save size={18} className="ml-2" />
-                    </Button>
+                        Salvar Identidade Visual
+                    </NeoButton>
                 </div>
 
             </div>
@@ -216,3 +268,4 @@ const SalonSettingsPage: React.FC = () => {
 };
 
 export default SalonSettingsPage;
+

@@ -20,7 +20,7 @@ import {
     ArrowDownRight
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
-import { Card, Button, Badge, Progress } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, NeoButton, Badge, Progress, Typography } from '../../../shared/components/ui/NeoComponents';
 
 // Brand Colors - Rose Pink
 const ROSE = 'var(--color-brand-primary)';
@@ -28,7 +28,7 @@ const ROSE_LIGHT = '#F5CED8';
 const GOLD = ROSE; // Legacy alias
 const GOLD_LIGHT = ROSE_LIGHT; // Legacy alias
 
-// Types
+// ... types ... (RevenueData, TopClient, StaffEarnings)
 interface RevenueData {
     date: string;
     revenue: number;
@@ -101,7 +101,7 @@ const SimpleBarChart: React.FC<{ data: RevenueData[] }> = ({ data }) => {
                                 )}
                                 style={{ backgroundColor: isToday ? GOLD : undefined }}
                             />
-                            <span className="text-[10px] text-neo-text-secondary">{item.date}</span>
+                            <Typography variant="caption" className="text-[10px] text-neo-text-secondary">{item.date}</Typography>
                         </div>
                     );
                 })}
@@ -130,47 +130,47 @@ const SummaryCards: React.FC<{
     profit: number;
 }> = ({ totalRevenue, totalExpenses, totalAppointments, profit }) => (
     <div className="grid grid-cols-2 gap-4 mb-6">
-        <Card className="p-4">
+        <NeoCard className="p-4">
             <div className="flex items-center gap-2 mb-2">
                 <DollarSign size={18} style={{ color: GOLD }} />
-                <span className="text-xs text-neo-text-secondary">Receita</span>
+                <Typography variant="caption" className="text-neo-text-secondary">Receita</Typography>
             </div>
-            <p className="text-xl font-bold text-neo-text">{formatCurrency(totalRevenue)}</p>
+            <Typography variant="h5" className="font-bold text-neo-text">{formatCurrency(totalRevenue)}</Typography>
             <div className="flex items-center gap-1 mt-1">
                 <ArrowUpRight size={14} className="text-green-500" />
                 <span className="text-xs text-green-500">+12%</span>
             </div>
-        </Card>
+        </NeoCard>
 
-        <Card className="p-4">
+        <NeoCard className="p-4">
             <div className="flex items-center gap-2 mb-2">
                 <TrendingDown size={18} className="text-neo-danger" />
-                <span className="text-xs text-neo-text-secondary">Despesas</span>
+                <Typography variant="caption" className="text-neo-text-secondary">Despesas</Typography>
             </div>
-            <p className="text-xl font-bold text-neo-text">{formatCurrency(totalExpenses)}</p>
+            <Typography variant="h5" className="font-bold text-neo-text">{formatCurrency(totalExpenses)}</Typography>
             <div className="flex items-center gap-1 mt-1">
                 <ArrowDownRight size={14} className="text-green-500" />
                 <span className="text-xs text-green-500">-5%</span>
             </div>
-        </Card>
+        </NeoCard>
 
-        <Card className="p-4">
+        <NeoCard className="p-4">
             <div className="flex items-center gap-2 mb-2">
                 <TrendingUp size={18} className="text-green-500" />
-                <span className="text-xs text-neo-text-secondary">Lucro Líquido</span>
+                <Typography variant="caption" className="text-neo-text-secondary">Lucro Líquido</Typography>
             </div>
-            <p className="text-xl font-bold text-green-600">{formatCurrency(profit)}</p>
-            <p className="text-xs text-neo-text-secondary mt-1">Após comissões</p>
-        </Card>
+            <Typography variant="h5" className="font-bold text-green-600">{formatCurrency(profit)}</Typography>
+            <Typography variant="caption" className="text-neo-text-secondary mt-1">Após comissões</Typography>
+        </NeoCard>
 
-        <Card className="p-4">
+        <NeoCard className="p-4">
             <div className="flex items-center gap-2 mb-2">
                 <Calendar size={18} className="text-neo-info" />
-                <span className="text-xs text-neo-text-secondary">Atendimentos</span>
+                <Typography variant="caption" className="text-neo-text-secondary">Atendimentos</Typography>
             </div>
-            <p className="text-xl font-bold text-neo-text">{totalAppointments}</p>
-            <p className="text-xs text-neo-text-secondary mt-1">este mês</p>
-        </Card>
+            <Typography variant="h5" className="font-bold text-neo-text">{totalAppointments}</Typography>
+            <Typography variant="caption" className="text-neo-text-secondary mt-1">este mês</Typography>
+        </NeoCard>
     </div>
 );
 
@@ -178,11 +178,11 @@ const SummaryCards: React.FC<{
 const TopClientsSection: React.FC<{ clients: TopClient[] }> = ({ clients }) => (
     <section className="mb-6">
         <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-neo-text flex items-center gap-2">
+            <Typography variant="h3" className="font-semibold text-lg text-neo-text flex items-center gap-2">
                 <Star size={18} style={{ color: GOLD }} />
                 Melhores Clientes
-            </h2>
-            <button className="text-xs text-neo-accent font-medium">Ver todos</button>
+            </Typography>
+            <NeoButton variant="ghost" size="sm" className="text-neo-accent font-medium">Ver todos</NeoButton>
         </div>
 
         <div className="space-y-3">
@@ -193,7 +193,7 @@ const TopClientsSection: React.FC<{ clients: TopClient[] }> = ({ clients }) => (
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.1 }}
                 >
-                    <Card className="p-4">
+                    <NeoCard className="p-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="relative">
@@ -213,20 +213,20 @@ const TopClientsSection: React.FC<{ clients: TopClient[] }> = ({ clients }) => (
                                     )}
                                 </div>
                                 <div>
-                                    <p className="font-medium text-neo-text">{client.name}</p>
-                                    <p className="text-xs text-neo-text-secondary">
+                                    <Typography variant="body" className="font-medium text-neo-text">{client.name}</Typography>
+                                    <Typography variant="caption" className="text-xs text-neo-text-secondary">
                                         {client.visits} visitas • Última: {client.lastVisit}
-                                    </p>
+                                    </Typography>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="font-bold" style={{ color: GOLD }}>
+                                <Typography variant="body" className="font-bold" style={{ color: GOLD }}>
                                     {formatCurrency(client.totalSpent)}
-                                </p>
-                                <p className="text-xs text-neo-text-secondary">total gasto</p>
+                                </Typography>
+                                <Typography variant="caption" className="text-xs text-neo-text-secondary">total gasto</Typography>
                             </div>
                         </div>
-                    </Card>
+                    </NeoCard>
                 </motion.div>
             ))}
         </div>
@@ -239,34 +239,34 @@ const StaffPerformanceSection: React.FC<{ staff: StaffEarnings[] }> = ({ staff }
 
     return (
         <section className="mb-6">
-            <h2 className="font-semibold text-neo-text flex items-center gap-2 mb-4">
+            <Typography variant="h3" className="font-semibold text-lg text-neo-text flex items-center gap-2 mb-4">
                 <Users size={18} style={{ color: GOLD }} />
                 Performance da Equipe
-            </h2>
+            </Typography>
 
             <div className="space-y-3">
                 {staff.map((member, idx) => {
                     const percentage = (member.grossGenerated / totalGenerated) * 100;
 
                     return (
-                        <Card key={member.id} className="p-4">
+                        <NeoCard key={member.id} className="p-4">
                             <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-neo shadow-neo-in flex items-center justify-center">
                                         <span className="font-semibold text-neo-accent">{member.name.charAt(0)}</span>
                                     </div>
                                     <div>
-                                        <p className="font-medium text-neo-text">{member.name}</p>
-                                        <p className="text-xs text-neo-text-secondary">
+                                        <Typography variant="body" className="font-medium text-neo-text">{member.name}</Typography>
+                                        <Typography variant="caption" className="text-xs text-neo-text-secondary">
                                             {(member.commissionRate * 100).toFixed(0)}% comissão
-                                        </p>
+                                        </Typography>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="font-bold text-neo-text">{formatCurrency(member.grossGenerated)}</p>
-                                    <p className="text-xs" style={{ color: GOLD }}>
+                                    <Typography variant="body" className="font-bold text-neo-text">{formatCurrency(member.grossGenerated)}</Typography>
+                                    <Typography variant="caption" className="text-xs" style={{ color: GOLD }}>
                                         Comissão: {formatCurrency(member.commission)}
-                                    </p>
+                                    </Typography>
                                 </div>
                             </div>
 
@@ -279,10 +279,10 @@ const StaffPerformanceSection: React.FC<{ staff: StaffEarnings[] }> = ({ staff }
                                     style={{ backgroundColor: GOLD }}
                                 />
                             </div>
-                            <p className="text-xs text-neo-text-secondary text-right mt-1">
+                            <Typography variant="caption" className="text-xs text-neo-text-secondary text-right mt-1">
                                 {percentage.toFixed(1)}% do faturamento
-                            </p>
-                        </Card>
+                            </Typography>
+                        </NeoCard>
                     );
                 })}
             </div>
@@ -318,8 +318,8 @@ export const FinancialDashboard: React.FC = () => {
                             <BarChart3 size={24} style={{ color: GOLD }} />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-neo-text">Performance</h1>
-                            <p className="text-sm text-neo-text-secondary">Resumo financeiro</p>
+                            <Typography variant="h2" className="text-xl font-bold text-neo-text">Performance</Typography>
+                            <Typography variant="caption" className="text-sm text-neo-text-secondary">Resumo financeiro</Typography>
                         </div>
                     </div>
 
@@ -330,19 +330,19 @@ export const FinancialDashboard: React.FC = () => {
                             { id: 'month', label: 'Mês' },
                             { id: 'year', label: 'Ano' },
                         ].map(p => (
-                            <button
+                            <NeoButton
                                 key={p.id}
+                                variant={period === p.id ? 'neu' : 'neu'}
                                 onClick={() => setPeriod(p.id as typeof period)}
                                 className={cn(
-                                    'flex-1 py-2 rounded-neo text-sm font-medium transition-all',
+                                    'flex-1 py-2 text-sm font-medium transition-all',
                                     period === p.id
-                                        ? 'shadow-neo-pressed'
+                                        ? 'shadow-neo-pressed text-brand-primary'
                                         : 'shadow-neo-out text-neo-text-secondary'
                                 )}
-                                style={{ color: period === p.id ? GOLD : undefined }}
                             >
                                 {p.label}
-                            </button>
+                            </NeoButton>
                         ))}
                     </div>
                 </header>
@@ -358,15 +358,15 @@ export const FinancialDashboard: React.FC = () => {
                     />
 
                     {/* Revenue Chart */}
-                    <Card className="p-4 mb-6">
+                    <NeoCard className="p-4 mb-6">
                         <div className="flex items-center justify-between mb-2">
-                            <h3 className="font-semibold text-neo-text">Receita por Dia</h3>
+                            <Typography variant="h3" className="font-semibold text-lg text-neo-text">Receita por Dia</Typography>
                             <Badge variant="success">
                                 +{((totals.totalRevenue / 10000) * 100).toFixed(0)}%
                             </Badge>
                         </div>
                         <SimpleBarChart data={MONTHLY_DATA} />
-                    </Card>
+                    </NeoCard>
 
                     {/* Top Clients */}
                     <TopClientsSection clients={TOP_CLIENTS} />
@@ -375,32 +375,32 @@ export const FinancialDashboard: React.FC = () => {
                     <StaffPerformanceSection staff={STAFF_EARNINGS} />
 
                     {/* Profit Summary */}
-                    <Card className="p-4 mb-6">
-                        <h3 className="font-semibold text-neo-text mb-4 flex items-center gap-2">
+                    <NeoCard className="p-4 mb-6">
+                        <Typography variant="h3" className="font-semibold text-lg text-neo-text mb-4 flex items-center gap-2">
                             <DollarSign size={18} style={{ color: GOLD }} />
                             Resumo de Lucro
-                        </h3>
+                        </Typography>
 
                         <div className="space-y-3">
                             <div className="flex justify-between">
-                                <span className="text-neo-text-secondary">Receita Total</span>
-                                <span className="font-medium text-neo-text">{formatCurrency(totals.totalRevenue)}</span>
+                                <Typography variant="body" className="text-neo-text-secondary">Receita Total</Typography>
+                                <Typography variant="body" className="font-medium text-neo-text">{formatCurrency(totals.totalRevenue)}</Typography>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-neo-text-secondary">(-) Despesas</span>
-                                <span className="font-medium text-neo-danger">-{formatCurrency(totals.totalExpenses)}</span>
+                                <Typography variant="body" className="text-neo-text-secondary">(-) Despesas</Typography>
+                                <Typography variant="body" className="font-medium text-neo-danger">-{formatCurrency(totals.totalExpenses)}</Typography>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-neo-text-secondary">(-) Comissões Equipe</span>
-                                <span className="font-medium text-neo-warning">-{formatCurrency(totals.totalCommissions)}</span>
+                                <Typography variant="body" className="text-neo-text-secondary">(-) Comissões Equipe</Typography>
+                                <Typography variant="body" className="font-medium text-neo-warning">-{formatCurrency(totals.totalCommissions)}</Typography>
                             </div>
                             <div className="h-px bg-neo-text-secondary/20" />
                             <div className="flex justify-between">
-                                <span className="font-semibold text-neo-text">Lucro Líquido</span>
-                                <span className="font-bold text-lg text-green-600">{formatCurrency(totals.profit)}</span>
+                                <Typography variant="body" className="font-semibold text-neo-text">Lucro Líquido</Typography>
+                                <Typography variant="h5" className="font-bold text-green-600">{formatCurrency(totals.profit)}</Typography>
                             </div>
                         </div>
-                    </Card>
+                    </NeoCard>
                 </main>
             </div>
         </div>

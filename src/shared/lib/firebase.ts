@@ -52,7 +52,8 @@ try {
     auth = getAuth(app);
     db = getFirestore(app);
     storage = getStorage(app);
-    analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+    // analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+    analytics = null; // Temporarily disabled to debug Auth
     functions = getFunctions(app);
     console.log('[Firebase] Successfully initialized');
   } else {

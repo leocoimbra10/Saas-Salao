@@ -6,6 +6,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { Organization } from '../types/types';
 
 interface BrandColors {
     primary: string;
@@ -17,6 +18,7 @@ interface BrandColors {
 }
 
 interface BrandingContextType {
+    organization: Organization | null;
     colors: BrandColors;
     updateColors: (colors: Partial<BrandColors>) => Promise<void>;
     loading: boolean;
@@ -37,14 +39,15 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode; orgId?: str
     children,
     orgId = 'default'
 }) => {
+    const [organization, setOrganization] = useState<Organization | null>(null);
     const [colors, setColors] = useState<BrandColors>(DEFAULT_COLORS);
     const [loading, setLoading] = useState(true);
 
-    // Inject colors into CSS variables
-    const injectCSSVariables = (brandColors: BrandColors) => {
+    // Inject colors and other branding into CSS variables/body
+    const injectStyles = (brandColors: BrandColors, settings?: any) => {
         const root = document.documentElement;
 
-        // Brand colors
+        // 1. Inject Brand Colors
         root.style.setProperty('--color-brand-primary', brandColors.primary);
         root.style.setProperty('--color-brand-primary-light', brandColors.primaryLight);
         root.style.setProperty('--color-brand-primary-dark', brandColors.primaryDark);
@@ -52,7 +55,10 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode; orgId?: str
         root.style.setProperty('--color-brand-gold-light', brandColors.goldLight);
         root.style.setProperty('--color-brand-purple', brandColors.purple);
 
-        // Update gradients
+        // Ensure --neo-accent is synced with primary brand color (legacy support)
+        root.style.setProperty('--neo-accent', brandColors.primary);
+
+        // 2. Update Gradients
         const gradientBrand = `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.gold} 100%)`;
         const gradientReverse = `linear-gradient(135deg, ${brandColors.gold} 0%, ${brandColors.primary} 100%)`;
         const gradientVertical = `linear-gradient(180deg, ${brandColors.primary} 0%, ${brandColors.gold} 100%)`;
@@ -60,6 +66,31 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode; orgId?: str
         root.style.setProperty('--gradient-brand', gradientBrand);
         root.style.setProperty('--gradient-reverse', gradientReverse);
         root.style.setProperty('--gradient-vertical', gradientVertical);
+
+        // 3. Inject Legacy Settings (Background, etc.)
+        if (settings?.backgroundUrl) {
+            document.body.style.backgroundImage = `url('${settings.backgroundUrl}')`;
+            root.style.setProperty('--bg-image', `url('${settings.backgroundUrl}')`);
+        } else {
+            document.body.style.backgroundImage = 'none';
+        }
+    };
+
+    // Helper to extract brand colors from organization data
+    const getBrandColorsFromData = (data: any): BrandColors => {
+        if (data?.brandColors) {
+            return { ...DEFAULT_COLORS, ...data.brandColors };
+        }
+
+        // Fallback to legacy primaryColor if brandColors is missing
+        if (data?.settings?.primaryColor) {
+            return {
+                ...DEFAULT_COLORS,
+                primary: data.settings.primaryColor
+            };
+        }
+
+        return DEFAULT_COLORS;
     };
 
     // Fetch branding from Firestore
@@ -71,25 +102,20 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode; orgId?: str
 
                 if (orgDoc.exists()) {
                     const data = orgDoc.data();
-                    if (data?.brandColors) {
-                        const newColors = {
-                            ...DEFAULT_COLORS,
-                            ...data.brandColors
-                        };
-                        setColors(newColors);
-                        injectCSSVariables(newColors);
-                    } else {
-                        // No custom colors, use defaults
-                        injectCSSVariables(DEFAULT_COLORS);
-                    }
+                    const orgWithId = { id: orgDoc.id, ...data } as Organization;
+                    setOrganization(orgWithId);
+
+                    const newColors = getBrandColorsFromData(data);
+                    setColors(newColors);
+                    injectStyles(newColors, data.settings);
                 } else {
                     // Organization doesn't exist, use defaults
-                    injectCSSVariables(DEFAULT_COLORS);
+                    injectStyles(DEFAULT_COLORS);
                 }
             } catch (error) {
                 console.error('Error fetching branding:', error);
                 // On error, use defaults
-                injectCSSVariables(DEFAULT_COLORS);
+                injectStyles(DEFAULT_COLORS);
             } finally {
                 setLoading(false);
             }
@@ -103,14 +129,12 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode; orgId?: str
             (snapshot) => {
                 if (snapshot.exists()) {
                     const data = snapshot.data();
-                    if (data?.brandColors) {
-                        const newColors = {
-                            ...DEFAULT_COLORS,
-                            ...data.brandColors
-                        };
-                        setColors(newColors);
-                        injectCSSVariables(newColors);
-                    }
+                    const orgWithId = { id: snapshot.id, ...data } as Organization;
+                    setOrganization(orgWithId);
+
+                    const newColors = getBrandColorsFromData(data);
+                    setColors(newColors);
+                    injectStyles(newColors, data.settings);
                 }
             }
         );
@@ -121,7 +145,7 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode; orgId?: str
     const updateColors = async (newColors: Partial<BrandColors>) => {
         const updatedColors = { ...colors, ...newColors };
         setColors(updatedColors);
-        injectCSSVariables(updatedColors);
+        injectStyles(updatedColors);
 
         // TODO: Update Firestore (requires admin permissions)
         // await updateDoc(doc(db, 'organizations', orgId), {
@@ -130,7 +154,7 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode; orgId?: str
     };
 
     return (
-        <BrandingContext.Provider value={{ colors, updateColors, loading }}>
+        <BrandingContext.Provider value={{ organization, colors, updateColors, loading }}>
             {children}
         </BrandingContext.Provider>
     );

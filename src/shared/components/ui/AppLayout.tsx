@@ -6,6 +6,7 @@ import React from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../lib/utils';
+import { NeoButton } from './NeoComponents';
 
 // Tab configuration
 interface TabItem {
@@ -409,28 +410,30 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             {/* Navigation */}
             <nav className="flex-1 space-y-2">
               {ADMIN_TABS.map((item) => (
-                <button
+                <NeoButton
                   key={item.path}
                   onClick={() => handleNavigate(item.path)}
+                  variant={location.pathname === item.path ? 'neu' : 'ghost'}
                   className={cn(
-                    'w-full flex items-center gap-3 px-4 py-3 rounded-neo transition-all duration-200 bg-neo-bg',
+                    'w-full flex items-center justify-start gap-3 px-4 py-3 rounded-neo transition-all duration-200',
                     location.pathname === item.path
-                      ? 'shadow-neo-pressed text-neo-accent'
-                      : 'shadow-neo-out text-neo-text-secondary hover:text-neo-text'
+                      ? 'text-neo-accent'
+                      : 'text-neo-text-secondary hover:text-neo-text'
                   )}
                 >
                   <span className={cn(location.pathname === item.path && 'transform scale-110')}>
                     {item.icon}
                   </span>
                   <span className="font-medium">{item.label}</span>
-                </button>
+                </NeoButton>
               ))}
             </nav>
 
             {/* Logout */}
-            <button
+            <NeoButton
               onClick={() => navigate('/')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-neo shadow-neo-out text-neo-danger active:shadow-neo-pressed transition-all bg-neo-bg"
+              variant="neu"
+              className="w-full flex items-center justify-start gap-3 px-4 py-3 rounded-neo text-neo-danger active:shadow-neo-pressed transition-all"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -438,7 +441,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 <line x1="21" y1="12" x2="9" y2="12" />
               </svg>
               <span className="font-medium">Sair</span>
-            </button>
+            </NeoButton>
           </div>
         </aside>
 

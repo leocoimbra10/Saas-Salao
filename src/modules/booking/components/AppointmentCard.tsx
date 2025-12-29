@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { cn, formatCurrency, formatTime, getStatusColor } from '../../../shared/lib/utils';
 import { Appointment, Service } from '../../../shared/types/types';
-import { Badge, Avatar, Button, Divider } from '../../../shared/components/ui/NeoComponents';
+import { Badge, Avatar, NeoButton, Divider } from '../../../shared/components/ui/NeoComponents';
 import { ActionBottomSheet } from '../../../shared/components/ui/BottomSheet';
 
 interface AppointmentCardProps {
@@ -138,7 +138,7 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
       {(onWhatsApp || onEdit) && (
         <div className="flex gap-2 pt-2 border-t border-neo-text-secondary/10">
           {onWhatsApp && (
-            <Button
+            <NeoButton
               variant="ghost"
               size="sm"
               onClick={(e) => { e.stopPropagation(); onWhatsApp(); }}
@@ -146,10 +146,10 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
             >
               <MessageCircle size={16} />
               WhatsApp
-            </Button>
+            </NeoButton>
           )}
           {onEdit && (
-            <Button
+            <NeoButton
               variant="ghost"
               size="sm"
               onClick={(e) => { e.stopPropagation(); onEdit(); }}
@@ -157,7 +157,7 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
             >
               <Edit size={16} />
               Editar
-            </Button>
+            </NeoButton>
           )}
         </div>
       )}

@@ -7,7 +7,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Crown, User, Sparkles, Check } from 'lucide-react';
 import { cn } from '../../../shared/lib/utils';
-import { BeautyTimelineSlot } from '../../../bride/services/brideIntelligence';
+import { BeautyTimelineSlot } from '../services/brideIntelligence';
 
 // Brand Colors
 const ROSE = 'var(--color-brand-primary)';

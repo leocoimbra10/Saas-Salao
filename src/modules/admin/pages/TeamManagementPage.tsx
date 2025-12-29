@@ -7,7 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { UserProfile, UserPermissions } from '../../../shared/types/types';
-import { Skeleton } from '../../../shared/components/ui/NeoComponents';
+import { Skeleton, NeoButton, NeoCard, Toggle, Typography, NeoInput } from '../../../shared/components/ui/NeoComponents';
+import { BottomSheet } from '../../../shared/components/ui/BottomSheet';
 import { cn } from '../../../shared/lib/utils';
 import { addEmployee, getUserProfile, onAuthChange } from '../../auth/services/authService';
 
@@ -23,30 +24,7 @@ const PERMISSION_LABELS: { key: keyof UserPermissions; label: string; descriptio
 ];
 
 // Neomorphic Toggle Component
-const NeoToggle: React.FC<{
-    enabled: boolean;
-    onChange: (value: boolean) => void;
-    disabled?: boolean;
-}> = ({ enabled, onChange, disabled }) => {
-    return (
-        <button
-            type="button"
-            onClick={() => !disabled && onChange(!enabled)}
-            disabled={disabled}
-            className={`relative w-14 h-7 rounded-full transition-all duration-300 ${enabled
-                ? 'bg-gradient-to-r from-amber-400 to-amber-500 shadow-neo-out'
-                : 'bg-neo-bg shadow-neo-in'
-                } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-        >
-            <motion.div
-                animate={{ x: enabled ? 28 : 2 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                className={`absolute top-1 w-5 h-5 rounded-full shadow-md ${enabled ? 'bg-white' : 'bg-neo-bg shadow-neo-out'
-                    }`}
-            />
-        </button>
-    );
-};
+// Replaced by imported Toggle
 
 // Employee Card Component
 const EmployeeCard: React.FC<{
@@ -55,31 +33,27 @@ const EmployeeCard: React.FC<{
     isSelected: boolean;
 }> = ({ employee, onSelect, isSelected }) => {
     return (
-        <motion.button
-            whileTap={{ scale: 0.98 }}
+        <NeoCard
+            variant={isSelected ? 'inset' : 'raised'}
+            className={cn("w-full transition-all duration-300 cursor-pointer hover:shadow-neo-out-lg text-left", isSelected && "border-2 border-brand-primary")}
             onClick={onSelect}
-            className={`w-full p-4 rounded-neo transition-all duration-300 text-left ${isSelected
-                ? 'shadow-neo-in border-2 border-amber-400'
-                : 'shadow-neo-out hover:shadow-neo-out-lg'
-                }`}
         >
             <div className="flex items-center gap-3">
                 {/* Avatar */}
-                <div className="w-12 h-12 rounded-full bg-neo-bg shadow-neo-out flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-neo-bg shadow-neo-out flex items-center justify-center overflow-hidden">
                     {employee.photoURL ? (
-                        <img src={employee.photoURL} alt="" className="w-full h-full rounded-full object-cover" />
+                        <img src={employee.photoURL} alt="" className="w-full h-full object-cover" />
                     ) : (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-neo-accent">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                            <circle cx="12" cy="7" r="4" />
-                        </svg>
+                        <div className="w-full h-full bg-neo-bg flex items-center justify-center">
+                            <Typography variant="caption" className="text-xl">{employee.displayName?.charAt(0) || '?'}</Typography>
+                        </div>
                     )}
                 </div>
 
                 {/* Info */}
                 <div className="flex-1">
-                    <h3 className="font-semibold text-neo-text">{employee.displayName || 'Sem nome'}</h3>
-                    <p className="text-xs text-neo-text-secondary">{employee.specialty || 'Profissional'}</p>
+                    <Typography variant="h6" className="font-semibold text-neo-text">{employee.displayName || 'Sem nome'}</Typography>
+                    <Typography variant="caption" className="text-xs text-neo-text-secondary">{employee.specialty || 'Profissional'}</Typography>
                 </div>
 
                 {/* Role Badge */}
@@ -90,7 +64,7 @@ const EmployeeCard: React.FC<{
                     {employee.role === 'owner' ? 'Proprietário' : 'Funcionário'}
                 </span>
             </div>
-        </motion.button>
+        </NeoCard>
     );
 };
 
@@ -133,96 +107,64 @@ const PermissionEditor: React.FC<{
     const isOwner = employee.role === 'owner';
 
     return (
-        <AnimatePresence>
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/30 z-50 flex items-end justify-center"
-                onClick={onClose}
-            >
-                <motion.div
-                    initial={{ y: '100%' }}
-                    animate={{ y: 0 }}
-                    exit={{ y: '100%' }}
-                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-full max-w-lg bg-neo-bg rounded-t-3xl shadow-neo-out-lg p-6 pb-8 max-h-[85vh] overflow-y-auto"
-                >
-                    {/* Handle */}
-                    <div className="w-12 h-1 bg-neo-text-secondary/30 rounded-full mx-auto mb-6" />
-
-                    {/* Header */}
-                    <div className="flex items-center gap-4 mb-6">
-                        <button
-                            onClick={onClose}
-                            className="p-2 rounded-full bg-neo-bg shadow-neo-out active:shadow-neo-pressed transition-all"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M19 12H5M12 19l-7-7 7-7" />
-                            </svg>
-                        </button>
-                        <div>
-                            <h2 className="text-lg font-semibold text-neo-text">{employee.displayName}</h2>
-                            <p className="text-sm text-neo-text-secondary">Editar permissões</p>
-                        </div>
+        <BottomSheet
+            isOpen={true}
+            onClose={onClose}
+            title={employee.displayName || 'Editar Permissões'}
+        >
+            <div className="space-y-6">
+                {isOwner && (
+                    <div className="p-4 rounded-neo bg-amber-50 border border-amber-200">
+                        <Typography variant="caption" className="text-amber-700">
+                            <strong>Proprietário</strong> - Possui todas as permissões automaticamente.
+                        </Typography>
                     </div>
+                )}
 
-                    {isOwner && (
-                        <div className="mb-6 p-4 rounded-neo bg-amber-50 border border-amber-200">
-                            <p className="text-sm text-amber-700">
-                                <strong>Proprietário</strong> - Possui todas as permissões automaticamente.
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Commission Rate */}
-                    <div className="mb-6 p-4 rounded-neo shadow-neo-out">
-                        <label className="block text-sm font-medium text-neo-text mb-2">
-                            Taxa de Comissão
-                        </label>
-                        <div className="flex items-center gap-4">
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={commission}
-                                onChange={(e) => handleCommissionChange(Number(e.target.value))}
-                                disabled={isOwner}
-                                className="flex-1 h-2 bg-neo-bg rounded-full shadow-neo-in appearance-none cursor-pointer"
-                                style={{
-                                    background: `linear-gradient(to right, var(--color-brand-gold) ${commission}%, #e8e8ed ${commission}%)`
-                                }}
-                            />
-                            <span className="w-16 text-center font-semibold text-neo-accent">
-                                {commission}%
-                            </span>
-                        </div>
+                {/* Commission Rate */}
+                <NeoCard variant="inset" padding="sm" className="space-y-4">
+                    <Typography variant="label">Taxa de Comissão</Typography>
+                    <div className="flex items-center gap-4">
+                        <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={commission}
+                            onChange={(e) => handleCommissionChange(Number(e.target.value))}
+                            disabled={isOwner}
+                            className="flex-1 h-2 bg-neo-bg rounded-full shadow-neo-in appearance-none cursor-pointer"
+                            style={{
+                                background: `linear-gradient(to right, var(--color-brand-gold) ${commission}%, #e8e8ed ${commission}%)`
+                            }}
+                        />
+                        <span className="w-16 text-center font-semibold text-neo-accent">
+                            {commission}%
+                        </span>
                     </div>
+                </NeoCard>
 
-                    {/* Permissions List */}
-                    <div className="space-y-3">
-                        <h3 className="text-sm font-semibold text-neo-text-secondary uppercase tracking-wide">
-                            Acessos & Permissões
-                        </h3>
+                {/* Permissions List */}
+                <div className="space-y-3">
+                    <Typography variant="label" className="uppercase tracking-wide text-neo-text-secondary">
+                        Acessos & Permissões
+                    </Typography>
 
-                        {PERMISSION_LABELS.map((perm) => (
-                            <div key={perm.key} className="flex items-center justify-between p-4 rounded-neo shadow-neo-out">
-                                <div className="flex-1 mr-4">
-                                    <p className="font-medium text-neo-text">{perm.label}</p>
-                                    <p className="text-xs text-neo-text-secondary">{perm.description}</p>
-                                </div>
-                                <NeoToggle
-                                    enabled={isOwner || permissions[perm.key]}
-                                    onChange={(value) => handleToggle(perm.key, value)}
-                                    disabled={isOwner || saving}
-                                />
+                    {PERMISSION_LABELS.map((perm) => (
+                        <NeoCard key={perm.key} variant="raised" padding="sm" className="flex items-center justify-between">
+                            <div className="flex-1 mr-4">
+                                <Typography variant="h6" className="font-medium text-base">{perm.label}</Typography>
+                                <Typography variant="caption">{perm.description}</Typography>
                             </div>
-                        ))}
-                    </div>
-                </motion.div>
-            </motion.div>
-        </AnimatePresence>
+                            <Toggle
+                                checked={isOwner || !!permissions[perm.key]}
+                                onChange={(value) => handleToggle(perm.key, value)}
+                                disabled={isOwner || saving}
+                            />
+                        </NeoCard>
+                    ))}
+                </div>
+            </div>
+        </BottomSheet>
     );
 };
 
@@ -269,87 +211,86 @@ const AddEmployeeModal: React.FC<{
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
             onClick={onClose}
         >
             <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
+                initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-md bg-neo-bg rounded-neo-lg shadow-neo-out-lg p-6"
+                className="w-full max-w-md"
             >
-                <h2 className="text-xl font-semibold text-neo-text mb-6">Novo Profissional</h2>
+                <NeoCard className="relative overflow-hidden">
+                    <button
+                        onClick={onClose}
+                        className="absolute right-4 top-4 text-neo-text-secondary hover:text-neo-text transition-colors"
+                    >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                    </button>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-neo-text-secondary mb-2">Nome *</label>
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full neo-input"
-                            placeholder="Nome completo"
-                            required
-                        />
+                    <div className="mb-6">
+                        <Typography variant="h3" className="mb-1">Novo Profissional</Typography>
+                        <Typography variant="caption">Adicione um novo membro à equipe</Typography>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-neo-text-secondary mb-2">E-mail *</label>
-                        <input
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <NeoInput
+                            label="Nome Completo *"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Ex: Maria Silva"
+                            required
+                        />
+
+                        <NeoInput
+                            label="Email *"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full neo-input"
                             placeholder="email@exemplo.com"
                             required
                         />
-                    </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-neo-text-secondary mb-2">Senha *</label>
-                        <input
+                        <NeoInput
+                            label="Senha *"
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full neo-input"
                             placeholder="Mínimo 6 caracteres"
                             minLength={6}
                             required
                         />
-                    </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-neo-text-secondary mb-2">Especialidade</label>
-                        <input
-                            type="text"
+                        <NeoInput
+                            label="Especialidade"
                             value={specialty}
                             onChange={(e) => setSpecialty(e.target.value)}
-                            className="w-full neo-input"
                             placeholder="Ex: Maquiadora, Cabeleireiro"
                         />
-                    </div>
 
-                    {error && (
-                        <p className="text-sm text-red-500 text-center">{error}</p>
-                    )}
+                        {error && (
+                            <Typography variant="caption" className="text-neo-danger text-center">{error}</Typography>
+                        )}
 
-                    <div className="flex gap-3 pt-4">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 py-3 rounded-neo bg-neo-bg shadow-neo-out active:shadow-neo-pressed font-medium text-neo-text-secondary transition-all"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="flex-1 py-3 rounded-neo bg-gradient-to-r from-amber-400 to-amber-500 shadow-neo-out active:shadow-neo-pressed font-semibold text-white transition-all disabled:opacity-50"
-                        >
-                            {loading ? 'Adicionando...' : 'Adicionar'}
-                        </button>
-                    </div>
-                </form>
+                        <div className="flex gap-3 pt-4">
+                            <NeoButton variant="ghost" onClick={onClose} className="flex-1">
+                                Cancelar
+                            </NeoButton>
+                            <NeoButton
+                                type="submit"
+                                variant="gradient"
+                                loading={loading}
+                                className="flex-1"
+                            >
+                                Adicionar
+                            </NeoButton>
+                        </div>
+                    </form>
+                </NeoCard>
             </motion.div>
         </motion.div>
     );
@@ -407,30 +348,31 @@ export const TeamManagementPage: React.FC = () => {
         <div className="min-h-screen bg-neo-bg p-6 pb-24">
             {/* Header */}
             <header className="flex items-center gap-4 mb-8">
-                <button
+                <NeoButton
                     onClick={() => navigate('/admin')}
-                    className="p-3 rounded-full bg-neo-bg shadow-neo-out active:shadow-neo-pressed transition-all"
+                    className="w-12 h-12 rounded-full flex items-center justify-center p-0"
+                    variant="neu"
                 >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M19 12H5M12 19l-7-7 7-7" />
                     </svg>
-                </button>
+                </NeoButton>
                 <div>
-                    <h1 className="text-2xl font-display font-bold text-neo-text">Equipe</h1>
-                    <p className="text-sm text-neo-text-secondary">Profissionais & Comissões</p>
+                    <Typography variant="h2" className="font-display font-bold text-neo-text">Equipe</Typography>
+                    <Typography variant="caption" className="text-sm text-neo-text-secondary">Profissionais & Comissões</Typography>
                 </div>
             </header>
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="p-4 rounded-neo shadow-neo-out text-center">
-                    <p className="text-2xl font-bold text-neo-accent">{employees.length}</p>
-                    <p className="text-xs text-neo-text-secondary">Profissionais</p>
-                </div>
-                <div className="p-4 rounded-neo shadow-neo-out text-center">
-                    <p className="text-2xl font-bold text-neo-success">{employees.filter(e => e.role === 'owner').length}</p>
-                    <p className="text-xs text-neo-text-secondary">Proprietários</p>
-                </div>
+                <NeoCard className="p-4 text-center">
+                    <Typography variant="h4" className="text-2xl font-bold text-neo-accent">{employees.length}</Typography>
+                    <Typography variant="caption" className="text-xs text-neo-text-secondary">Profissionais</Typography>
+                </NeoCard>
+                <NeoCard className="p-4 text-center">
+                    <Typography variant="h4" className="text-2xl font-bold text-neo-success">{employees.filter(e => e.role === 'owner').length}</Typography>
+                    <Typography variant="caption" className="text-xs text-neo-text-secondary">Proprietários</Typography>
+                </NeoCard>
             </div>
 
             {/* Employee List */}
@@ -464,22 +406,18 @@ export const TeamManagementPage: React.FC = () => {
 
             {/* Add Button (only for owners) */}
             {isOwner && (
-                <button
+                <NeoButton
+                    variant="glow"
                     onClick={() => setShowAddModal(true)}
                     className={cn(
                         "fixed bottom-24 right-6 z-40",
-                        "w-14 h-14 rounded-full",
-                        "bg-gradient-to-br from-brand-primary to-brand-gold",
-                        "text-white shadow-[0_8px_32px_rgba(232,160,184,0.5)]",
-                        "flex items-center justify-center",
-                        "hover:scale-110 hover:shadow-[0_12px_40px_rgba(232,160,184,0.6)] active:scale-95",
-                        "transition-all duration-300",
+                        "w-14 h-14 rounded-full p-0 flex items-center justify-center",
                         "border-2 border-white/30 backdrop-blur-md"
                     )}
                     title="Adicionar Membro"
                 >
                     <Plus size={26} strokeWidth={2.5} />
-                </button>
+                </NeoButton>
             )}
 
             {/* Permission Editor */}

@@ -9,7 +9,7 @@ import {
     Heart,
     Stars
 } from 'lucide-react';
-import { Card, Button, Input } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, NeoButton, NeoInput, NeoTextarea } from '../../../shared/components/ui/NeoComponents';
 import { cn } from '../../../shared/lib/utils';
 import { ptBR } from 'date-fns/locale';
 import { format } from 'date-fns';
@@ -83,14 +83,14 @@ export const BrideOnboarding: React.FC<BrideOnboardingProps> = ({
                                         Data & Hora
                                     </h3>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <Input
+                                        <NeoInput
                                             label="Data do Casamento"
                                             type="date"
                                             value={formData.weddingDate}
                                             onChange={(e) => setFormData({ ...formData, weddingDate: e.target.value })}
                                             className="bg-white"
                                         />
-                                        <Input
+                                        <NeoInput
                                             label="Hora da Cerimônia"
                                             type="time"
                                             value={formData.ceremonyTime}
@@ -111,7 +111,7 @@ export const BrideOnboarding: React.FC<BrideOnboardingProps> = ({
                                         <MapPin size={18} className="text-pink-500" />
                                         Onde será o sonho?
                                     </h3>
-                                    <Input
+                                    <NeoInput
                                         label="Local da Cerimônia/Festa"
                                         placeholder="Nome do buffet ou igreja"
                                         value={formData.location}
@@ -119,12 +119,12 @@ export const BrideOnboarding: React.FC<BrideOnboardingProps> = ({
                                         className="bg-white"
                                     />
                                     <div className="mt-4">
-                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 block ml-1">Observações Especiais</label>
-                                        <textarea
-                                            className="w-full h-32 p-4 rounded-2xl bg-white border border-pink-100 focus:ring-2 focus:ring-pink-200 outline-none transition-all resize-none text-gray-700"
+                                        <NeoTextarea
+                                            className="bg-white text-gray-700 h-32"
                                             placeholder="Conte-nos algum detalhe importante..."
                                             value={formData.notes}
                                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                            label="Observações Especiais"
                                         />
                                     </div>
                                 </div>
@@ -133,22 +133,22 @@ export const BrideOnboarding: React.FC<BrideOnboardingProps> = ({
 
                         <div className="mt-10 flex gap-4">
                             {step > 1 && (
-                                <Button
+                                <NeoButton
                                     variant="ghost"
                                     className="flex-1 py-4 rounded-full border border-pink-100 text-pink-400"
                                     onClick={() => setStep(1)}
                                 >
                                     Voltar
-                                </Button>
+                                </NeoButton>
                             )}
-                            <Button
-                                variant="primary"
+                            <NeoButton
+                                variant="gradient"
                                 className="flex-[2] py-4 rounded-full bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-lg shadow-pink-200"
                                 onClick={handleNext}
                             >
                                 {step === 1 ? 'Continuar' : 'Finalizar Mágica'}
                                 <ChevronRight className="ml-2" size={20} />
-                            </Button>
+                            </NeoButton>
                         </div>
 
                         <div className="flex items-center justify-center gap-2 mt-8 text-pink-300">

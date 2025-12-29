@@ -25,7 +25,7 @@ import {
     Save
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
-import { Card, Badge, Toggle } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, Badge, Toggle } from '../../../shared/components/ui/NeoComponents';
 
 // Brand Colors
 const ROSE = 'var(--color-brand-primary)';

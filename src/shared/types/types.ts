@@ -19,6 +19,7 @@ export interface Service {
   description?: string;
   tags?: string[]; // For additional categorization (e.g., 'noiva', 'festa', etc.)
   orgId: string;
+  active: boolean;
   createdAt?: Date;
 }
 
@@ -121,6 +122,7 @@ export interface UserProfile {
   permissions: UserPermissions;
   commissionRate?: number; // Percentage (0-100)
   specialty?: string; // e.g., "Maquiagem", "Cabelo"
+  stats?: StatsData | { totalAppointments: number; totalSpent: number; lastVisit?: any };
   createdAt: Date;
   lastLogin: Date;
 }
@@ -135,6 +137,14 @@ export interface Organization {
     logo?: string;
     backgroundUrl?: string; // Global background image
     primaryColor?: string;
+    brandColors?: {
+      primary: string;
+      primaryLight: string;
+      primaryDark: string;
+      gold: string;
+      goldLight: string;
+      purple: string;
+    };
     phone?: string;
     address?: string;
     businessHours?: {
@@ -163,6 +173,7 @@ export const SERVICES_DATA: Service[] = [
     category: 'makeup',
     description: 'Maquiagem completa com produtos profissionais',
     active: true,
+    orgId: 'default'
   },
   {
     id: 'makeup-combo',
@@ -172,6 +183,7 @@ export const SERVICES_DATA: Service[] = [
     category: 'makeup',
     description: 'Maquiagem + Designer de sobrancelhas',
     active: true,
+    orgId: 'default'
   },
   // Hairstyle Services
   {
@@ -182,6 +194,7 @@ export const SERVICES_DATA: Service[] = [
     category: 'hairstyle',
     description: 'Ondas naturais com finalização',
     active: true,
+    orgId: 'default'
   },
   {
     id: 'hair-semi-updo',
@@ -191,6 +204,7 @@ export const SERVICES_DATA: Service[] = [
     category: 'hairstyle',
     description: 'Cabelo preso parcialmente',
     active: true,
+    orgId: 'default'
   },
   {
     id: 'hair-ponytail',
@@ -200,6 +214,7 @@ export const SERVICES_DATA: Service[] = [
     category: 'hairstyle',
     description: 'Cobertura com rabo de cavalo',
     active: true,
+    orgId: 'default'
   },
   {
     id: 'hair-bun',
@@ -209,6 +224,7 @@ export const SERVICES_DATA: Service[] = [
     category: 'hairstyle',
     description: 'Coque moderno com acessórios',
     active: true,
+    orgId: 'default'
   },
 ];
 

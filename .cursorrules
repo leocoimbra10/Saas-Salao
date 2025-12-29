@@ -1,0 +1,28 @@
+# RULES FOR AI AGENT (ANTIGRAVITY)
+
+## 1. UI SINGLE SOURCE OF TRUTH
+- **MANDATORY**: You must usage `src/shared/components/ui/NeoComponents.tsx` for ALL UI elements.
+- **PROHIBITED**: Do NOT use raw HTML tags like `<button>`, `<input>`, `<select>`, `<textarea>`, `<h1>`, `<p>`, `<span>` for UI components.
+- **PROHIBITED**: Do NOT create new CSS classes or stylesheets unless absolutely necessary and approved. Use Tailwind utility classes via `className` prop on NeoComponents.
+- **MAPPING**:
+  - `<button>` -> `<NeoButton>`
+  - `<input>` -> `<NeoInput>`
+  - `<select>` -> `<NeoSelect>`
+  - `<textarea>` -> `<NeoTextarea>`
+  - `<div>` (card-like) -> `<NeoCard>`
+  - Text tags -> `<Typography>`
+  - Loading -> `<Spinner>`
+
+## 2. COMPONENT USAGE GUIDELINES
+- Always import `NeoComponents` from `src/shared/components/ui/NeoComponents`.
+- Use `Typography` variants (`h1`...`h6`, `body`, `caption`, `label`) instead of heading tags.
+- Use `NeoButton` variants (`primary`, `secondary`, `ghost`, `link`, `icon`, `glass`, `gradient`, `glow`) appropriate for the context.
+- Use `NeoInput` and `NeoSelect` for all forms.
+
+## 3. TEXT & CONTENT
+- Prefer using constants from `src/shared/lib/constants.ts` for user-facing text strings (titles, labels, messages).
+- Ensure all text is in Portuguese (pt-BR).
+
+## 4. ERROR HANDLING
+- Ensure `ConfigGuard` wraps the application to catch environment/connection errors.
+- Fail gracefully with user-friendly messages.

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BEAUTY SALON NEOMORPHIC APP - Services Management Page
  */
 import React, { useState } from 'react';
@@ -19,7 +19,7 @@ import {
 import { cn, formatCurrency } from '../../../shared/lib/utils';
 import { Service } from '../../../shared/types/types';
 import { SERVICES_DATA } from '../../../shared/types/types';
-import { Card, Button, Badge, Input, Toggle, Skeleton } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, NeoButton, Badge, NeoInput, Toggle, Skeleton, NeoTextarea, Typography } from '../../../shared/components/ui/NeoComponents';
 import { ActionBottomSheet } from '../../../shared/components/ui/BottomSheet';
 
 // Service Editor Modal
@@ -65,7 +65,7 @@ const ServiceEditor: React.FC<{
       <div className="space-y-4">
         {/* Category Toggle */}
         <div className="flex gap-2">
-          <button
+          <NeoButton
             onClick={() => setFormData(prev => ({ ...prev, category: 'makeup' }))}
             className={cn(
               'flex-1 py-3 rounded-neo flex items-center justify-center gap-2 transition-all',
@@ -76,8 +76,8 @@ const ServiceEditor: React.FC<{
           >
             <Sparkles size={18} />
             Maquiagem
-          </button>
-          <button
+          </NeoButton>
+          <NeoButton
             onClick={() => setFormData(prev => ({ ...prev, category: 'hairstyle' }))}
             className={cn(
               'flex-1 py-3 rounded-neo flex items-center justify-center gap-2 transition-all',
@@ -88,10 +88,10 @@ const ServiceEditor: React.FC<{
           >
             <Heart size={18} />
             Cabelo
-          </button>
+          </NeoButton>
         </div>
 
-        <Input
+        <NeoInput
           label="Nome do Serviço"
           placeholder="Ex: Maquiagem Completa"
           value={formData.name}
@@ -99,7 +99,7 @@ const ServiceEditor: React.FC<{
         />
 
         <div className="grid grid-cols-2 gap-4">
-          <Input
+          <NeoInput
             label="Preço (R$)"
             type="number"
             placeholder="0,00"
@@ -107,7 +107,7 @@ const ServiceEditor: React.FC<{
             onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
             icon={<DollarSign size={18} />}
           />
-          <Input
+          <NeoInput
             label="Duração (min)"
             type="number"
             placeholder="60"
@@ -118,11 +118,9 @@ const ServiceEditor: React.FC<{
         </div>
 
         <div className="w-full">
-          <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-            Descrição
-          </label>
-          <textarea
-            className="w-full bg-neo-bg rounded-neo shadow-neo-in px-4 py-3 text-neo-text placeholder:text-neo-text-secondary outline-none focus:ring-2 focus:ring-neo-accent/20 transition-all resize-none h-20"
+          <NeoTextarea
+            label="Descrição"
+            className="h-24"
             placeholder="Descreva o serviço..."
             value={formData.description}
             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
@@ -164,7 +162,7 @@ const ServiceEditor: React.FC<{
                 { id: 'fri', label: 'Sex' },
                 { id: 'sat', label: 'Sáb' },
               ].map(day => (
-                <button
+                <NeoButton
                   key={day.id}
                   onClick={() => {
                     const days = formData.discountDays || [];
@@ -183,7 +181,7 @@ const ServiceEditor: React.FC<{
                   )}
                 >
                   {day.label}
-                </button>
+                </NeoButton>
               ))}
             </div>
           )}
@@ -196,13 +194,13 @@ const ServiceEditor: React.FC<{
         </div>
 
         <div className="flex gap-4 pt-4">
-          <Button variant="ghost" onClick={onClose} className="flex-1">
+          <NeoButton variant="ghost" onClick={onClose} className="flex-1">
             Cancelar
-          </Button>
-          <Button variant="primary" onClick={handleSave} className="flex-1">
+          </NeoButton>
+          <NeoButton variant="gradient" onClick={handleSave} className="flex-1">
             <Save size={18} />
             Salvar
-          </Button>
+          </NeoButton>
         </div>
       </div>
     </ActionBottomSheet>
@@ -238,10 +236,10 @@ const ServiceListItem: React.FC<{
           </div>
 
           <div>
-            <h4 className="font-semibold text-neo-text">{service.name}</h4>
-            <p className="text-xs text-neo-text-secondary mt-1 line-clamp-1">
+            <Typography variant="h4" className="font-semibold text-neo-text">{service.name}</Typography>
+            <Typography variant="caption" className="text-xs text-neo-text-secondary mt-1 line-clamp-1">
               {service.description || 'Sem descrição'}
-            </p>
+            </Typography>
             <div className="flex items-center gap-3 mt-2">
               <span className="text-xs text-neo-text-secondary flex items-center gap-1">
                 <Clock size={12} />
@@ -259,18 +257,18 @@ const ServiceListItem: React.FC<{
             {formatCurrency(service.price)}
           </span>
           <div className="flex items-center gap-2">
-            <button
+            <NeoButton
               onClick={onEdit}
               className="w-8 h-8 bg-neo-bg rounded-full shadow-neo-out flex items-center justify-center text-neo-text-secondary active:shadow-neo-pressed transition-all"
             >
               <Edit size={14} />
-            </button>
-            <button
+            </NeoButton>
+            <NeoButton
               onClick={onDelete}
               className="w-8 h-8 bg-neo-bg rounded-full shadow-neo-out flex items-center justify-center text-neo-danger active:shadow-neo-pressed transition-all"
             >
               <Trash2 size={14} />
-            </button>
+            </NeoButton>
           </div>
         </div>
       </div>
@@ -280,7 +278,7 @@ const ServiceListItem: React.FC<{
         <span className="text-xs text-neo-text-secondary">
           {service.active ? 'Disponível para agendamento' : 'Indisponível'}
         </span>
-        <button
+        <NeoButton
           onClick={onToggle}
           className={cn(
             'flex items-center gap-1 text-sm font-medium transition-colors',
@@ -298,13 +296,13 @@ const ServiceListItem: React.FC<{
               Inativo
             </>
           )}
-        </button>
+        </NeoButton>
       </div>
     </motion.div>
   );
 };
 
-// Statistics Card
+// Statistics NeoCard
 const ServiceStats: React.FC<{ services: Service[] }> = ({ services }) => {
   const makeupServices = services.filter(s => s.category === 'makeup' && s.active);
   const hairstyleServices = services.filter(s => s.category === 'hairstyle' && s.active);
@@ -313,44 +311,44 @@ const ServiceStats: React.FC<{ services: Service[] }> = ({ services }) => {
 
   return (
     <div className="grid grid-cols-2 gap-4 mb-6">
-      <Card className="p-4">
+      <NeoCard className="p-4">
         <div className="flex items-center gap-2 mb-2">
           <Sparkles size={18} className="text-neo-accent" />
           <span className="text-xs text-neo-text-secondary">Maquiagem</span>
         </div>
-        <p className="text-xl font-bold text-neo-text">{makeupServices.length}</p>
-        <p className="text-xs text-neo-text-secondary">serviços ativos</p>
-      </Card>
+        <Typography variant="h4" className="text-xl font-bold text-neo-text">{makeupServices.length}</Typography>
+        <Typography variant="caption" className="text-xs text-neo-text-secondary">serviços ativos</Typography>
+      </NeoCard>
 
-      <Card className="p-4">
+      <NeoCard className="p-4">
         <div className="flex items-center gap-2 mb-2">
           <Heart size={18} className="text-neo-info" />
           <span className="text-xs text-neo-text-secondary">Cabelos</span>
         </div>
-        <p className="text-xl font-bold text-neo-text">{hairstyleServices.length}</p>
-        <p className="text-xs text-neo-text-secondary">serviços ativos</p>
-      </Card>
+        <Typography variant="h4" className="text-xl font-bold text-neo-text">{hairstyleServices.length}</Typography>
+        <Typography variant="caption" className="text-xs text-neo-text-secondary">serviços ativos</Typography>
+      </NeoCard>
 
-      <Card className="p-4">
+      <NeoCard className="p-4">
         <div className="flex items-center gap-2 mb-2">
           <DollarSign size={18} className="text-neo-success" />
           <span className="text-xs text-neo-text-secondary">Preço Médio</span>
         </div>
-        <p className="text-xl font-bold text-neo-text">{formatCurrency(avgPrice)}</p>
-      </Card>
+        <Typography variant="h4" className="text-xl font-bold text-neo-text">{formatCurrency(avgPrice)}</Typography>
+      </NeoCard>
 
-      <Card className="p-4">
+      <NeoCard className="p-4">
         <div className="flex items-center gap-2 mb-2">
           <Clock size={18} className="text-neo-warning" />
           <span className="text-xs text-neo-text-secondary">Duração Média</span>
         </div>
-        <p className="text-xl font-bold text-neo-text">{Math.round(avgDuration)} min</p>
-      </Card>
+        <Typography variant="h4" className="text-xl font-bold text-neo-text">{Math.round(avgDuration)} min</Typography>
+      </NeoCard>
     </div>
   );
 };
 
-import { useBranding } from '../../organization/context/BrandingContext';
+import { useBranding } from '../../../shared/context/BrandingContext';
 import { useServices, useServiceMutations } from '../hooks/useServices';
 
 // Main Services Management Page
@@ -393,10 +391,10 @@ export const ServicesManagement: React.FC = () => {
       <header className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-display mb-2">Serviços</h1>
-            <p className="text-caption">Gerencie seus serviços</p>
+            <Typography variant="h2" className="mb-2">Serviços</Typography>
+            <Typography variant="caption">Gerencie seus serviços</Typography>
           </div>
-          <button
+          <NeoButton
             onClick={() => {
               setEditingService(undefined);
               setShowEditor(true);
@@ -413,7 +411,7 @@ export const ServicesManagement: React.FC = () => {
             title="Adicionar Serviço"
           >
             <Plus size={26} strokeWidth={2.5} />
-          </button>
+          </NeoButton>
         </div>
 
         <ServiceStats services={services} />
@@ -452,13 +450,13 @@ export const ServicesManagement: React.FC = () => {
               <Sparkles size={32} className="text-neo-text-secondary" />
             </div>
             <p className="text-neo-text-secondary">Nenhum serviço cadastrado</p>
-            <Button
-              variant="primary"
+            <NeoButton
+              variant="gradient"
               className="mt-4"
               onClick={() => setShowEditor(true)}
             >
               Adicionar Primeiro Serviço
-            </Button>
+            </NeoButton>
           </div>
         )}
       </main>
@@ -487,13 +485,13 @@ export const ServicesManagement: React.FC = () => {
             Esta ação não pode ser desfeita.
           </p>
           <div className="flex gap-4">
-            <Button variant="ghost" onClick={() => setShowDeleteConfirm(undefined)} className="flex-1">
+            <NeoButton variant="ghost" onClick={() => setShowDeleteConfirm(undefined)} className="flex-1">
               Cancelar
-            </Button>
-            <Button variant="danger" onClick={handleDelete} className="flex-1">
+            </NeoButton>
+            <NeoButton variant="neu" onClick={handleDelete} className="flex-1 text-neo-danger">
               <Trash2 size={18} />
               Excluir
-            </Button>
+            </NeoButton>
           </div>
         </div>
       </ActionBottomSheet>
@@ -502,3 +500,4 @@ export const ServicesManagement: React.FC = () => {
 };
 
 export default ServicesManagement;
+

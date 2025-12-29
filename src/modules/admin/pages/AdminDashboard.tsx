@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BEAUTY SALON NEOMORPHIC APP - Admin Dashboard Page
  */
 import React, { useState, useMemo } from 'react';
@@ -29,7 +29,16 @@ import {
 import { cn, formatCurrency, getStatusColor } from '../../../shared/lib/utils';
 import { Service, Appointment, Staff, STATS_INITIAL } from '../../../shared/types/types';
 import { SERVICES_DATA } from '../../../shared/types/types';
-import { Card, Button, Badge, Avatar, Toggle, Progress, Input, Skeleton } from '../../../shared/components/ui/NeoComponents';
+import {
+  NeoCard as NeoCard,
+  NeoButton as NeoButton,
+  Badge,
+  Avatar,
+  Progress,
+  NeoInput as NeoInput,
+  Skeleton,
+  Typography
+} from '../../../shared/components/ui/NeoComponents';
 import { Calendar, DaySchedule } from '../../booking/components/Calendar';
 import { StaffScheduler } from '../components/StaffScheduler';
 import { AgendaView } from '../components/AgendaView';
@@ -60,47 +69,47 @@ const StatsPanel: React.FC = () => {
 
   return (
     <div className="grid grid-cols-2 gap-4 mb-6">
-      <Card className="p-4">
+      <NeoCard className="p-4">
         <div className="flex items-center gap-2 mb-2">
           <DollarSign size={18} className="text-neo-accent" />
-          <span className="text-xs text-neo-text-secondary">Receita Mensal</span>
+          <Typography variant="caption" className="text-xs">Receita Mensal</Typography>
         </div>
-        <p className="text-xl font-bold text-neo-text">
+        <Typography variant="h4" className="text-xl font-bold">
           {formatCurrency(stats.monthlyRevenue)}
-        </p>
-        <p className="text-xs text-neo-success mt-1">+12% vs último mês</p>
-      </Card>
+        </Typography>
+        <Typography variant="caption" className="text-xs text-neo-success mt-1">+12% vs último mês</Typography>
+      </NeoCard>
 
-      <Card className="p-4">
+      <NeoCard className="p-4">
         <div className="flex items-center gap-2 mb-2">
           <CalendarIcon size={18} className="text-neo-info" />
-          <span className="text-xs text-neo-text-secondary">Agendamentos</span>
+          <Typography variant="caption" className="text-xs">Agendamentos</Typography>
         </div>
-        <p className="text-xl font-bold text-neo-text">
+        <Typography variant="h4" className="text-xl font-bold">
           {stats.monthlyAppointments}
-        </p>
-        <p className="text-xs text-neo-text-secondary mt-1">este mês</p>
-      </Card>
+        </Typography>
+        <Typography variant="caption" className="text-xs mt-1">este mês</Typography>
+      </NeoCard>
 
-      <Card className="p-4">
+      <NeoCard className="p-4">
         <div className="flex items-center gap-2 mb-2">
           <TrendingUp size={18} className="text-neo-success" />
-          <span className="text-xs text-neo-text-secondary">Retenção</span>
+          <Typography variant="caption" className="text-xs">Retenção</Typography>
         </div>
-        <p className="text-xl font-bold text-neo-text">
+        <Typography variant="h4" className="text-xl font-bold">
           {stats.clientRetention}%
-        </p>
+        </Typography>
         <Progress value={stats.clientRetention} className="mt-2" />
-      </Card>
+      </NeoCard>
 
-      <Card className="p-4">
+      <NeoCard className="p-4">
         <div className="flex items-center gap-2 mb-2">
           <Users size={18} className="text-neo-warning" />
-          <span className="text-xs text-neo-text-secondary">Novos Clientes</span>
+          <Typography variant="caption" className="text-xs">Novos Clientes</Typography>
         </div>
-        <p className="text-xl font-bold text-neo-text">8</p>
-        <p className="text-xs text-neo-success mt-1">este mês</p>
-      </Card>
+        <Typography variant="h4" className="text-xl font-bold">8</Typography>
+        <Typography variant="caption" className="text-xs text-neo-success mt-1">este mês</Typography>
+      </NeoCard>
     </div>
   );
 };
@@ -132,13 +141,16 @@ const ProStatsPanel: React.FC = () => {
 
   return (
     <div className="mb-6">
-      <button
+      <NeoButton
+        variant="neu"
+        fullWidth
         onClick={() => setIsVisible(!isVisible)}
-        className="w-full p-3 rounded-neo shadow-neo-out flex items-center justify-between mb-4"
+        className="justify-between mb-4"
+        icon={isVisible ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        iconPosition="right"
       >
-        <span className="font-medium text-neo-text">Pro Stats</span>
-        {isVisible ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-      </button>
+        <Typography variant="h6">Pro Stats</Typography>
+      </NeoButton>
 
       <AnimatePresence>
         {isVisible && (
@@ -148,48 +160,48 @@ const ProStatsPanel: React.FC = () => {
             exit={{ opacity: 0, height: 0 }}
             className="space-y-4"
           >
-            <Card className="p-4 bg-gradient-to-br from-neo-accent/5 to-neo-accent/10">
-              <h4 className="font-semibold text-neo-text mb-4">Projeções do Mês</h4>
+            <NeoCard className="p-4 bg-gradient-to-br from-neo-accent/5 to-neo-accent/10">
+              <Typography variant="h4" className="mb-4">Projeções do Mês</Typography>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-neo-text-secondary">Receita Projetada</p>
-                  <p className="text-lg font-bold text-neo-accent">
+                  <Typography variant="caption">Receita Projetada</Typography>
+                  <Typography variant="h4" className="text-lg font-bold text-neo-accent">
                     {formatCurrency(projections.projectedRevenue)}
-                  </p>
+                  </Typography>
                 </div>
                 <div>
-                  <p className="text-xs text-neo-text-secondary">Agendamentos</p>
-                  <p className="text-lg font-bold text-neo-text">
+                  <Typography variant="caption">Agendamentos</Typography>
+                  <Typography variant="h4" className="text-lg font-bold">
                     {projections.projectedAppointments}
-                  </p>
+                  </Typography>
                 </div>
                 <div>
-                  <p className="text-xs text-neo-text-secondary">Ticket Médio</p>
-                  <p className="text-lg font-bold text-neo-text">
+                  <Typography variant="caption">Ticket Médio</Typography>
+                  <Typography variant="h4" className="text-lg font-bold">
                     {formatCurrency(projections.averageTicket)}
-                  </p>
+                  </Typography>
                 </div>
                 <div>
-                  <p className="text-xs text-neo-text-secondary">Taxa de Conversão</p>
-                  <p className="text-lg font-bold text-neo-success">
+                  <Typography variant="caption">Taxa de Conversão</Typography>
+                  <Typography variant="h4" className="text-lg font-bold text-neo-success">
                     {(projections.conversionRate * 100).toFixed(0)}%
-                  </p>
+                  </Typography>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {stats.map((stat) => (
-                  <Card key={stat.title} className="p-6">
+                  <NeoCard key={stat.title} className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="p-3 bg-neo-bg rounded-neo shadow-neo-in">
                         <stat.icon size={24} className="text-neo-accent" />
                       </div>
-                      <span className="text-xs font-medium text-neo-success">{stat.trend}</span>
+                      <Typography variant="label" className="text-neo-success">{stat.trend}</Typography>
                     </div>
-                    <h3 className="text-sm font-medium text-neo-text-secondary mb-1">{stat.title}</h3>
-                    <p className="text-2xl font-bold text-neo-text">{stat.value}</p>
-                  </Card>
+                    <Typography variant="caption" className="mb-1">{stat.title}</Typography>
+                    <Typography variant="h4" className="text-2xl font-bold">{stat.value}</Typography>
+                  </NeoCard>
                 ))}
               </div>
 
@@ -197,60 +209,60 @@ const ProStatsPanel: React.FC = () => {
               <section className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <Sparkles size={20} className="text-neo-accent" />
-                  <h2 className="text-xl font-display font-bold text-neo-text">Insights - Marcela AI</h2>
+                  <Typography variant="h3">Insights - Marcela AI</Typography>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {getChurnAlerts().map((alert, idx) => (
-                    <Card key={idx} className="p-5 border-l-4 border-neo-warning relative overflow-hidden">
+                    <NeoCard key={idx} className="p-5 border-l-4 border-neo-warning relative overflow-hidden">
                       <div className="flex justify-between items-start">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <AlertTriangle size={16} className="text-neo-warning" />
-                            <span className="text-xs font-bold text-neo-warning tracking-widest uppercase">Risco de Churn: {alert.risk}</span>
+                            <Typography variant="label" className="text-neo-warning tracking-widest uppercase">Risco de Churn: {alert.risk}</Typography>
                           </div>
-                          <h4 className="font-bold text-lg text-neo-text">{alert.clientName}</h4>
-                          <p className="text-sm text-neo-text-secondary">Última visita há {alert.lastVisit}</p>
+                          <Typography variant="h4" className="text-lg">{alert.clientName}</Typography>
+                          <Typography variant="caption">Última visita há {alert.lastVisit}</Typography>
                         </div>
-                        <Button size="sm" variant="secondary" className="shadow-neo-out text-xs gap-2">
+                        <NeoButton size="sm" variant="outline" className="shadow-neo-out text-xs gap-2">
                           Falar com Cliente <ArrowRight size={14} />
-                        </Button>
+                        </NeoButton>
                       </div>
                       <div className="mt-4 p-3 bg-neo-warning/5 rounded-neo border border-neo-warning/10">
-                        <p className="text-xs font-medium text-neo-warning/80 italic">Ação sugerida: {alert.action}</p>
+                        <Typography variant="caption" className="text-neo-warning/80 italic">Ação sugerida: {alert.action}</Typography>
                       </div>
-                    </Card>
+                    </NeoCard>
                   ))}
                 </div>
               </section>
 
               <div className="mt-4 pt-4 border-t border-neo-text-secondary/10">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-neo-text-secondary">Meta Mensal</span>
-                  <span className="font-semibold text-neo-text">
+                  <Typography variant="caption" className="text-neo-text-secondary">Meta Mensal</Typography>
+                  <Typography variant="body" className="font-semibold text-neo-text">
                     {Math.round((projections.projectedRevenue / 20000) * 100)}%
-                  </span>
+                  </Typography>
                 </div>
                 <Progress
                   value={(projections.projectedRevenue / 20000) * 100}
                   className="mt-2"
                 />
               </div>
-            </Card>
+            </NeoCard>
 
-            <Card className="p-4">
-              <h4 className="font-semibold text-neo-text mb-3">Serviços Mais Populares</h4>
+            <NeoCard className="p-4">
+              <Typography variant="h4" className="mb-3">Serviços Mais Populares</Typography>
               <div className="space-y-3">
                 {projections.topServices?.map((service, idx) => (
                   <div key={idx} className="flex items-center gap-3">
-                    <span className="w-6 h-6 bg-neo-bg rounded-full shadow-neo-out flex items-center justify-center text-xs font-bold text-neo-accent">
+                    <Typography variant="caption" className="w-6 h-6 bg-neo-bg rounded-full shadow-neo-out flex items-center justify-center font-bold text-neo-accent">
                       {idx + 1}
-                    </span>
-                    <span className="flex-1 text-neo-text">{service.name}</span>
-                    <span className="text-neo-text-secondary">{service.count}</span>
+                    </Typography>
+                    <Typography variant="body" className="flex-1">{service.name}</Typography>
+                    <Typography variant="caption">{service.count}</Typography>
                   </div>
                 ))}
               </div>
-            </Card>
+            </NeoCard>
           </motion.div>
         )}
       </AnimatePresence>
@@ -258,7 +270,7 @@ const ProStatsPanel: React.FC = () => {
   );
 };
 
-import { useBranding } from '../../organization/context/BrandingContext';
+import { useBranding } from '../../../shared/context/BrandingContext';
 // ... props
 
 import { useAppointments, useAppointmentMutations } from '../../booking/hooks/useAppointments';
@@ -426,19 +438,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
       <header className="p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-display font-bold text-neo-text">
+            <Typography variant="h2">
               {isLoading ? <Skeleton className="w-32 h-8" /> : (organization?.name || (initialView === 'schedule' ? 'Dashboard' : 'Agenda'))}
-            </h2>
-            <p className="text-neo-text-secondary">
+            </Typography>
+            <Typography variant="caption">
               {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
-            </p>
+            </Typography>
           </div>
 
           {initialView === 'schedule' && (
             <a href="/register-business" title="Configurações do Salão">
-              <Button variant="ghost" size="sm">
+              <NeoButton variant="ghost" size="sm">
                 <Settings size={20} />
-              </Button>
+              </NeoButton>
             </a>
           )}
         </div>
@@ -462,7 +474,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
 
             {/* Recent Activity / Simplified List could go here */}
             <div className="bg-neo-bg rounded-neo shadow-neo-out p-6 border border-white/40">
-              <h3 className="text-lg font-display font-semibold text-neo-text mb-4">Atividade Recente</h3>
+              <Typography variant="h3" className="mb-4">Atividade Recente</Typography>
               <div className="space-y-4">
                 {todaysAppointments.slice(0, 3).map(apt => (
                   <div key={apt.id} className="flex items-center justify-between p-3 rounded-neo bg-white/30 border border-white/40">
@@ -471,8 +483,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
                         {apt.clientName.charAt(0)}
                       </div>
                       <div>
-                        <p className="font-semibold text-neo-text">{apt.clientName}</p>
-                        <p className="text-xs text-neo-text-secondary">{apt.time} • {apt.services.join(', ')}</p>
+                        <Typography variant="h6">{apt.clientName}</Typography>
+                        <Typography variant="caption">{apt.time} • {apt.services.join(', ')}</Typography>
                       </div>
                     </div>
                     <Badge variant={apt.status === 'confirmed' ? 'success' : 'warning'}>
@@ -481,7 +493,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
                   </div>
                 ))}
                 {todaysAppointments.length === 0 && (
-                  <p className="text-sm text-neo-text-secondary text-center py-4">Nenhuma atividade recente.</p>
+                  <Typography variant="body" className="text-neo-text-secondary text-center py-4">Nenhuma atividade recente.</Typography>
                 )}
               </div>
             </div>
@@ -506,19 +518,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
         )}
       </main>
 
-      {/* FAB - Handled by AgendaView now */}
-      {/* 
-      {
-        initialView === 'calendar' && (
-          <button
-            onClick={() => setShowAddAppointment(true)}
-            className="neo-fab"
-          >
-            <Plus size={24} />
-          </button>
-        )
-      } 
-      */}
+      {/* Add Appointment Modal */}
 
       {/* Add Appointment Modal */}
       <NewBookingModal
@@ -579,3 +579,4 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
 };
 
 export default AdminDashboard;
+

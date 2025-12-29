@@ -21,6 +21,7 @@ import {
     Send
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { NeoButton, NeoInput, Badge } from './NeoComponents';
 
 // Brand Colors - Rose Pink
 const PURPLE = '#8A2BE2';
@@ -94,22 +95,21 @@ const SearchOverlay: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isO
             >
                 <div className="flex items-center gap-3 max-w-lg mx-auto">
                     <div className="flex-1 relative">
-                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-neo-text-secondary" />
-                        <input
-                            type="text"
+                        <NeoInput
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Buscar clientes, agendamentos..."
-                            className="w-full pl-10 pr-4 py-3 bg-neo-bg rounded-neo shadow-neo-in text-neo-text"
                             autoFocus
+                            icon={<Search size={18} />}
                         />
                     </div>
-                    <button
+                    <NeoButton
                         onClick={onClose}
-                        className="w-10 h-10 rounded-neo shadow-neo-out flex items-center justify-center"
+                        className="w-10 h-10 rounded-neo flex items-center justify-center p-0"
+                        variant="neu"
                     >
                         <X size={18} />
-                    </button>
+                    </NeoButton>
                 </div>
 
                 {/* Quick Results */}
@@ -242,12 +242,13 @@ const MarketingPanel: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ is
                     ))}
                 </div>
 
-                <button
-                    className="mt-4 w-full btn-glass-glow"
+                <NeoButton
+                    className="mt-4 w-full"
+                    variant="glow"
                 >
                     <Send size={18} />
                     Enviar para Todos
-                </button>
+                </NeoButton>
             </motion.div>
         </motion.div>
     );

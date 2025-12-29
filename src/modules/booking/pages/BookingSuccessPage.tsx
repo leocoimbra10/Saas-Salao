@@ -23,13 +23,11 @@ import {
     Plus
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
-import { Card, Button, Badge } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, NeoButton, Badge, Typography } from '../../../shared/components/ui/NeoComponents';
 
-// Brand Colors - Rose Pink
-const ROSE = 'var(--color-brand-primary)';
-const ROSE_LIGHT = '#F5CED8';
-const GOLD = ROSE; // Legacy alias
-const GOLD_LIGHT = ROSE_LIGHT; // Legacy alias
+// Brand Colors
+const BRAND_PRIMARY = 'var(--color-brand-primary)';
+const BRAND_GOLD = 'var(--color-brand-gold)';
 
 // Types
 interface BookingData {
@@ -77,92 +75,82 @@ const SuccessCheckmark: React.FC = () => (
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
-        className="w-28 h-28 rounded-full mx-auto mb-6 flex items-center justify-center"
-        style={{
-            backgroundColor: GOLD_LIGHT,
-            boxShadow: '8px 8px 16px rgba(0,0,0,0.1), -8px -8px 16px rgba(255,255,255,0.9)'
-        }}
+        className="w-28 h-28 rounded-full mx-auto mb-6 flex items-center justify-center bg-neo-bg shadow-neo-out"
     >
         <motion.div
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.4 }}
         >
-            <CheckCircle size={56} style={{ color: GOLD }} strokeWidth={2.5} />
+            <CheckCircle size={56} className="text-brand-primary" strokeWidth={2.5} />
         </motion.div>
     </motion.div>
 );
 
 // Booking Summary Card (Glassmorphism)
 const BookingSummary: React.FC<{ booking: BookingData }> = ({ booking }) => (
-    <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="rounded-2xl p-5 mb-6"
-        style={{
-            background: 'rgba(255, 255, 255, 0.7)',
-            backdropFilter: 'blur(20px)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-            border: '1px solid rgba(255, 255, 255, 0.5)',
-        }}
+    <NeoCard
+        className="p-5 mb-6 bg-white/70 backdrop-blur-md border border-white/50"
+        variant="raised" // Base style + glass override via className
     >
-        <h3 className="font-semibold text-neo-text mb-4 flex items-center gap-2">
-            <Sparkles size={18} style={{ color: GOLD }} />
+        <Typography variant="h4" className="font-semibold text-neo-text mb-4 flex items-center gap-2">
+            <Sparkles size={18} className="text-brand-gold" />
             Detalhes do Agendamento
-        </h3>
+        </Typography>
 
         <div className="space-y-3">
             <div className="flex items-center justify-between">
-                <span className="text-neo-text-secondary text-sm">Serviço</span>
-                <span className="font-medium text-neo-text">{booking.serviceName}</span>
+                <Typography variant="caption" className="text-neo-text-secondary">Serviço</Typography>
+                <Typography variant="body" className="font-medium text-neo-text">{booking.serviceName}</Typography>
             </div>
             <div className="flex items-center justify-between">
-                <span className="text-neo-text-secondary text-sm flex items-center gap-1">
+                <Typography variant="caption" className="text-neo-text-secondary flex items-center gap-1">
                     <Calendar size={14} /> Data
-                </span>
-                <span className="font-medium text-neo-text">{booking.date}</span>
+                </Typography>
+                <Typography variant="body" className="font-medium text-neo-text">{booking.date}</Typography>
             </div>
             <div className="flex items-center justify-between">
-                <span className="text-neo-text-secondary text-sm flex items-center gap-1">
+                <Typography variant="caption" className="text-neo-text-secondary flex items-center gap-1">
                     <Clock size={14} /> Horário
-                </span>
-                <span className="font-medium text-neo-text">{booking.time}</span>
+                </Typography>
+                <Typography variant="body" className="font-medium text-neo-text">{booking.time}</Typography>
             </div>
             <div className="flex items-center justify-between">
-                <span className="text-neo-text-secondary text-sm flex items-center gap-1">
+                <Typography variant="caption" className="text-neo-text-secondary flex items-center gap-1">
                     <User size={14} /> Profissional
-                </span>
+                </Typography>
                 <Badge variant="success">{booking.professional}</Badge>
             </div>
 
             <div className="h-px bg-neo-text-secondary/20 my-3" />
 
             <div className="flex items-center justify-between">
-                <span className="text-neo-text-secondary text-sm">Total</span>
-                <span className="font-bold text-lg" style={{ color: GOLD }}>
+                <Typography variant="caption" className="text-neo-text-secondary">Total</Typography>
+                <Typography variant="h5" className="font-bold" style={{ color: BRAND_GOLD }}>
                     {formatCurrency(booking.totalAmount)}
-                </span>
+                </Typography>
             </div>
             {booking.depositAmount > 0 && (
                 <div className="flex items-center justify-between">
-                    <span className="text-neo-text-secondary text-sm">Sinal Pago</span>
-                    <span className="font-medium text-green-600">
+                    <Typography variant="caption" className="text-neo-text-secondary">Sinal Pago</Typography>
+                    <Typography variant="body" className="font-medium text-green-600">
                         {formatCurrency(booking.depositAmount)} ✓
-                    </span>
+                    </Typography>
                 </div>
             )}
         </div>
 
-        <motion.p
-            className="text-xs text-center text-neo-text-secondary mt-4 pt-3 border-t border-neo-text-secondary/10"
+        <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
+            className="mt-4 pt-3 border-t border-neo-text-secondary/10"
         >
-            Código: #{booking.id}
-        </motion.p>
-    </motion.div>
+            <Typography variant="caption" className="text-xs text-center text-neo-text-secondary">
+                Código: #{booking.id}
+            </Typography>
+        </motion.div>
+    </NeoCard>
 );
 
 // Preparation Tips Section
@@ -173,9 +161,9 @@ const PreparationSection: React.FC = () => (
         transition={{ delay: 0.6 }}
         className="mb-6"
     >
-        <h3 className="font-semibold text-neo-text mb-4">
+        <Typography variant="h4" className="font-semibold text-neo-text mb-4">
             💄 Preparações para o seu dia
-        </h3>
+        </Typography>
 
         <div className="space-y-3">
             {PREPARATION_TIPS.map((tip, idx) => (
@@ -184,22 +172,18 @@ const PreparationSection: React.FC = () => (
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.7 + idx * 0.1 }}
-                    className="bg-neo-bg rounded-neo shadow-neo-out p-4"
                 >
-                    <div className="flex items-start gap-3">
-                        <div
-                            className="w-10 h-10 rounded-neo flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: GOLD_LIGHT }}
-                        >
-                            <span style={{ color: GOLD }}>{tip.icon}</span>
+                    <NeoCard className="p-4 flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-neo flex items-center justify-center flex-shrink-0 bg-neo-bg shadow-neo-in text-brand-gold">
+                            {tip.icon}
                         </div>
                         <div>
-                            <h4 className="font-medium text-neo-text mb-1">{tip.title}</h4>
-                            <p className="text-sm text-neo-text-secondary leading-relaxed">
+                            <Typography variant="body" className="font-medium text-neo-text mb-1">{tip.title}</Typography>
+                            <Typography variant="caption" className="text-neo-text-secondary leading-relaxed">
                                 {tip.description}
-                            </p>
+                            </Typography>
                         </div>
-                    </div>
+                    </NeoCard>
                 </motion.div>
             ))}
         </div>
@@ -214,38 +198,40 @@ const LocationSection: React.FC = () => (
         transition={{ delay: 0.9 }}
         className="mb-6"
     >
-        <h3 className="font-semibold text-neo-text mb-4">
+        <Typography variant="h4" className="font-semibold text-neo-text mb-4">
             📍 Como Chegar
-        </h3>
+        </Typography>
 
-        <Card className="p-4">
+        <NeoCard className="p-4">
             <div className="flex items-start gap-3 mb-4">
-                <MapPin size={20} style={{ color: GOLD }} className="flex-shrink-0 mt-1" />
+                <MapPin size={20} className="text-brand-gold flex-shrink-0 mt-1" />
                 <div>
-                    <p className="font-medium text-neo-text">{STUDIO_INFO.name}</p>
-                    <p className="text-sm text-neo-text-secondary">{STUDIO_INFO.address}</p>
-                    <p className="text-sm text-neo-text-secondary">{STUDIO_INFO.city}</p>
-                    <p className="text-xs text-neo-accent mt-1">🅿️ {STUDIO_INFO.parking}</p>
+                    <Typography variant="body" className="font-medium text-neo-text">{STUDIO_INFO.name}</Typography>
+                    <Typography variant="caption" className="text-neo-text-secondary">{STUDIO_INFO.address}</Typography>
+                    <Typography variant="caption" className="text-neo-text-secondary">{STUDIO_INFO.city}</Typography>
+                    <Typography variant="caption" className="text-xs text-neo-accent mt-1">🅿️ {STUDIO_INFO.parking}</Typography>
                 </div>
             </div>
 
             <div className="flex gap-3">
-                <button
+                <NeoButton
+                    variant="neu"
+                    fullWidth
                     onClick={() => window.open(STUDIO_INFO.mapsUrl, '_blank')}
-                    className="flex-1 py-3 bg-neo-bg rounded-neo shadow-neo-out flex items-center justify-center gap-2 text-neo-text font-medium active:shadow-neo-pressed transition-all"
+                    icon={<Navigation size={18} className="text-brand-gold" />}
                 >
-                    <Navigation size={18} style={{ color: GOLD }} />
                     Abrir Mapa
-                </button>
-                <button
+                </NeoButton>
+                <NeoButton
+                    variant="neu"
+                    fullWidth
                     onClick={() => window.open(`tel:+55${STUDIO_INFO.phone}`)}
-                    className="flex-1 py-3 bg-neo-bg rounded-neo shadow-neo-out flex items-center justify-center gap-2 text-neo-text font-medium active:shadow-neo-pressed transition-all"
+                    icon={<Phone size={18} className="text-neo-accent" />}
                 >
-                    <Phone size={18} className="text-neo-accent" />
                     Ligar
-                </button>
+                </NeoButton>
             </div>
-        </Card>
+        </NeoCard>
     </motion.section>
 );
 
@@ -288,21 +274,23 @@ const CTASection: React.FC<{ booking: BookingData }> = ({ booking }) => {
             transition={{ delay: 1.0 }}
             className="space-y-3"
         >
-            <button
+            <NeoButton
+                variant="glow"
+                fullWidth
                 onClick={handleWhatsAppShare}
-                className="w-full btn-glass-glow"
+                icon={<MessageCircle size={20} />}
             >
-                <MessageCircle size={20} />
                 Enviar Comprovante via WhatsApp
-            </button>
+            </NeoButton>
 
-            <button
+            <NeoButton
+                variant="neu"
+                fullWidth
                 onClick={handleAddToCalendar}
-                className="w-full py-4 bg-neo-bg rounded-neo shadow-neo-out font-semibold flex items-center justify-center gap-2 text-neo-text active:shadow-neo-pressed transition-all"
+                icon={<Plus size={20} />}
             >
-                <Plus size={20} />
                 Adicionar ao Calendário
-            </button>
+            </NeoButton>
         </motion.section>
     );
 };
@@ -328,12 +316,14 @@ export const BookingSuccessPage: React.FC = () => {
             <div className="w-full max-w-[480px] mx-auto">
                 {/* Header */}
                 <header className="p-4 pt-6">
-                    <button
+                    <NeoButton
+                        variant="neu"
+                        size="icon"
                         onClick={() => navigate('/')}
-                        className="w-10 h-10 bg-neo-bg rounded-neo shadow-neo-out flex items-center justify-center active:shadow-neo-pressed mb-6"
+                        className="mb-6"
                     >
                         <ChevronLeft size={20} className="text-neo-text-secondary" />
-                    </button>
+                    </NeoButton>
 
                     {/* Success Animation */}
                     <SuccessCheckmark />
@@ -345,12 +335,12 @@ export const BookingSuccessPage: React.FC = () => {
                         transition={{ delay: 0.3 }}
                         className="text-center mb-8"
                     >
-                        <h1 className="text-2xl font-bold text-neo-text mb-2">
+                        <Typography variant="h2" className="font-bold text-neo-text mb-2">
                             Agendamento Confirmado!
-                        </h1>
-                        <p className="text-neo-text-secondary">
+                        </Typography>
+                        <Typography variant="body" className="text-neo-text-secondary">
                             Seu momento de beleza está garantido ✨
-                        </p>
+                        </Typography>
                     </motion.div>
                 </header>
 
@@ -369,15 +359,21 @@ export const BookingSuccessPage: React.FC = () => {
                     <CTASection booking={bookingData} />
 
                     {/* Back Button */}
-                    <motion.button
+                    <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 1.2 }}
-                        onClick={() => navigate('/')}
-                        className="w-full mt-6 py-3 text-neo-text-secondary text-sm font-medium"
+                        className="mt-6"
                     >
-                        ← Voltar para o Início
-                    </motion.button>
+                        <NeoButton
+                            variant="ghost"
+                            fullWidth
+                            onClick={() => navigate('/')}
+                            className="text-neo-text-secondary text-sm font-medium"
+                        >
+                            ← Voltar para o Início
+                        </NeoButton>
+                    </motion.div>
                 </main>
             </div>
         </div>

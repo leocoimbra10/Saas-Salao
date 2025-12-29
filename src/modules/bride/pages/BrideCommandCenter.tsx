@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BRIDE COMMAND CENTER
  * Admin page for managing all bridal clients
  */
@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
 import { BridalPackage, BridalStatus } from '../../bride/types/brideTypes';
-import { Badge, Button, Input } from '../../../shared/components/ui/NeoComponents';
+import { Badge, NeoButton, NeoInput, Typography, NeoCard, NeoSelect, Checkbox } from '../../../shared/components/ui/NeoComponents';
 import BridalServicesManager from '../../admin/components/BridalServicesManager';
 
 // Brand Colors - Rose Pink
@@ -35,7 +35,7 @@ const GOLD_LIGHT = ROSE_LIGHT; // Legacy alias
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getBridalPackagesByOrg, createBridalPackage, updateBridalPackage } from '../../bride/services/brideService';
-import { useBranding } from '../../organization/context/BrandingContext';
+import { useBranding } from '../../../shared/context/BrandingContext';
 import { notificationService } from '../../../shared/services/notificationService';
 import { toast } from 'sonner';
 import { useBrideTimeline } from '../../bride/hooks/useBrideTimeline';
@@ -54,9 +54,9 @@ const StatusBadge: React.FC<{ status: BridalStatus }> = ({ status }) => {
     const { label, color, bg } = config[status];
 
     return (
-        <span className={cn('px-2 py-1 rounded-full text-xs font-medium', color, bg)}>
+        <Badge variant={status === 'confirmed' ? 'success' : status === 'cancelled' ? 'danger' : status === 'lead' ? 'info' : 'warning'}>
             {label}
-        </span>
+        </Badge>
     );
 };
 
@@ -93,14 +93,14 @@ const BrideCard: React.FC<{
                         <Crown size={20} className="text-white" />
                     </div>
                     <div>
-                        <h4 className="font-semibold text-neo-text">{bride.clientName}</h4>
-                        <p className="text-xs text-neo-text-secondary">
+                        <Typography variant="h4">{bride.clientName}</Typography>
+                        <Typography variant="caption" className="text-neo-text-secondary">
                             {bride.weddingDate.toLocaleDateString('pt-BR', {
                                 day: '2-digit',
                                 month: 'short',
                                 year: 'numeric'
                             })}
-                        </p>
+                        </Typography>
                     </div>
                 </div>
                 <StatusBadge status={bride.status} />
@@ -112,22 +112,22 @@ const BrideCard: React.FC<{
                 <div className="bg-neo-bg rounded-neo-sm shadow-neo-in p-2">
                     <div className="flex items-center gap-1 text-neo-text-secondary text-xs mb-1">
                         <Calendar size={12} />
-                        <span>Casamento</span>
+                        <Typography variant="label" className="text-[10px] uppercase">Casamento</Typography>
                     </div>
-                    <span className="font-semibold text-neo-text">
+                    <Typography variant="body" className="font-semibold">
                         {daysUntilWedding > 0 ? `${daysUntilWedding} dias` : 'Hoje!'}
-                    </span>
+                    </Typography>
                 </div>
 
                 {/* Package Value */}
                 <div className="bg-neo-bg rounded-neo-sm shadow-neo-in p-2">
                     <div className="flex items-center gap-1 text-neo-text-secondary text-xs mb-1">
                         <DollarSign size={12} />
-                        <span>Pacote</span>
+                        <Typography variant="label" className="text-[10px] uppercase">Pacote</Typography>
                     </div>
-                    <span className="font-semibold text-neo-text">
+                    <Typography variant="body" className="font-semibold">
                         {formatCurrency(bride.packageValue)}
-                    </span>
+                    </Typography>
                 </div>
             </div>
 
@@ -135,9 +135,9 @@ const BrideCard: React.FC<{
             {trialDate && (
                 <div className="flex items-center gap-2 text-xs text-neo-text-secondary mb-3">
                     <Clock size={12} />
-                    <span>
+                    <Typography variant="caption">
                         Prova: {trialDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-                    </span>
+                    </Typography>
                     {bride.timeline.find(t => t.type === 'trial')?.status === 'completed' && (
                         <CheckCircle size={12} className="text-green-500" />
                     )}
@@ -148,17 +148,17 @@ const BrideCard: React.FC<{
             {bride.attendants.length > 0 && (
                 <div className="flex items-center gap-2 text-xs text-neo-text-secondary mb-3">
                     <Users size={12} />
-                    <span>{bride.attendants.length} pessoas + {formatCurrency(
+                    <Typography variant="caption">{bride.attendants.length} pessoas + {formatCurrency(
                         bride.attendants.reduce((sum, a) => sum + a.totalPrice, 0)
-                    )}</span>
+                    )}</Typography>
                 </div>
             )}
 
             {/* Payment Progress */}
             <div className="mb-3">
                 <div className="flex justify-between text-xs text-neo-text-secondary mb-1">
-                    <span>Pagamento</span>
-                    <span>{depositPercent.toFixed(0)}%</span>
+                    <Typography variant="caption">Pagamento</Typography>
+                    <Typography variant="label">{depositPercent.toFixed(0)}%</Typography>
                 </div>
                 <div className="h-1.5 bg-neo-bg rounded-full shadow-neo-in overflow-hidden">
                     <div
@@ -173,20 +173,24 @@ const BrideCard: React.FC<{
 
             {/* Actions */}
             <div className="flex gap-2 pt-2 border-t border-neo-text-secondary/10">
-                <button
+                <NeoButton
+                    variant="neu"
+                    size="sm"
                     onClick={(e) => { e.stopPropagation(); onWhatsApp(); }}
-                    className="flex-1 py-2 rounded-neo shadow-neo-out text-green-500 text-xs font-medium flex items-center justify-center gap-1"
+                    className="flex-1 text-green-500 gap-1 h-auto py-2"
+                    icon={<MessageCircle size={14} />}
                 >
-                    <MessageCircle size={14} />
                     WhatsApp
-                </button>
-                <button
+                </NeoButton>
+                <NeoButton
+                    variant="neu"
+                    size="sm"
                     onClick={onClick}
-                    className="flex-1 py-2 rounded-neo shadow-neo-out text-neo-text-secondary text-xs font-medium flex items-center justify-center gap-1"
+                    className="flex-1 text-neo-text-secondary gap-1 h-auto py-2"
+                    icon={<ChevronRight size={14} />}
                 >
                     Ver Detalhes
-                    <ChevronRight size={14} />
-                </button>
+                </NeoButton>
             </div>
         </motion.div>
     );
@@ -196,14 +200,14 @@ const BrideCard: React.FC<{
 const StatsCard: React.FC<{ icon: React.ReactNode; label: string; value: string; subvalue?: string }> = ({
     icon, label, value, subvalue
 }) => (
-    <div className="bg-neo-bg rounded-neo shadow-neo-out p-4">
+    <NeoCard className="p-4">
         <div className="flex items-center gap-2 mb-2">
             <span style={{ color: GOLD }}>{icon}</span>
-            <span className="text-xs text-neo-text-secondary">{label}</span>
+            <Typography variant="label" className="text-neo-text-secondary">{label}</Typography>
         </div>
-        <p className="text-xl font-bold text-neo-text">{value}</p>
-        {subvalue && <p className="text-xs text-neo-text-secondary">{subvalue}</p>}
-    </div>
+        <Typography variant="h3">{value}</Typography>
+        {subvalue && <Typography variant="caption">{subvalue}</Typography>}
+    </NeoCard>
 );
 
 // Timeline Section component
@@ -224,12 +228,12 @@ const TimelineSection: React.FC<{ packageId: string }> = ({ packageId }) => {
                             {milestone.status === 'completed' ? <CheckCircle size={14} /> : <Clock size={14} />}
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-neo-text">
+                            <Typography variant="body" className="font-medium">
                                 {milestone.type === 'trial' ? 'Prova' : milestone.type === 'pre_wedding' ? 'Pré-Wedding' : 'Casamento'}
-                            </p>
-                            <p className="text-[10px] text-neo-text-secondary">
+                            </Typography>
+                            <Typography variant="caption">
                                 {milestone.date ? milestone.date.toLocaleDateString('pt-BR') : 'Data a definir'}
-                            </p>
+                            </Typography>
                         </div>
                     </div>
                     <Badge variant={milestone.status === 'completed' ? 'success' : 'warning'}>
@@ -309,45 +313,42 @@ export const BrideCommandCenter: React.FC = () => {
                 <header className="p-4">
                     <div className="flex items-center gap-3 mb-6">
                         <div
-                            className="w-12 h-12 rounded-neo flex items-center justify-center"
+                            className="w-12 h-12 rounded-neo flex items-center justify-center p-2.5 shadow-neo-out"
                             style={{ background: `linear-gradient(135deg, ${GOLD} 0%, #E8C547 100%)` }}
                         >
                             <Crown size={24} className="text-white" />
                         </div>
                         <div>
-                            <h1 className="text-display">Noivas</h1>
-                            <p className="text-caption">Central de Comando</p>
+                            <Typography variant="h1">Noivas</Typography>
+                            <Typography variant="caption">Central de Comando</Typography>
                         </div>
                     </div>
                 </header>
 
                 {/* Tab Navigation */}
                 <div className="flex gap-2 mb-6 px-4">
-                    <button
+                    <NeoButton
+                        variant={activeTab === 'brides' ? 'gradient' : 'neu'}
                         onClick={() => setActiveTab('brides')}
                         className={cn(
-                            'flex-1 py-3 px-4 rounded-neo font-semibold text-sm flex items-center justify-center gap-2 transition-all',
-                            activeTab === 'brides'
-                                ? 'shadow-neo-pressed text-neo-accent'
-                                : 'shadow-neo-out text-neo-text-secondary hover:shadow-neo-flat'
+                            'flex-1 py-3 px-4 h-auto',
+                            activeTab === 'brides' ? 'shadow-neo-pressed' : ''
                         )}
+                        icon={<Crown size={16} className={activeTab === 'brides' ? 'text-white' : 'text-neo-text-secondary'} />}
                     >
-                        <Crown size={16} />
-                        Noivas
-                    </button>
-                    <button
+                        <Typography variant="label" className={activeTab === 'brides' ? 'text-white' : ''}>Noivas</Typography>
+                    </NeoButton>
+                    <NeoButton
+                        variant={activeTab === 'services' ? 'gradient' : 'neu'}
                         onClick={() => setActiveTab('services')}
                         className={cn(
-                            'flex-1 py-3 px-4 rounded-neo font-semibold text-sm flex items-center justify-center gap-2 transition-all',
-                            activeTab === 'services'
-                                ? 'shadow-neo-pressed'
-                                : 'shadow-neo-out text-neo-text-secondary hover:shadow-neo-flat'
+                            'flex-1 py-3 px-4 h-auto',
+                            activeTab === 'services' ? 'shadow-neo-pressed' : ''
                         )}
-                        style={{ color: activeTab === 'services' ? GOLD : undefined }}
+                        icon={<Settings size={16} className={activeTab === 'services' ? 'text-white' : 'text-neo-text-secondary'} />}
                     >
-                        <Settings size={16} />
-                        Serviços
-                    </button>
+                        <Typography variant="label" className={activeTab === 'services' ? 'text-white' : ''}>Serviços</Typography>
+                    </NeoButton>
                 </div>
 
                 {/* Conditional Content based on Tab */}
@@ -385,71 +386,44 @@ export const BrideCommandCenter: React.FC = () => {
 
                         {/* Add Bride Button - Glassmorphic with Pulse */}
                         <div className="px-4 mb-6">
-                            <motion.button
+                            <NeoButton
+                                variant="glass"
                                 onClick={() => setShowAddBride(true)}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className={cn(
-                                    "w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-semibold",
-                                    // Glassmorphism Recipe
-                                    "bg-white/10 backdrop-blur-xl border border-white/20",
-                                    "shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.4),0_8px_24px_-4px_rgba(0,0,0,0.15)]",
-                                    "text-neo-text hover:bg-white/15 transition-all",
-                                    "group relative overflow-hidden"
-                                )}
+                                className="w-full py-6 rounded-2xl gap-3 shadow-neo-out-lg"
+                                icon={<Plus size={20} className="text-brand-gold" />}
                             >
-                                {/* Liquid Pulse Animation on Hover */}
-                                <motion.div
-                                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    style={{
-                                        background: `radial-gradient(circle at center, ${ROSE}20 0%, transparent 70%)`
-                                    }}
-                                    animate={{
-                                        scale: [1, 1.2, 1],
-                                    }}
-                                    transition={{
-                                        duration: 2,
-                                        repeat: Infinity,
-                                        ease: 'easeInOut'
-                                    }}
-                                />
-                                <Plus size={20} style={{ color: GOLD }} className="relative z-10" />
-                                <span className="relative z-10">Cadastrar Noiva</span>
-                            </motion.button>
+                                <Typography variant="h6" className="font-semibold">Cadastrar Noiva</Typography>
+                            </NeoButton>
                         </div>
 
-                        {/* Search & Filter */}
-                        <div className="flex gap-2 mb-4">
-                            <div className="flex-1 relative">
-                                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-neo-text-secondary" />
-                                <input
-                                    type="text"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    placeholder="Buscar noiva..."
-                                    className="w-full pl-10 pr-4 py-3 bg-neo-bg rounded-neo shadow-neo-in text-neo-text"
-                                />
-                            </div>
-                            <button className="w-12 h-12 bg-neo-bg rounded-neo shadow-neo-out flex items-center justify-center">
-                                <Filter size={18} className="text-neo-text-secondary" />
-                            </button>
+                        <div className="flex gap-2 mb-4 px-4">
+                            <NeoInput
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Buscar noiva..."
+                                icon={<Search size={18} />}
+                                className="flex-1"
+                            />
+                            <NeoButton
+                                variant="neu"
+                                className="w-12 h-12 p-0 flex items-center justify-center"
+                                icon={<Filter size={18} className="text-neo-text-secondary" />}
+                            />
                         </div>
 
-                        {/* Status Filter - Dropdown */}
-                        <div className="relative px-4 mb-4">
-                            <select
+                        <div className="px-4 mb-4">
+                            <NeoSelect
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value as BridalStatus | 'all')}
-                                className="w-full px-4 py-3 rounded-neo shadow-neo-in bg-neo-bg text-neo-text appearance-none cursor-pointer focus:outline-none"
-                                style={{ color: statusFilter !== 'all' ? GOLD : undefined }}
-                            >
-                                <option value="all">Todas as Noivas</option>
-                                <option value="lead">Leads</option>
-                                <option value="confirmed">Confirmadas</option>
-                                <option value="trial_done">Prova OK</option>
-                                <option value="completed">Concluídas</option>
-                            </select>
-                            <ChevronRight size={18} className="absolute right-7 top-1/2 -translate-y-1/2 rotate-90 text-neo-text-secondary pointer-events-none" />
+                                options={[
+                                    { value: 'all', label: 'Todas as Noivas' },
+                                    { value: 'lead', label: 'Leads' },
+                                    { value: 'confirmed', label: 'Confirmadas' },
+                                    { value: 'trial_done', label: 'Prova OK' },
+                                    { value: 'completed', label: 'Concluídas' },
+                                ]}
+                                className="w-full"
+                            />
                         </div>
 
                         {/* Content */}
@@ -500,8 +474,8 @@ export const BrideCommandCenter: React.FC = () => {
                                                 <Crown size={24} className="text-white" />
                                             </div>
                                             <div>
-                                                <h2 className="text-xl font-bold text-neo-text">{selectedBride.clientName}</h2>
-                                                <p className="text-sm text-neo-text-secondary">{selectedBride.clientPhone}</p>
+                                                <Typography variant="h4">{selectedBride.clientName}</Typography>
+                                                <Typography variant="caption">{selectedBride.clientPhone}</Typography>
                                             </div>
                                         </div>
                                         <StatusBadge status={selectedBride.status} />
@@ -509,41 +483,41 @@ export const BrideCommandCenter: React.FC = () => {
 
                                     {/* Wedding Info */}
                                     <div className="bg-neo-bg rounded-neo shadow-neo-in p-4 mb-4">
-                                        <h3 className="font-semibold text-neo-text mb-2" style={{ color: GOLD }}>📅 Casamento</h3>
-                                        <p className="text-neo-text">
+                                        <Typography variant="h6" className="mb-2" style={{ color: GOLD }}>📅 Casamento</Typography>
+                                        <Typography variant="body">
                                             {selectedBride.weddingDate.toLocaleDateString('pt-BR', {
                                                 weekday: 'long',
                                                 day: '2-digit',
                                                 month: 'long',
                                                 year: 'numeric'
                                             })}
-                                        </p>
+                                        </Typography>
                                         {selectedBride.weddingVenue && (
-                                            <p className="text-sm text-neo-text-secondary">{selectedBride.weddingVenue}</p>
+                                            <Typography variant="caption">{selectedBride.weddingVenue}</Typography>
                                         )}
                                     </div>
 
                                     {/* Timeline */}
                                     <div className="bg-neo-bg rounded-neo shadow-neo-in p-4 mb-4">
-                                        <h3 className="font-semibold text-neo-text mb-3" style={{ color: GOLD }}>📅 Cronograma</h3>
+                                        <Typography variant="h6" className="mb-3" style={{ color: GOLD }}>📅 Cronograma</Typography>
                                         <TimelineSection packageId={selectedBride.id} />
                                     </div>
 
                                     {/* Financial Summary */}
                                     <div className="bg-neo-bg rounded-neo shadow-neo-in p-4 mb-4">
-                                        <h3 className="font-semibold text-neo-text mb-3" style={{ color: GOLD }}>💰 Financeiro</h3>
+                                        <Typography variant="h6" className="mb-3" style={{ color: GOLD }}>💰 Financeiro</Typography>
                                         <div className="space-y-2">
                                             <div className="flex justify-between">
-                                                <span className="text-neo-text-secondary">Valor do Pacote</span>
-                                                <span className="font-semibold text-neo-text">{formatCurrency(selectedBride.packageValue)}</span>
+                                                <Typography variant="caption">Valor do Pacote</Typography>
+                                                <Typography variant="body" className="font-semibold">{formatCurrency(selectedBride.packageValue)}</Typography>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-neo-text-secondary">Sinal Pago</span>
-                                                <span className="font-semibold text-green-600">{formatCurrency(selectedBride.depositPaid)}</span>
+                                                <Typography variant="caption">Sinal Pago</Typography>
+                                                <Typography variant="body" className="font-semibold text-green-600">{formatCurrency(selectedBride.depositPaid)}</Typography>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-neo-text-secondary">Saldo Pendente</span>
-                                                <span className="font-semibold" style={{ color: GOLD }}>{formatCurrency(selectedBride.balanceDue)}</span>
+                                                <Typography variant="caption">Saldo Pendente</Typography>
+                                                <Typography variant="body" className="font-semibold" style={{ color: GOLD }}>{formatCurrency(selectedBride.balanceDue)}</Typography>
                                             </div>
                                         </div>
                                     </div>
@@ -551,14 +525,14 @@ export const BrideCommandCenter: React.FC = () => {
                                     {/* Attendants */}
                                     {selectedBride.attendants.length > 0 && (
                                         <div className="bg-neo-bg rounded-neo shadow-neo-in p-4 mb-4">
-                                            <h3 className="font-semibold text-neo-text mb-3" style={{ color: GOLD }}>👥 Acompanhantes</h3>
+                                            <Typography variant="h6" className="mb-3" style={{ color: GOLD }}>👥 Acompanhantes</Typography>
                                             <div className="space-y-2">
                                                 {selectedBride.attendants.map(att => (
                                                     <div key={att.id} className="flex justify-between items-center">
-                                                        <span className="text-neo-text">{att.name}</span>
+                                                        <Typography variant="body">{att.name}</Typography>
                                                         <div className="text-right">
-                                                            <span className="font-medium text-neo-text">{formatCurrency(att.totalPrice)}</span>
-                                                            {att.isPaid && <span className="text-xs text-green-500 ml-2">✓</span>}
+                                                            <Typography variant="body" className="font-medium">{formatCurrency(att.totalPrice)}</Typography>
+                                                            {att.isPaid && <Typography variant="caption" className="text-green-500 ml-2">✓</Typography>}
                                                         </div>
                                                     </div>
                                                 ))}
@@ -569,14 +543,16 @@ export const BrideCommandCenter: React.FC = () => {
                                     {/* Actions */}
                                     <div className="flex flex-col gap-3 mt-6">
                                         <div className="flex gap-3">
-                                            <button
+                                            <NeoButton
+                                                variant="outline"
                                                 onClick={() => handleWhatsApp(selectedBride)}
-                                                className="flex-1 py-3 rounded-neo shadow-neo-out bg-neo-bg border-2 border-green-500 text-green-600 font-semibold flex items-center justify-center gap-2 active:shadow-neo-pressed"
+                                                className="flex-1 py-3 text-green-600 border-green-500 gap-2 h-auto"
+                                                icon={<MessageCircle size={18} />}
                                             >
-                                                <MessageCircle size={18} />
                                                 Confirmar WhatsApp
-                                            </button>
-                                            <button
+                                            </NeoButton>
+                                            <NeoButton
+                                                variant="outline"
                                                 onClick={() => {
                                                     notificationService.sendMilestoneAlert(
                                                         selectedBride.clientName,
@@ -584,18 +560,19 @@ export const BrideCommandCenter: React.FC = () => {
                                                         "Sua prova está chegando!"
                                                     );
                                                 }}
-                                                className="flex-1 py-3 rounded-neo shadow-neo-out bg-neo-bg border-2 border-neo-accent text-neo-accent font-semibold flex items-center justify-center gap-2 active:shadow-neo-pressed"
+                                                className="flex-1 py-3 border-neo-accent text-neo-accent gap-2 h-auto"
+                                                icon={<Sparkles size={18} />}
                                             >
-                                                <Sparkles size={18} />
                                                 Lembrete Mágico
-                                            </button>
+                                            </NeoButton>
                                         </div>
-                                        <button
+                                        <NeoButton
+                                            variant="neu"
                                             onClick={() => setSelectedBride(null)}
-                                            className="w-full py-3 rounded-neo shadow-neo-out text-neo-text-secondary font-semibold"
+                                            className="w-full py-3 text-neo-text-secondary h-auto"
                                         >
                                             Fechar
-                                        </button>
+                                        </NeoButton>
                                     </div>
                                 </motion.div>
                             </motion.div>
@@ -627,8 +604,8 @@ export const BrideCommandCenter: React.FC = () => {
                                             <Crown size={20} className="text-white" />
                                         </div>
                                         <div>
-                                            <h2 className="text-xl font-bold text-neo-text">Nova Noiva</h2>
-                                            <p className="text-sm text-neo-text-secondary">Preencha os dados da nova cliente</p>
+                                            <Typography variant="h4">Nova Noiva</Typography>
+                                            <Typography variant="caption">Preencha os dados da nova cliente</Typography>
                                         </div>
                                     </div>
 
@@ -636,56 +613,48 @@ export const BrideCommandCenter: React.FC = () => {
                                     <div className="space-y-4">
                                         {/* Name */}
                                         <div>
-                                            <label className="block text-sm font-medium text-neo-text mb-2">Nome Completo *</label>
-                                            <input
-                                                type="text"
+                                            <Typography variant="label" className="mb-2 block">Nome Completo *</Typography>
+                                            <NeoInput
                                                 value={newBride.name}
                                                 onChange={(e) => setNewBride({ ...newBride, name: e.target.value })}
                                                 placeholder="Nome da noiva"
-                                                className="w-full px-4 py-3 rounded-neo shadow-neo-in bg-neo-bg text-neo-text placeholder:text-neo-text-secondary/50 focus:outline-none"
                                             />
                                         </div>
-
                                         {/* Phone */}
                                         <div>
-                                            <label className="block text-sm font-medium text-neo-text mb-2">WhatsApp *</label>
-                                            <input
+                                            <Typography variant="label" className="mb-2 block">WhatsApp *</Typography>
+                                            <NeoInput
                                                 type="tel"
                                                 value={newBride.phone}
                                                 onChange={(e) => setNewBride({ ...newBride, phone: e.target.value })}
                                                 placeholder="(11) 99999-9999"
-                                                className="w-full px-4 py-3 rounded-neo shadow-neo-in bg-neo-bg text-neo-text placeholder:text-neo-text-secondary/50 focus:outline-none"
                                             />
                                         </div>
-
                                         {/* Email */}
                                         <div>
-                                            <label className="block text-sm font-medium text-neo-text mb-2">E-mail</label>
-                                            <input
+                                            <Typography variant="label" className="mb-2 block">E-mail</Typography>
+                                            <NeoInput
                                                 type="email"
                                                 value={newBride.email}
                                                 onChange={(e) => setNewBride({ ...newBride, email: e.target.value })}
                                                 placeholder="email@exemplo.com"
-                                                className="w-full px-4 py-3 rounded-neo shadow-neo-in bg-neo-bg text-neo-text placeholder:text-neo-text-secondary/50 focus:outline-none"
                                             />
                                         </div>
-
                                         {/* Wedding Date */}
                                         <div>
-                                            <label className="block text-sm font-medium text-neo-text mb-2">Data do Casamento *</label>
-                                            <input
+                                            <Typography variant="label" className="mb-2 block">Data do Casamento *</Typography>
+                                            <NeoInput
                                                 type="date"
                                                 value={newBride.weddingDate}
                                                 onChange={(e) => setNewBride({ ...newBride, weddingDate: e.target.value })}
-                                                className="w-full px-4 py-3 rounded-neo shadow-neo-in bg-neo-bg text-neo-text focus:outline-none"
                                             />
                                         </div>
 
                                         {/* Services Selector */}
                                         <div>
-                                            <label className="block text-sm font-medium text-neo-text mb-2" style={{ color: GOLD }}>
+                                            <Typography variant="label" className="mb-2 block" style={{ color: GOLD }}>
                                                 Selecione os Serviços *
-                                            </label>
+                                            </Typography>
                                             <div className="space-y-2 max-h-48 overflow-y-auto p-2 rounded-neo shadow-neo-in">
                                                 {[
                                                     { id: 'bride-day', name: 'Noiva Dia D (Make + Hair)', price: 850 },
@@ -706,11 +675,10 @@ export const BrideCommandCenter: React.FC = () => {
                                                             }`}
                                                     >
                                                         <div className="flex items-center gap-3">
-                                                            <input
-                                                                type="checkbox"
+                                                            <Checkbox
                                                                 checked={newBride.selectedServices.includes(service.id)}
-                                                                onChange={(e) => {
-                                                                    if (e.target.checked) {
+                                                                onChange={(checked) => {
+                                                                    if (checked) {
                                                                         setNewBride({
                                                                             ...newBride,
                                                                             selectedServices: [...newBride.selectedServices, service.id]
@@ -722,13 +690,12 @@ export const BrideCommandCenter: React.FC = () => {
                                                                         });
                                                                     }
                                                                 }}
-                                                                className="w-5 h-5 accent-amber-500"
                                                             />
-                                                            <span className="text-neo-text text-sm">{service.name}</span>
+                                                            <Typography variant="body">{service.name}</Typography>
                                                         </div>
-                                                        <span className="font-semibold text-neo-text-secondary text-sm">
+                                                        <Typography variant="label" className="font-semibold text-neo-text-secondary">
                                                             {formatCurrency(service.price)}
-                                                        </span>
+                                                        </Typography>
                                                     </label>
                                                 ))}
                                             </div>
@@ -738,8 +705,8 @@ export const BrideCommandCenter: React.FC = () => {
                                         {newBride.selectedServices.length > 0 && (
                                             <div className="p-4 rounded-neo shadow-neo-in bg-neo-bg">
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-neo-text font-medium">Total do Pacote:</span>
-                                                    <span className="text-xl font-bold" style={{ color: GOLD }}>
+                                                    <Typography variant="body" className="font-medium">Total do Pacote:</Typography>
+                                                    <Typography variant="h4" style={{ color: GOLD }}>
                                                         {formatCurrency(
                                                             [
                                                                 { id: 'bride-day', price: 850 },
@@ -754,18 +721,19 @@ export const BrideCommandCenter: React.FC = () => {
                                                             ].filter(s => newBride.selectedServices.includes(s.id))
                                                                 .reduce((sum, s) => sum + s.price, 0)
                                                         )}
-                                                    </span>
+                                                    </Typography>
                                                 </div>
-                                                <p className="text-xs text-neo-text-secondary mt-1">
+                                                <Typography variant="caption" className="mt-1 block">
                                                     {newBride.selectedServices.length} serviço(s) selecionado(s)
-                                                </p>
+                                                </Typography>
                                             </div>
                                         )}
                                     </div>
 
                                     {/* Actions */}
                                     <div className="flex gap-3 mt-6">
-                                        <button
+                                        <NeoButton
+                                            variant="gradient"
                                             onClick={() => {
                                                 if (!newBride.name || !newBride.phone || !newBride.weddingDate || newBride.selectedServices.length === 0) {
                                                     alert('Preencha todos os campos obrigatórios e selecione ao menos um serviço');
@@ -796,17 +764,18 @@ export const BrideCommandCenter: React.FC = () => {
                                                 setNewBride({ name: '', phone: '', email: '', weddingDate: '', selectedServices: [] });
                                                 setShowAddBride(false);
                                             }}
-                                            className="flex-1 btn-glass-glow"
+                                            className="flex-1 h-auto py-3"
+                                            icon={<Plus size={18} />}
                                         >
-                                            <Plus size={18} />
                                             Adicionar
-                                        </button>
-                                        <button
+                                        </NeoButton>
+                                        <NeoButton
+                                            variant="neu"
                                             onClick={() => setShowAddBride(false)}
-                                            className="flex-1 py-3 rounded-neo shadow-neo-out text-neo-text-secondary font-semibold"
+                                            className="flex-1 h-auto py-3 text-neo-text-secondary"
                                         >
                                             Cancelar
-                                        </button>
+                                        </NeoButton>
                                     </div>
                                 </motion.div>
                             </motion.div>
@@ -819,3 +788,4 @@ export const BrideCommandCenter: React.FC = () => {
 };
 
 export default BrideCommandCenter;
+

@@ -16,7 +16,8 @@ import {
     CheckCircle,
     XCircle,
     Crown,
-    Sparkles
+    Sparkles,
+    MessageCircle
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -281,9 +282,26 @@ export const PaymentPage: React.FC = () => {
 
                 {paymentLink.status === 'paid' && (
                     <div className="text-center p-4">
-                        <p className="text-sm text-neo-text-secondary">
+                        <p className="text-sm text-neo-text-secondary mb-4">
                             Nos vemos no dia {format(new Date(paymentLink.appointmentDate), "d 'de' MMMM", { locale: ptBR })}! 💜
                         </p>
+
+                        <button
+                            onClick={() => {
+                                const phone = "5511999999999"; // TODO: Use env var
+                                const message = `Olá! Acabei de confirmar o agendamento de ${paymentLink.services.map(s => s.name).join(', ')} para ${format(new Date(paymentLink.appointmentDate), "dd/MM", { locale: ptBR })} às ${paymentLink.appointmentTime}.`;
+                                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
+                            }}
+                            className={cn(
+                                "w-full py-3 rounded-neo font-semibold text-white transition-all",
+                                "bg-[#25D366] hover:bg-[#128C7E]",
+                                "shadow-neo-out hover:shadow-neo-in",
+                                "flex items-center justify-center gap-2"
+                            )}
+                        >
+                            <MessageCircle size={20} />
+                            Confirmar no WhatsApp
+                        </button>
                     </div>
                 )}
             </div>

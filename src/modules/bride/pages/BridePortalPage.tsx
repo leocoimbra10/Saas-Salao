@@ -36,7 +36,7 @@ import {
     Scissors
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
-import { Card, Button, Badge, Progress, Skeleton } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, NeoButton, Badge, Progress, Skeleton, Typography, NeoSelect, NeoTextarea, Checkbox } from '../../../shared/components/ui/NeoComponents';
 import { BridalIntakeForm } from '../components/BridalIntakeForm';
 
 // Brand Colors
@@ -114,9 +114,9 @@ interface TimelineStep {
 
 interface MoodboardPhoto {
     id: string;
-    url: string;
-    category: 'vestido' | 'penteado' | 'maquiagem' | 'inspiracao';
-    note?: string;
+    imageUrl: string;
+    category: 'dress' | 'hair' | 'makeup' | 'inspiration';
+    notes?: string;
 }
 
 interface Attendant {
@@ -142,10 +142,10 @@ const AVAILABLE_SERVICES = [
 ];
 
 const MOODBOARD_CATEGORIES = [
-    { id: 'vestido', label: 'Vestido', icon: <Heart size={16} /> },
-    { id: 'penteado', label: 'Penteado', icon: <Scissors size={16} /> },
-    { id: 'maquiagem', label: 'Maquiagem', icon: <Palette size={16} /> },
-    { id: 'inspiracao', label: 'Inspiração', icon: <Sparkles size={16} /> },
+    { id: 'dress', label: 'Vestido', icon: <Heart size={16} /> },
+    { id: 'hair', label: 'Penteado', icon: <Scissors size={16} /> },
+    { id: 'makeup', label: 'Maquiagem', icon: <Palette size={16} /> },
+    { id: 'inspiration', label: 'Inspiração', icon: <Sparkles size={16} /> },
 ];
 
 // ============================================
@@ -158,10 +158,10 @@ const JourneyTimeline: React.FC<{ steps: TimelineStep[] }> = ({ steps }) => {
     const progressPercent = (completedCount / steps.length) * 100;
 
     return (
-        <Card className="p-4 mb-6">
+        <NeoCard className="p-4 mb-6">
             <div className="flex items-center gap-2 mb-4">
                 <Crown size={20} style={{ color: GOLD }} />
-                <h3 className="font-semibold text-neo-text">Sua Jornada de Noiva</h3>
+                <Typography variant="h6">Sua Jornada de Noiva</Typography>
             </div>
 
             {/* Progress Bar */}
@@ -205,24 +205,27 @@ const JourneyTimeline: React.FC<{ steps: TimelineStep[] }> = ({ steps }) => {
             <div className="grid grid-cols-4 gap-1 text-center">
                 {steps.map((step) => (
                     <div key={step.id}>
-                        <p className={cn(
-                            'text-[10px] font-medium',
-                            step.status === 'completed' ? 'text-neo-text' : 'text-neo-text-secondary'
-                        )}>
+                        <Typography
+                            variant="label"
+                            className={cn(
+                                'text-[10px] block',
+                                step.status === 'completed' ? 'text-neo-text' : 'text-neo-text-secondary'
+                            )}
+                        >
                             {step.title}
-                        </p>
+                        </Typography>
                         {step.date && (
-                            <p className="text-[8px] text-neo-text-secondary">
+                            <Typography variant="caption" className="text-[8px] block mt-0.5">
                                 {step.date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
-                            </p>
+                            </Typography>
                         )}
                         {step.status === 'scheduled' && (
-                            <Badge variant="warning" className="text-[8px] mt-1">Agendado</Badge>
+                            <Badge variant="warning" className="text-[8px] mt-1 h-4">Agendado</Badge>
                         )}
                     </div>
                 ))}
             </div>
-        </Card>
+        </NeoCard>
     );
 };
 
@@ -238,25 +241,20 @@ const CountdownWidget: React.FC<{ weddingDate: Date | null; onEditDate: () => vo
     if (!weddingDate) {
         // Empty State - Date not set
         return (
-            <motion.button
+            <NeoButton
+                variant="glass"
                 onClick={onEditDate}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={cn(
-                    "w-full p-6 mb-6 rounded-[1.5rem] text-center",
-                    "bg-white/10 backdrop-blur-xl border border-white/20",
-                    "shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.4),0_10px_20px_-5px_rgba(0,0,0,0.2)]"
-                )}
+                className="w-full py-8 mb-6 rounded-[1.5rem] flex flex-col items-center justify-center gap-2 shadow-neo-out-lg"
             >
-                <Sparkles size={32} style={{ color: GOLD }} className="mx-auto mb-2" />
-                <p className="text-neo-text font-semibold">Defina a data do seu grande dia</p>
-                <p className="text-xs text-neo-text-secondary mt-1">Toque para adicionar</p>
-            </motion.button>
+                <Sparkles size={32} style={{ color: GOLD }} />
+                <Typography variant="h6">Defina a data do seu grande dia</Typography>
+                <Typography variant="caption" className="italic text-neo-text-secondary">Toque para adicionar</Typography>
+            </NeoButton>
         );
     }
 
     return (
-        <Card className="p-4 mb-6 relative overflow-hidden">
+        <NeoCard className="p-4 mb-6 relative overflow-hidden">
             {/* Glassmorphism overlay */}
             <div
                 className="absolute inset-0 opacity-10"
@@ -275,38 +273,44 @@ const CountdownWidget: React.FC<{ weddingDate: Date | null; onEditDate: () => vo
                     </div>
                     <div>
                         {/* Gold Glow Number */}
-                        <p
-                            className="text-4xl font-bold font-serif"
+                        <Typography
+                            variant="h1"
+                            className="font-serif !text-4xl"
                             style={{
                                 color: GOLD,
                                 textShadow: `0 0 20px ${GOLD}66, 0 0 40px ${GOLD}33`
                             }}
                         >
                             {days}
-                        </p>
-                        <p className="text-xs text-neo-text-secondary">dias para o grande dia!</p>
+                        </Typography>
+                        <Typography variant="caption" className="text-neo-text-secondary block">dias para o grande dia!</Typography>
                         {weeks > 0 && (
-                            <p className="text-[10px] text-neo-text-secondary">
+                            <Typography variant="caption" className="text-[10px] text-neo-text-secondary block">
                                 ({weeks} semanas e {remainingDays} dias)
-                            </p>
+                            </Typography>
                         )}
                     </div>
                 </div>
                 <div className="text-right">
-                    <p className="text-sm font-medium text-neo-text">
+                    <Typography variant="body" className="font-semibold block">
                         {weddingDate.toLocaleDateString('pt-BR', {
                             day: '2-digit',
                             month: 'long',
                             year: 'numeric'
                         })}
-                    </p>
-                    <button onClick={onEditDate} className="text-xs text-neo-accent mt-1 flex items-center gap-1 ml-auto">
-                        <Edit3 size={12} />
+                    </Typography>
+                    <NeoButton
+                        variant="ghost"
+                        size="sm"
+                        onClick={onEditDate}
+                        className="text-neo-accent mt-1 h-auto p-0 hover:bg-transparent"
+                        icon={<Edit3 size={12} />}
+                    >
                         Alterar
-                    </button>
+                    </NeoButton>
                 </div>
             </div>
-        </Card>
+        </NeoCard>
     );
 };
 
@@ -328,44 +332,39 @@ const MoodboardSection: React.FC<{
     return (
         <section className="mb-6">
             <div className="flex items-center justify-between mb-4">
-                <h2 className="text-subtitle flex items-center gap-2">
+                <Typography variant="h6" className="flex items-center gap-2">
                     <Camera size={18} style={{ color: GOLD }} />
                     Moodboard
-                </h2>
-                <button
+                </Typography>
+                <NeoButton
+                    variant="neu"
+                    size="sm"
                     onClick={() => onAddPhoto('inspiracao')}
-                    className="px-3 py-1.5 bg-neo-bg rounded-neo shadow-neo-out text-xs font-medium text-neo-accent flex items-center gap-1"
+                    className="text-neo-accent"
+                    icon={<Plus size={14} />}
                 >
-                    <Plus size={14} />
                     Adicionar
-                </button>
+                </NeoButton>
             </div>
 
-            {/* Category Filter - Dropdown */}
-            <div className="relative mb-4">
-                <select
+            <div className="mb-4">
+                <NeoSelect
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full px-4 py-3 rounded-neo shadow-neo-in bg-neo-bg text-neo-text appearance-none cursor-pointer focus:outline-none pr-10"
-                >
-                    <option value="all">Todas as Fotos</option>
-                    {MOODBOARD_CATEGORIES.map(cat => (
-                        <option key={cat.id} value={cat.id}>
-                            {cat.label}
-                        </option>
-                    ))}
-                </select>
-                <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-neo-text-secondary pointer-events-none" />
+                    options={[
+                        { value: 'all', label: 'Todas as Fotos' },
+                        ...MOODBOARD_CATEGORIES.map(cat => ({ value: cat.id, label: cat.label }))
+                    ]}
+                />
             </div>
 
-            {/* Photo Grid */}
             <div className="grid grid-cols-3 gap-2 mb-4">
                 {filteredPhotos.map(photo => (
                     <div
                         key={photo.id}
                         className="aspect-square rounded-neo shadow-neo-out overflow-hidden relative group"
                     >
-                        <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                        <img src={photo.imageUrl} alt="" className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <Trash2 size={16} className="text-white cursor-pointer" />
                         </div>
@@ -373,26 +372,27 @@ const MoodboardSection: React.FC<{
                 ))}
 
                 {/* Add Photo Button */}
-                <button
+                <NeoButton
+                    variant="neu"
                     onClick={() => onAddPhoto(selectedCategory === 'all' ? 'inspiracao' : selectedCategory)}
-                    className="aspect-square rounded-neo shadow-neo-in flex flex-col items-center justify-center border-2 border-dashed border-neo-text-secondary/20"
+                    className="aspect-square flex-col gap-1 border-2 border-dashed border-neo-text-secondary/20 shadow-neo-in"
+                    icon={<Upload size={20} className="text-neo-text-secondary" />}
                 >
-                    <Upload size={20} className="text-neo-text-secondary mb-1" />
-                    <span className="text-[10px] text-neo-text-secondary">Upload</span>
-                </button>
+                    <Typography variant="caption" className="text-[10px] text-neo-text-secondary">Upload</Typography>
+                </NeoButton>
             </div>
 
             {/* Pro Notes (Admin Only) */}
             {isAdmin && (
-                <Card className="p-4">
+                <NeoCard className="p-4">
                     <button
                         onClick={() => setShowProNotes(!showProNotes)}
                         className="w-full flex items-center justify-between"
                     >
-                        <span className="font-medium text-neo-text flex items-center gap-2">
+                        <Typography variant="label" className="font-medium flex items-center gap-2">
                             <FileText size={16} style={{ color: GOLD }} />
                             Ficha Técnica do Teste
-                        </span>
+                        </Typography>
                         <ChevronDown
                             size={16}
                             className={cn(
@@ -410,19 +410,19 @@ const MoodboardSection: React.FC<{
                                 exit={{ height: 0, opacity: 0 }}
                                 className="overflow-hidden"
                             >
-                                <textarea
+                                <NeoTextarea
                                     placeholder="Produtos utilizados, tom de base, técnicas aplicadas..."
-                                    className="w-full mt-4 p-3 bg-neo-bg rounded-neo shadow-neo-in text-sm text-neo-text resize-none"
+                                    className="mt-4"
                                     rows={4}
                                     defaultValue={proNotes}
                                 />
-                                <Button variant="primary" size="sm" className="mt-2">
+                                <NeoButton variant="gradient" size="sm" className="mt-2">
                                     Salvar Anotações
-                                </Button>
+                                </NeoButton>
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </Card>
+                </NeoCard>
             )}
         </section>
     );
@@ -444,31 +444,24 @@ const AttendantManager: React.FC<{
             {/* Section Header */}
             <div className="flex items-center justify-between mb-4">
                 <div>
-                    <h2 className="text-subtitle flex items-center gap-2 font-serif">
+                    <Typography variant="h6" className="flex items-center gap-2 font-serif">
                         <Users size={18} style={{ color: GOLD }} />
                         Madrinhas & Convidadas
-                    </h2>
+                    </Typography>
                     {attendants.length > 0 && (
-                        <p className="text-xs text-neo-text-secondary tracking-wider">
+                        <Typography variant="caption" className="tracking-wider text-neo-text-secondary block">
                             {attendants.length} pessoas • Total: {formatCurrency(totalPackage)}
-                        </p>
+                        </Typography>
                     )}
                 </div>
-                {/* Add Button - Glassmorphic with Scale Animation */}
-                <motion.button
+                <NeoButton
+                    variant="glass"
                     onClick={onAdd}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={cn(
-                        "px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium",
-                        "bg-white/10 backdrop-blur-xl border border-white/20",
-                        "shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.4),0_4px_12px_-2px_rgba(0,0,0,0.15)]",
-                        "text-neo-text hover:bg-white/15 transition-colors"
-                    )}
+                    className="px-4 py-2 h-auto gap-2"
+                    icon={<Plus size={16} style={{ color: GOLD }} />}
                 >
-                    <Plus size={16} style={{ color: GOLD }} />
-                    Adicionar
-                </motion.button>
+                    <Typography variant="label" className="font-medium">Adicionar</Typography>
+                </NeoButton>
             </div>
 
             {/* Empty State */}
@@ -488,17 +481,18 @@ const AttendantManager: React.FC<{
                     >
                         <Users size={28} style={{ color: GOLD }} />
                     </div>
-                    <p className="text-neo-text font-serif text-lg mb-1">Convide suas madrinhas</p>
-                    <p className="text-xs text-neo-text-secondary mb-4">
+                    <Typography variant="h6" className="font-serif mb-1">Convide suas madrinhas</Typography>
+                    <Typography variant="caption" className="text-neo-text-secondary mb-4 block">
                         Adicione as pessoas especiais para o dia da noiva
-                    </p>
-                    <button
+                    </Typography>
+                    <NeoButton
+                        variant="ghost"
                         onClick={onAdd}
-                        className="text-sm font-medium"
+                        className="text-sm font-medium hover:bg-transparent p-0"
                         style={{ color: GOLD }}
                     >
                         + Adicionar primeira convidada
-                    </button>
+                    </NeoButton>
                 </motion.div>
             )}
 
@@ -540,36 +534,38 @@ const AttendantManager: React.FC<{
                                         {attendant.name.charAt(0)}
                                     </div>
                                     <div>
-                                        <p className="font-serif font-medium text-neo-text">{attendant.name}</p>
-                                        <p className="text-[11px] text-neo-text-secondary tracking-wider uppercase">
+                                        <Typography variant="body" className="font-serif font-medium">{attendant.name}</Typography>
+                                        <Typography variant="label" className="text-[11px] text-neo-text-secondary tracking-wider uppercase block">
                                             {attendant.relation}
-                                        </p>
+                                        </Typography>
                                     </div>
                                 </div>
-                                <div className="flex gap-1">
-                                    <button
+                                <div className="flex gap-2">
+                                    <NeoButton
+                                        variant="neu"
+                                        size="sm"
                                         onClick={() => onEdit(attendant.id)}
-                                        className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                                    >
-                                        <Edit3 size={14} style={{ color: GOLD }} />
-                                    </button>
-                                    <button
+                                        className="p-0 w-8 h-8 flex items-center justify-center"
+                                        icon={<Edit3 size={14} style={{ color: GOLD }} />}
+                                    />
+                                    <NeoButton
+                                        variant="neu"
+                                        size="sm"
                                         onClick={() => onRemove(attendant.id)}
-                                        className="p-2 rounded-full bg-white/10 hover:bg-red-500/20 transition-colors"
-                                    >
-                                        <Trash2 size={14} className="text-red-400" />
-                                    </button>
+                                        className="p-0 w-8 h-8 flex items-center justify-center group/del"
+                                        icon={<Trash2 size={14} className="text-red-400 group-hover/del:text-red-500" />}
+                                    />
                                 </div>
                             </div>
 
                             {/* Services */}
                             <div className="relative mb-3 pl-1">
                                 {attendant.services.map(service => (
-                                    <div key={service.id} className="flex justify-between text-sm py-1">
-                                        <span className="text-neo-text-secondary">{service.name}</span>
-                                        <span className="text-neo-text font-medium tracking-wider">
+                                    <div key={service.id} className="flex justify-between items-center py-1">
+                                        <Typography variant="caption" className="text-neo-text-secondary">{service.name}</Typography>
+                                        <Typography variant="body" className="font-medium tracking-wider">
                                             {formatCurrency(service.price)}
-                                        </span>
+                                        </Typography>
                                     </div>
                                 ))}
                             </div>
@@ -581,10 +577,10 @@ const AttendantManager: React.FC<{
                                 "shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]"
                             )}>
                                 <div className="flex justify-between text-xs mb-2">
-                                    <span className="text-neo-text-secondary">Pagamento</span>
-                                    <span className="text-neo-text font-semibold tracking-wider">
+                                    <Typography variant="caption" className="text-neo-text-secondary">Pagamento</Typography>
+                                    <Typography variant="label" className="font-semibold tracking-wider">
                                         {paidPercent.toFixed(0)}%
-                                    </span>
+                                    </Typography>
                                 </div>
                                 {/* Custom Progress Bar with Gradient */}
                                 <div className="h-2 bg-black/30 rounded-full overflow-hidden mb-2">
@@ -598,13 +594,13 @@ const AttendantManager: React.FC<{
                                         }}
                                     />
                                 </div>
-                                <div className="flex justify-between text-[11px]">
-                                    <span className="text-green-400 tracking-wider">
+                                <div className="flex justify-between items-center">
+                                    <Typography variant="caption" className="text-green-400 tracking-wider">
                                         Pago: {formatCurrency(attendant.depositPaid)}
-                                    </span>
-                                    <span style={{ color: GOLD }} className="tracking-wider">
+                                    </Typography>
+                                    <Typography variant="caption" style={{ color: GOLD }} className="tracking-wider">
                                         Pendente: {formatCurrency(remaining)}
-                                    </span>
+                                    </Typography>
                                 </div>
                             </div>
                         </motion.div>
@@ -623,28 +619,28 @@ const AttendantManager: React.FC<{
                         "shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.4)]"
                     )}
                 >
-                    <h4 className="font-serif font-semibold text-neo-text mb-3 flex items-center gap-2">
+                    <Typography variant="h6" className="font-serif mb-3 flex items-center gap-2">
                         <DollarSign size={16} style={{ color: GOLD }} />
                         Resumo Financeiro
-                    </h4>
+                    </Typography>
                     <div className="grid grid-cols-3 gap-2 text-center">
                         <div>
-                            <p className="text-xl font-bold text-neo-text tracking-wider">
+                            <Typography variant="h4" className="tracking-wider block">
                                 {formatCurrency(totalPackage)}
-                            </p>
-                            <p className="text-[10px] text-neo-text-secondary uppercase tracking-widest">Total</p>
+                            </Typography>
+                            <Typography variant="label" className="text-[10px] text-neo-text-secondary uppercase tracking-widest block">Total</Typography>
                         </div>
                         <div>
-                            <p className="text-xl font-bold text-green-400 tracking-wider">
+                            <Typography variant="h4" className="text-green-400 tracking-wider block">
                                 {formatCurrency(totalPaid)}
-                            </p>
-                            <p className="text-[10px] text-neo-text-secondary uppercase tracking-widest">Pago</p>
+                            </Typography>
+                            <Typography variant="label" className="text-[10px] text-neo-text-secondary uppercase tracking-widest block">Pago</Typography>
                         </div>
                         <div>
-                            <p className="text-xl font-bold tracking-wider" style={{ color: GOLD }}>
+                            <Typography variant="h4" className="tracking-wider block" style={{ color: GOLD }}>
                                 {formatCurrency(totalPending)}
-                            </p>
-                            <p className="text-[10px] text-neo-text-secondary uppercase tracking-widest">Pendente</p>
+                            </Typography>
+                            <Typography variant="label" className="text-[10px] text-neo-text-secondary uppercase tracking-widest block">Pendente</Typography>
                         </div>
                     </div>
                 </motion.div>
@@ -661,68 +657,72 @@ const DocumentsHub: React.FC<{ hasContract: boolean; onViewContract: () => void;
     onGenerateReceipt
 }) => (
     <section className="mb-6">
-        <h2 className="text-subtitle flex items-center gap-2 mb-4">
+        <Typography variant="h6" className="flex items-center gap-2 mb-4 font-serif">
             <FileText size={18} style={{ color: GOLD }} />
             Documentos
-        </h2>
+        </Typography>
 
         <div className="grid grid-cols-2 gap-3">
-            <button
+            <NeoButton
+                variant="neu"
                 onClick={onViewContract}
                 disabled={!hasContract}
                 className={cn(
-                    'p-4 bg-neo-bg rounded-neo shadow-neo-out flex flex-col items-center gap-2 active:shadow-neo-pressed transition-all',
+                    'p-4 h-auto flex-col gap-2',
                     !hasContract && 'opacity-50 cursor-not-allowed'
                 )}
+                icon={<FileText size={24} style={{ color: GOLD }} />}
             >
-                <FileText size={24} style={{ color: GOLD }} />
-                <span className="text-sm font-medium text-neo-text">Contrato</span>
-                <span className="text-[10px] text-neo-text-secondary">
+                <Typography variant="label" className="font-medium text-neo-text block">Contrato</Typography>
+                <Typography variant="caption" className="text-[10px] text-neo-text-secondary block">
                     {hasContract ? 'Visualizar PDF' : 'Pendente'}
-                </span>
-            </button>
+                </Typography>
+            </NeoButton>
 
-            <button
+            <NeoButton
+                variant="neu"
                 onClick={onGenerateReceipt}
-                className="p-4 bg-neo-bg rounded-neo shadow-neo-out flex flex-col items-center gap-2 active:shadow-neo-pressed transition-all"
+                className="p-4 h-auto flex-col gap-2"
+                icon={<Receipt size={24} style={{ color: GOLD }} />}
             >
-                <Receipt size={24} style={{ color: GOLD }} />
-                <span className="text-sm font-medium text-neo-text">Recibo</span>
-                <span className="text-[10px] text-neo-text-secondary">Gerar PDF</span>
-            </button>
+                <Typography variant="label" className="font-medium text-neo-text block">Recibo</Typography>
+                <Typography variant="caption" className="text-[10px] text-neo-text-secondary block">Gerar PDF</Typography>
+            </NeoButton>
         </div>
     </section>
 );
 
 // Contact Specialist Section
 const ContactSpecialist: React.FC = () => (
-    <Card className="p-4 mb-6">
+    <NeoCard className="p-4 mb-6">
         <div className="flex items-center gap-4 mb-4">
             <div className="w-12 h-12 bg-neo-bg rounded-full shadow-neo-out flex items-center justify-center">
                 <Heart size={20} className="text-neo-accent" />
             </div>
             <div>
-                <h3 className="font-semibold text-neo-text">Fale com nossa Especialista</h3>
-                <p className="text-xs text-neo-text-secondary">Tire dúvidas sobre seu dia especial</p>
+                <Typography variant="label" className="font-semibold text-neo-text block">Fale com nossa Especialista</Typography>
+                <Typography variant="caption" className="text-neo-text-secondary block">Tire dúvidas sobre seu dia especial</Typography>
             </div>
         </div>
         <div className="flex gap-3">
-            <button
+            <NeoButton
+                variant="outline"
                 onClick={() => window.open('https://wa.me/5511999999999?text=Olá! Sou noiva e gostaria de mais informações.', '_blank')}
-                className="flex-1 py-3 bg-neo-bg border-2 border-green-500 text-green-600 rounded-neo shadow-neo-out font-semibold flex items-center justify-center gap-2 active:shadow-neo-pressed"
+                className="flex-1 py-3 border-green-500 text-green-600 hover:bg-green-50 gap-2"
+                icon={<MessageCircle size={18} />}
             >
-                <MessageCircle size={18} />
                 WhatsApp
-            </button>
-            <button
+            </NeoButton>
+            <NeoButton
+                variant="neu"
                 onClick={() => window.open('tel:+5511999999999')}
-                className="flex-1 py-3 bg-neo-bg rounded-neo shadow-neo-out text-neo-text font-semibold flex items-center justify-center gap-2 active:shadow-neo-pressed"
+                className="flex-1 py-3 gap-2"
+                icon={<Phone size={18} />}
             >
-                <Phone size={18} />
                 Ligar
-            </button>
+            </NeoButton>
         </div>
-    </Card>
+    </NeoCard>
 );
 
 // ============================================
@@ -730,55 +730,104 @@ const ContactSpecialist: React.FC = () => (
 // ============================================
 export const BridePortalPage: React.FC = () => {
     const navigate = useNavigate();
-    const { id } = useParams<{ id: string }>();
+    //     const { id } = useParams<{ id: string }>();    
+    const params = useParams<{ id: string }>();
+    // For demo purposes, if no ID is present, we treat it as valid to show the Mock Data
+    const id = params.id || 'demo-mode';
+    const isDemo = id === 'demo-mode';
+
     const [showIntakeForm, setShowIntakeForm] = useState(false);
 
-    // If no ID in URL, redirect to onboarding
+    // MOCK DATA FOR DEMO/TESTING
+    const dummyBrideData = {
+        id: 'mock-bride-1',
+        clientId: 'test-client-uid',
+        clientName: 'Marcela (Noiva Teste)',
+        weddingDate: new Date('2025-12-15'),
+        status: 'active',
+        packageId: 'combo-glam-plus',
+        totalValue: 2450.00,
+        paidValue: 800.00,
+        contractSigned: false,
+        contractUrl: null,
+        notes: 'Gostaria de testar penteado meio preso.',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        timeline: [
+            { id: '1', title: 'Reserva & Contrato', status: 'completed', date: new Date('2024-01-10') },
+            { id: '2', title: 'Teste de Penteado', status: 'scheduled', date: new Date('2024-11-20'), subtitle: '14:00' },
+            { id: '3', title: 'Teste de Make', status: 'pending' },
+            { id: '4', title: 'O Grande Dia', status: 'pending', date: new Date('2025-12-15') }
+        ] as any[],
+        moodboardPhotos: [
+            { id: '1', imageUrl: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80', category: 'dress' },
+            { id: '2', imageUrl: 'https://images.unsplash.com/photo-1522337360477-36358785d18b?auto=format&fit=crop&q=80', category: 'hair' },
+            { id: '3', imageUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?auto=format&fit=crop&q=80', category: 'makeup' }
+        ] as any[],
+        attendants: [
+            { id: '1', name: 'Ana Silva', relation: 'Mãe da Noiva', services: [{ id: 'mk1', name: 'Make Social', price: 160 }], depositPaid: 50, totalPrice: 160 },
+            { id: '2', name: 'Julia Santos', relation: 'Madrinha', services: [{ id: 'hair1', name: 'Penteado', price: 140 }], depositPaid: 140, totalPrice: 140 }
+        ] as any[]
+    };
+
+    // No longer redirecting if !id. We show Demo Data instead.
+    /*
     React.useEffect(() => {
         if (!id) {
             navigate('/noiva/cadastro');
         }
     }, [id, navigate]);
+    */
 
-    const { data: bride, isLoading } = useQuery({
+    const { data: fetchedBride, isLoading } = useQuery({
         queryKey: ['bride_full_data', id],
-        queryFn: () => (id ? getFullBrideData(id) : Promise.reject('No ID')),
-        enabled: !!id,
+        queryFn: () => getFullBrideData(id),
+        enabled: !!id && !isDemo, // Only fetch if we have a real ID
     });
 
-    if (!id) return null; // Will redirect
-    if (isLoading) return <BridePortalSkeleton />;
-    if (!bride) return <div className="p-8 text-center">Noiva não encontrada</div>;
+    // Use Mock Data if in Demo Mode, otherwise real data
+    const bride = isDemo ? dummyBrideData : fetchedBride;
 
-    const timeline = bride.timeline || [];
-    const moodboardPhotos = bride.moodboardPhotos || [];
-    const attendants = bride.attendants || [];
+    // Loading state only matters if we are NOT in demo mode and trying to fetch
+    if (!isDemo && isLoading) return <BridePortalSkeleton />;
+
+    // If real fetch failed or returned null (and not demo)
+    if (!isDemo && !bride) return <div className="p-8 text-center">Noiva não encontrada</div>;
+
+    // Safety check for empty data even in demo (shouldn't happen with const)
+    if (!bride) return null;
+
+    // Cast properties to safe defaults
+    const timeline = (bride as any).timeline || [];
+    const moodboardPhotos = (bride as any).moodboardPhotos || [];
+    const attendants = (bride as any).attendants || [];
 
     const handleAddPhoto = (category: string) => {
         toast.info(`Upload de foto para ${category} em breve!`);
     };
 
     const handleViewContract = () => {
-        alert('Abrindo contrato PDF...');
+        toast.info('Contrato de demonstração visualizado');
     };
 
     const handleGenerateReceipt = () => {
-        alert('Gerando recibo PDF...');
+        toast.success('Recibo gerado com sucesso!');
     };
 
     return (
         <div className="min-h-screen bg-neo-bg pb-24 overflow-x-hidden">
             <header className="p-4 bg-neo-bg/80 backdrop-blur-md sticky top-0 z-30">
                 <div className="w-full max-w-[480px] mx-auto flex items-center justify-between">
-                    <button
+                    <NeoButton
+                        variant="neu"
+                        size="sm"
                         onClick={() => navigate(-1)}
-                        className="w-10 h-10 bg-neo-bg rounded-neo shadow-neo-out flex items-center justify-center active:shadow-neo-pressed"
-                    >
-                        <ArrowLeft size={20} className="text-neo-text-secondary" />
-                    </button>
+                        className="w-10 h-10 p-0 flex items-center justify-center"
+                        icon={<ArrowLeft size={20} className="text-neo-text-secondary" />}
+                    />
                     <div className="flex items-center gap-2">
                         <Crown size={20} style={{ color: GOLD }} />
-                        <h1 className="font-display font-semibold text-neo-text">Área da Noiva</h1>
+                        <Typography variant="h6" className="font-serif">Área da Noiva</Typography>
                     </div>
                     <div className="w-10" />
                 </div>
@@ -787,8 +836,10 @@ export const BridePortalPage: React.FC = () => {
             <main className="w-full max-w-[480px] mx-auto p-4 pb-12">
                 {/* Header Welcome */}
                 <div className="mb-8 p-4">
-                    <h1 className="text-3xl font-serif font-bold text-neo-text mb-1">Olá, {bride.clientName}</h1>
-                    <p className="text-neo-text-secondary italic">Seu grande sonho está sendo preparado com carinho.</p>
+                    <Typography variant="h1" className="font-serif !text-3xl mb-1">Olá, {bride.clientName}</Typography>
+                    <Typography variant="body" className="text-neo-text-secondary italic block">
+                        Seu grande sonho está sendo preparado com carinho.
+                    </Typography>
                 </div>
 
                 {/* Countdown */}
@@ -798,22 +849,24 @@ export const BridePortalPage: React.FC = () => {
                 />
 
                 {/* Digital Intake CTA */}
-                <Card className="p-4 mb-6 bg-gradient-to-br from-neo-bg to-neo-accent/5 border border-neo-accent/20">
+                <NeoCard className="p-4 mb-6 bg-gradient-to-br from-neo-bg to-neo-accent/5 border border-neo-accent/20">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-white shadow-neo-out flex items-center justify-center text-neo-accent">
                                 <FileText size={20} />
                             </div>
                             <div>
-                                <h4 className="text-sm font-bold text-neo-text">Ficha de Noiva</h4>
-                                <p className="text-[10px] text-neo-text-secondary italic">Conte-nos seus desejos e preferências</p>
+                                <Typography variant="label" className="font-bold block">Ficha de Noiva</Typography>
+                                <Typography variant="caption" className="text-[10px] text-neo-text-secondary italic block">
+                                    Conte-nos seus desejos e preferências
+                                </Typography>
                             </div>
                         </div>
-                        <Button size="sm" onClick={() => setShowIntakeForm(true)}>
+                        <NeoButton variant="neu" size="sm" onClick={() => setShowIntakeForm(true)}>
                             Preencher
-                        </Button>
+                        </NeoButton>
                     </div>
-                </Card>
+                </NeoCard>
 
                 {/* Timeline */}
                 <JourneyTimeline steps={timeline.map(m => ({
@@ -827,7 +880,7 @@ export const BridePortalPage: React.FC = () => {
                 <MoodboardSection
                     photos={moodboardPhotos.map(p => ({
                         id: p.id,
-                        url: p.url,
+                        imageUrl: p.imageUrl,
                         category: p.category as any
                     }))}
                     onAddPhoto={handleAddPhoto}
@@ -840,7 +893,11 @@ export const BridePortalPage: React.FC = () => {
                         id: a.id,
                         name: a.name,
                         relation: a.relation === 'bridesmaid' ? 'Madrinha' : a.relation === 'mother' ? 'Mãe' : 'Convidada',
-                        services: Array.isArray(a.services) ? a.services.map(s => ({ id: s, name: s, price: 0 })) : [],
+                        services: Array.isArray(a.services) ? a.services.map(s => {
+                            if (typeof s === 'string') return { id: s, name: s, price: 0 };
+                            // Handle if s is already an object
+                            return { id: s.id, name: s.name, price: s.price || 0 };
+                        }) : [],
                         depositPaid: a.isPaid ? 100 : 0,
                         totalPrice: 100
                     }))}
@@ -850,30 +907,27 @@ export const BridePortalPage: React.FC = () => {
                 />
 
                 {/* Service Selection Card */}
-                <motion.button
+                <NeoButton
+                    variant="glass"
                     onClick={() => navigate(`/noiva/${id}/colecao`)}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={cn(
-                        "w-full p-6 mb-6 rounded-[1.5rem] text-left group overflow-hidden relative",
-                        "bg-white/10 backdrop-blur-2xl border border-white/20",
-                        "shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.4),0_10px_20px_-5px_rgba(0,0,0,0.2)]"
-                    )}
+                    className="w-full p-6 mb-6 rounded-[1.5rem] h-auto shadow-neo-out-lg group"
                 >
-                    <div className="relative flex items-center gap-4">
+                    <div className="w-full flex items-center gap-4">
                         <div
                             className="w-14 h-14 rounded-full flex items-center justify-center shadow-neo-out"
                             style={{ background: `linear-gradient(135deg, ${GOLD_LIGHT} 0%, ${GOLD} 100%)` }}
                         >
                             <Package size={24} className="text-white" />
                         </div>
-                        <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-neo-text">Meus Serviços</h3>
-                            <p className="text-sm text-neo-text-secondary">Personalize seu pacote especial</p>
+                        <div className="flex-1 text-left">
+                            <Typography variant="h6" className="text-lg block">Meus Serviços</Typography>
+                            <Typography variant="caption" className="text-sm text-neo-text-secondary block">
+                                Personalize seu pacote especial
+                            </Typography>
                         </div>
-                        <ChevronRight size={24} className="text-neo-accent" />
+                        <ChevronRight size={24} className="text-neo-accent transition-transform group-hover:translate-x-1" />
                     </div>
-                </motion.button>
+                </NeoButton>
 
                 {/* Documents Hub */}
                 <DocumentsHub
@@ -885,6 +939,7 @@ export const BridePortalPage: React.FC = () => {
                 {/* Contact */}
                 <ContactSpecialist />
             </main>
+
             {/* Intake Form Modal */}
             <AnimatePresence>
                 {showIntakeForm && (

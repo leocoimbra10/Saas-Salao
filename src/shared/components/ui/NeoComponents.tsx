@@ -9,7 +9,7 @@ import { Check } from 'lucide-react';
 // ===== BUTTON COMPONENT =====
 interface NeoButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'neu' | 'glass' | 'glow' | 'ghost' | 'gradient' | 'outline';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'icon';
   fullWidth?: boolean;
   loading?: boolean;
   icon?: React.ReactNode;
@@ -43,7 +43,8 @@ export const NeoButton = React.forwardRef<HTMLButtonElement, NeoButtonProps>(
     const sizeClasses = {
       sm: "px-4 py-2 text-sm",
       md: "px-6 py-3 text-base",
-      lg: "px-8 py-4 text-lg"
+      lg: "px-8 py-4 text-lg",
+      icon: "h-10 w-10 p-0 flex items-center justify-center"
     };
 
     return (
@@ -73,10 +74,8 @@ export const NeoButton = React.forwardRef<HTMLButtonElement, NeoButtonProps>(
 NeoButton.displayName = 'NeoButton';
 
 // ===== TYPOGRAPHY COMPONENT =====
-interface TypographyProps {
+interface TypographyProps extends React.HTMLAttributes<HTMLElement> {
   variant: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'body' | 'caption' | 'label';
-  children: React.ReactNode;
-  className?: string;
   as?: React.ElementType;
 }
 
@@ -84,7 +83,8 @@ export const Typography: React.FC<TypographyProps> = ({
   variant,
   children,
   className,
-  as
+  as,
+  ...props
 }) => {
   const variants = {
     h1: { tag: 'h1', class: 'text-4xl md:text-5xl font-display font-bold text-neo-text' },
@@ -99,9 +99,9 @@ export const Typography: React.FC<TypographyProps> = ({
   };
 
   const { tag: Tag, class: variantClass } = variants[variant];
-  const Component = as || Tag;
+  const Component = (as || Tag) as any;
 
-  return <Component className={cn(variantClass, className)}>{children}</Component>;
+  return <Component className={cn(variantClass, className)} {...props}>{children}</Component>;
 };
 
 // ===== INPUT COMPONENT =====
@@ -144,6 +144,42 @@ export const NeoInput = React.forwardRef<HTMLInputElement, NeoInputProps>(
   }
 );
 NeoInput.displayName = 'NeoInput';
+
+// ===== TEXTAREA COMPONENT =====
+export interface NeoTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+  error?: string;
+}
+
+export const NeoTextarea = React.forwardRef<HTMLTextAreaElement, NeoTextareaProps>(
+  ({ className, label, error, ...props }, ref) => {
+    return (
+      <div className="w-full">
+        {label && (
+          <Typography variant="label" className="mb-1.5 block ml-1">
+            {label}
+          </Typography>
+        )}
+
+        <textarea
+          ref={ref}
+          className={cn(
+            "w-full px-4 py-3 rounded-neo shadow-neo-in bg-neo-bg",
+            "text-neo-text placeholder:text-neo-text-secondary/50",
+            "focus:outline-none focus:ring-2 focus:ring-brand-primary/20",
+            "transition-all duration-200 resize-none",
+            error && "shadow-neo-danger-in",
+            className
+          )}
+          {...props}
+        />
+
+        {error && <Typography variant="caption" className="mt-1 text-neo-danger">{error}</Typography>}
+      </div>
+    );
+  }
+);
+NeoTextarea.displayName = 'NeoTextarea';
 
 // ===== SELECT COMPONENT =====
 interface NeoSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
@@ -439,4 +475,46 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     </div>
   );
 };
+// ===== SKELETON COMPONENT =====
+export const Skeleton: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, ...props }) => (
+  <div
+    className={cn("animate-pulse rounded-neo bg-neo-text-secondary/10", className)}
+    {...props}
+  />
+);
+Skeleton.displayName = 'Skeleton';
+
 EmptyState.displayName = 'EmptyState';
+
+// ===== TOGGLE COMPONENT =====
+interface ToggleProps {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  disabled?: boolean;
+  className?: string;
+  label?: string;
+}
+
+export const Toggle: React.FC<ToggleProps> = ({ checked, onChange, disabled, className, label }) => {
+  return (
+    <label className={cn("inline-flex items-center gap-2 cursor-pointer", disabled && "opacity-50 cursor-not-allowed", className)}>
+      <div
+        className={cn(
+          "w-12 h-6 rounded-full p-1 transition-all duration-300 relative",
+          checked ? "bg-neo-accent shadow-neo-in" : "bg-neo-bg shadow-neo-in"
+        )}
+        onClick={() => !disabled && onChange(!checked)}
+      >
+        <div
+          className={cn(
+            "w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-300",
+            checked ? "translate-x-6" : "translate-x-0"
+          )}
+        />
+      </div>
+      {label && <Typography variant="caption">{label}</Typography>}
+    </label>
+  );
+};
+Toggle.displayName = 'Toggle';
+

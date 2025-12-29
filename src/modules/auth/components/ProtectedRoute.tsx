@@ -4,14 +4,17 @@
  */
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
+    allowedRoles?: string[];
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-    const { user, loading } = useAuth();
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
+    const { user, profile, loading } = useAuth();
+    // Use location to redirect back after login
+    // const location = useLocation(); // Need to import useLocation if used
 
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center bg-neo-bg text-neo-text">Carregando...</div>;
@@ -19,6 +22,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
     if (!user) {
         return <Navigate to="/login" replace />;
+    }
+
+    if (allowedRoles && (!profile || !allowedRoles.includes(profile.role))) {
+        // Redirect to unauthorized page or home
+        return <Navigate to="/" replace />;
     }
 
     return <>{children}</>;

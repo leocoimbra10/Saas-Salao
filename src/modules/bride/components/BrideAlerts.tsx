@@ -7,7 +7,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Check, Bell, AlertTriangle, Lightbulb, Calendar } from 'lucide-react';
 import { cn } from '../../../shared/lib/utils';
-import { BrideNotification } from '../../../bride/services/brideIntelligence';
+import { BrideNotification } from '../services/brideIntelligence';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 

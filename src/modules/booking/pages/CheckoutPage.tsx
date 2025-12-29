@@ -23,6 +23,7 @@ import { paymentService } from '../services/paymentService';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
 import { BrideOnboardingModal } from '../../bride/components/BrideOnboardingModal';
 import { saveBrideJourney } from '../../bride/services/brideIntelligence';
+import { NeoButton, NeoCard, Typography, Badge } from '../../../shared/components/ui/NeoComponents';
 
 // Brand Colors
 const ROSE = 'var(--color-brand-primary)';
@@ -113,7 +114,7 @@ const GlassCreditCard: React.FC<{
                         {/* Name and Expiry */}
                         <div className="flex justify-between items-end">
                             <div className="flex-1 mr-4">
-                                <p className="text-[10px] text-white/50 uppercase mb-1">Nome no Cartão</p>
+                                <Typography variant="caption" className="text-[10px] text-white/50 uppercase mb-1">Nome no Cartão</Typography>
                                 <input
                                     type="text"
                                     value={cardName}
@@ -123,7 +124,7 @@ const GlassCreditCard: React.FC<{
                                 />
                             </div>
                             <div>
-                                <p className="text-[10px] text-white/50 uppercase mb-1">Validade</p>
+                                <Typography variant="caption" className="text-[10px] text-white/50 uppercase mb-1">Validade</Typography>
                                 <input
                                     type="text"
                                     value={expiry}
@@ -169,7 +170,7 @@ const GlassCreditCard: React.FC<{
                                     />
                                 </div>
                             </div>
-                            <p className="text-[10px] text-white/50 mt-2 text-right">Código de Segurança</p>
+                            <Typography variant="caption" className="text-[10px] text-white/50 mt-2 text-right">Código de Segurança</Typography>
                         </div>
                     </div>
                 </motion.div>
@@ -209,8 +210,8 @@ const SuccessScreen: React.FC<{
                 <CheckCircle size={56} className="text-white" />
             </motion.div>
 
-            <h2 className="text-2xl font-display font-bold text-white mb-2">Pagamento Confirmado!</h2>
-            <p className="text-white/70 mb-6">Seu agendamento foi confirmado com sucesso.</p>
+            <Typography variant="h3" className="font-bold text-white mb-2">Pagamento Confirmado!</Typography>
+            <Typography variant="body" className="text-white/70 mb-6">Seu agendamento foi confirmado com sucesso.</Typography>
 
             {/* Bridal Journey CTA - Shows for bride services */}
             {isBrideService && (
@@ -228,48 +229,33 @@ const SuccessScreen: React.FC<{
                             <Crown size={24} className="text-white" />
                         </div>
                         <div className="text-left">
-                            <h3 className="font-semibold text-white">Personalize sua Jornada</h3>
-                            <p className="text-xs text-white/60">Configure a data do seu grande dia</p>
+                            <Typography variant="h4" className="font-semibold text-white">Personalize sua Jornada</Typography>
+                            <Typography variant="caption" className="text-white/60">Configure a data do seu grande dia</Typography>
                         </div>
                     </div>
-                    <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                    <NeoButton
+                        variant="gradient"
+                        fullWidth
                         onClick={onStartBridalJourney}
-                        className="w-full py-3 rounded-xl font-semibold text-white flex items-center justify-center gap-2"
-                        style={{
-                            background: `linear-gradient(135deg, ${ROSE}90 0%, ${GOLD}90 100%)`,
-                            boxShadow: `0 5px 20px -5px ${ROSE}60`
-                        }}
+                        className="rounded-xl shadow-lg"
+                        icon={<Sparkles size={18} />}
                     >
-                        <Sparkles size={18} />
                         Começar Jornada de Noiva
-                    </motion.button>
+                    </NeoButton>
                 </motion.div>
             )}
 
-            <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+            <NeoButton
+                variant={isBrideService ? 'glass' : 'gradient'}
+                fullWidth
+                size="lg"
                 onClick={onViewAppointments}
-                className={cn(
-                    "w-full py-4 rounded-2xl font-semibold flex items-center justify-center gap-2",
-                    isBrideService
-                        ? "bg-white/10 text-white border border-white/20"
-                        : "text-white"
-                )}
-                style={!isBrideService ? {
-                    background: `linear-gradient(135deg, ${ROSE} 0%, ${GOLD} 100%)`,
-                    boxShadow: `0 10px 40px -10px ${ROSE}80`
-                } : undefined}
             >
                 Ver Meus Agendamentos
-            </motion.button>
+            </NeoButton>
         </motion.div>
     </motion.div>
 );
-
-
 
 // Main Checkout Page
 export const CheckoutPage: React.FC = () => {
@@ -408,34 +394,35 @@ export const CheckoutPage: React.FC = () => {
             <div className="w-full max-w-[480px] mx-auto">
                 {/* Header */}
                 <header className="p-4 flex items-center gap-4">
-                    <button
+                    <NeoButton
+                        variant="neu"
+                        size="icon"
                         onClick={() => navigate(-1)}
-                        className="w-10 h-10 bg-neo-bg rounded-neo shadow-neo-out flex items-center justify-center active:shadow-neo-pressed"
                     >
                         <ArrowLeft size={20} className="text-neo-text-secondary" />
-                    </button>
+                    </NeoButton>
                     <div>
-                        <h1 className="text-xl font-display font-bold text-neo-text">Pagamento</h1>
-                        <p className="text-sm text-neo-text-secondary">Finalize seu agendamento</p>
+                        <Typography variant="h4" className="font-bold text-neo-text">Pagamento</Typography>
+                        <Typography variant="caption" className="text-neo-text-secondary">Finalize seu agendamento</Typography>
                     </div>
                 </header>
 
                 <main className="px-4">
                     {/* Order Summary Mini */}
-                    <div className="bg-neo-bg rounded-neo shadow-neo-in p-4 mb-6">
+                    <NeoCard className="p-4 mb-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-neo-text">{checkoutData.serviceName}</p>
-                                <p className="text-xs text-neo-text-secondary">{checkoutData.date} às {checkoutData.time}</p>
+                                <Typography variant="h5" className="font-medium text-neo-text">{checkoutData.serviceName}</Typography>
+                                <Typography variant="caption" className="text-neo-text-secondary">{checkoutData.date} às {checkoutData.time}</Typography>
                             </div>
-                            <p className="text-lg font-bold" style={{ color: ROSE }}>
+                            <Typography variant="h4" className="font-bold" style={{ color: ROSE }}>
                                 {formatCurrency(checkoutData.totalAmount)}
-                            </p>
+                            </Typography>
                         </div>
-                    </div>
+                    </NeoCard>
 
                     {/* Payment Amount Choice */}
-                    <h2 className="text-sm font-semibold text-neo-text mb-3">Escolha o valor</h2>
+                    <Typography variant="body" className="font-semibold text-neo-text mb-3">Escolha o valor</Typography>
                     <div className="grid grid-cols-2 gap-3 mb-6">
                         {/* Deposit Option */}
                         <motion.button
@@ -451,11 +438,11 @@ export const CheckoutPage: React.FC = () => {
                                 border: paymentChoice === 'deposit' ? `2px solid ${GOLD}` : '2px solid transparent'
                             }}
                         >
-                            <p className="text-xs text-neo-text-secondary mb-1">Pagar Sinal</p>
-                            <p className="text-xl font-bold text-neo-text">{formatCurrency(depositAmount)}</p>
-                            <p className="text-[10px] text-neo-text-secondary mt-1">
+                            <Typography variant="caption" className="text-neo-text-secondary mb-1">Pagar Sinal</Typography>
+                            <Typography variant="h6" className="font-bold text-neo-text">{formatCurrency(depositAmount)}</Typography>
+                            <Typography variant="caption" className="text-[10px] text-neo-text-secondary mt-1">
                                 {checkoutData.depositPercentage}% do total
-                            </p>
+                            </Typography>
                         </motion.button>
 
                         {/* Full Amount Option */}
@@ -472,41 +459,39 @@ export const CheckoutPage: React.FC = () => {
                                 border: paymentChoice === 'full' ? `2px solid ${GOLD}` : '2px solid transparent'
                             }}
                         >
-                            <p className="text-xs text-neo-text-secondary mb-1">Valor Total</p>
-                            <p className="text-xl font-bold text-neo-text">{formatCurrency(checkoutData.totalAmount)}</p>
-                            <p className="text-[10px] text-green-600 mt-1">Sem saldo restante</p>
+                            <Typography variant="caption" className="text-neo-text-secondary mb-1">Valor Total</Typography>
+                            <Typography variant="h6" className="font-bold text-neo-text">{formatCurrency(checkoutData.totalAmount)}</Typography>
+                            <Typography variant="caption" className="text-[10px] text-green-600 mt-1">Sem saldo restante</Typography>
                         </motion.button>
                     </div>
 
                     {/* Payment Method Tabs */}
-                    <h2 className="text-sm font-semibold text-neo-text mb-3">Forma de pagamento</h2>
+                    <Typography variant="body" className="font-semibold text-neo-text mb-3">Forma de pagamento</Typography>
                     <div className="flex bg-neo-bg rounded-neo shadow-neo-in p-1 mb-6">
-                        <button
+                        <NeoButton
+                            variant={paymentMethod === 'pix' ? 'neu' : 'ghost'}
+                            fullWidth
                             onClick={() => setPaymentMethod('pix')}
                             className={cn(
-                                "flex-1 py-3 rounded-neo text-sm font-semibold transition-all flex items-center justify-center gap-2",
-                                paymentMethod === 'pix'
-                                    ? "bg-neo-bg shadow-neo-out"
-                                    : "text-neo-text-secondary"
+                                "rounded-neo text-sm font-semibold transition-all flex items-center justify-center gap-2",
+                                paymentMethod === 'pix' ? "text-brand-primary" : "text-neo-text-secondary"
                             )}
-                            style={{ color: paymentMethod === 'pix' ? ROSE : undefined }}
                         >
                             <QrCode size={18} />
                             PIX
-                        </button>
-                        <button
+                        </NeoButton>
+                        <NeoButton
+                            variant={paymentMethod === 'card' ? 'neu' : 'ghost'}
+                            fullWidth
                             onClick={() => setPaymentMethod('card')}
                             className={cn(
-                                "flex-1 py-3 rounded-neo text-sm font-semibold transition-all flex items-center justify-center gap-2",
-                                paymentMethod === 'card'
-                                    ? "bg-neo-bg shadow-neo-out"
-                                    : "text-neo-text-secondary"
+                                "rounded-neo text-sm font-semibold transition-all flex items-center justify-center gap-2",
+                                paymentMethod === 'card' ? "text-brand-primary" : "text-neo-text-secondary"
                             )}
-                            style={{ color: paymentMethod === 'card' ? ROSE : undefined }}
                         >
                             <CreditCard size={18} />
                             Cartão
-                        </button>
+                        </NeoButton>
                     </div>
 
                     {/* Payment Content */}
@@ -523,21 +508,23 @@ export const CheckoutPage: React.FC = () => {
                                     alt="QR Code PIX"
                                     className="w-48 h-48 mb-4"
                                 />
-                                <p className="text-sm text-gray-600 mb-4 text-center">
+                                <Typography variant="caption" className="text-gray-600 mb-4 text-center">
                                     Escaneie o código acima para pagar {formatCurrency(selectedAmount)}
-                                </p>
+                                </Typography>
 
-                                <button
+                                <NeoButton
+                                    variant="neu"
                                     onClick={() => {
                                         navigator.clipboard.writeText(pixData.qr_code);
                                         setPixCopied(true);
                                         setTimeout(() => setPixCopied(false), 2000);
                                     }}
-                                    className="w-full py-3 rounded-xl bg-gray-100 text-gray-800 font-medium flex items-center justify-center gap-2"
+                                    fullWidth
+                                    className="bg-gray-100 text-gray-800"
+                                    icon={pixCopied ? <Check size={18} /> : <Copy size={18} />}
                                 >
-                                    {pixCopied ? <Check size={18} /> : <Copy size={18} />}
                                     {pixCopied ? 'Copiado!' : 'Copiar Código Copia e Cola'}
-                                </button>
+                                </NeoButton>
                             </motion.div>
                         ) : (
                             <div className="mb-8">
@@ -569,44 +556,24 @@ export const CheckoutPage: React.FC = () => {
                     </AnimatePresence>
 
                     {/* Security Notice */}
-                    <div className="flex items-center gap-2 text-[11px] text-neo-text-secondary mb-6">
-                        <Lock size={14} />
-                        <span>Pagamento 100% seguro com criptografia de ponta a ponta</span>
+                    <div className="flex items-center gap-2 mb-6">
+                        <Lock size={14} className="text-neo-text-secondary" />
+                        <Typography variant="caption" className="text-[11px] text-neo-text-secondary">Pagamento 100% seguro com criptografia de ponta a ponta</Typography>
                     </div>
 
                     {/* Pay Button */}
-                    <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                    <NeoButton
+                        variant="gradient"
+                        fullWidth
+                        size="lg"
                         onClick={handlePayment}
+                        loading={isProcessing}
                         disabled={isProcessing}
-                        className={cn(
-                            "w-full py-4 rounded-neo font-semibold text-white flex items-center justify-center gap-2 transition-all relative overflow-hidden",
-                            isProcessing && "opacity-70 cursor-not-allowed"
-                        )}
-                        style={{
-                            background: `linear-gradient(135deg, ${ROSE} 0%, ${GOLD} 100%)`,
-                            boxShadow: `0 10px 30px -10px ${ROSE}80`
-                        }}
+                        className="relative overflow-hidden"
+                        icon={!isProcessing ? <Sparkles size={18} /> : undefined}
                     >
-                        {/* Liquid Ripple Effect */}
-                        <div className="absolute inset-0 bg-white/20 opacity-0 hover:opacity-100 transition-opacity" />
-
-                        {isProcessing ? (
-                            <>
-                                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                </svg>
-                                Processando...
-                            </>
-                        ) : (
-                            <>
-                                <Sparkles size={18} />
-                                Finalizar Pagamento • {formatCurrency(selectedAmount)}
-                            </>
-                        )}
-                    </motion.button>
+                        {isProcessing ? 'Processando...' : `Finalizar Pagamento • ${formatCurrency(selectedAmount)}`}
+                    </NeoButton>
                 </main>
             </div>
         </div>

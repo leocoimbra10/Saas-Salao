@@ -8,7 +8,7 @@ import {
     ArrowLeft,
     CheckCircle2
 } from 'lucide-react';
-import { Card, Button, Badge } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, NeoButton, Badge } from '../../../shared/components/ui/NeoComponents';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
 
 interface CheckoutViewProps {
@@ -124,14 +124,14 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
                                 </button>
                             </div>
 
-                            <Button
-                                variant="primary"
+                            <NeoButton
+                                variant="gradient"
                                 className="w-full py-4 rounded-full text-lg shadow-neo-out-lg"
                                 onClick={handlePayment}
                             >
                                 Pagar Agora
                                 <ChevronRight className="ml-2" size={20} />
-                            </Button>
+                            </NeoButton>
 
                             <div className="flex items-center justify-center gap-2 mt-6 text-neo-text-secondary">
                                 <ShieldCheck size={14} className="text-neo-success" />

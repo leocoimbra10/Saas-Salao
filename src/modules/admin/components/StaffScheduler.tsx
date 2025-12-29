@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
 import { Appointment, Service, Staff } from '../../../shared/types/types';
-import { Badge, Card, Avatar } from '../../../shared/components/ui/NeoComponents';
+import { Badge, NeoCard, Avatar } from '../../../shared/components/ui/NeoComponents';
 
 interface StaffSchedulerProps {
     selectedDate: Date;

@@ -19,8 +19,8 @@ import {
     Save,
     X
 } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { Card, Button, Badge, Progress } from '../components/ui/NeoComponents';
+import { cn } from '../../lib/utils';
+import { NeoCard, NeoButton, Badge, Progress } from '../ui/NeoComponents';
 
 // Types
 export interface AnamnesisData {
@@ -263,7 +263,7 @@ const Step2HealthSafety: React.FC<{
             <h2 className="text-xl font-semibold text-neo-text">Saúde & Segurança</h2>
         </div>
 
-        <Card className="p-4 mb-6 border-2 border-red-200 bg-red-50/50">
+        <NeoCard className="p-4 mb-6 border-2 border-red-200 bg-red-50/50">
             <p className="text-sm text-red-700 font-medium mb-4">
                 <AlertTriangle size={16} className="inline mr-2" />
                 Alergias e Sensibilidades
@@ -296,7 +296,7 @@ const Step2HealthSafety: React.FC<{
                 })}
                 placeholder="Fragrâncias, nickel, etc..."
             />
-        </Card>
+        </NeoCard>
 
         <NeoToggle
             label="Sensibilidade nos Olhos"
@@ -486,34 +486,34 @@ export const AnamnesisForm: React.FC<{
                 {/* Footer Navigation */}
                 <div className="p-4 border-t border-neo-text-secondary/10 flex gap-3">
                     {currentStep > 0 && (
-                        <Button
+                        <NeoButton
                             variant="ghost"
                             onClick={() => setCurrentStep(prev => prev - 1)}
                             className="flex-1"
                         >
                             <ChevronLeft size={18} />
                             Anterior
-                        </Button>
+                        </NeoButton>
                     )}
 
                     {currentStep < steps.length - 1 ? (
-                        <Button
-                            variant="primary"
+                        <NeoButton
+                            variant="gradient"
                             onClick={() => setCurrentStep(prev => prev + 1)}
                             className="flex-1"
                         >
                             Próximo
                             <ChevronRight size={18} />
-                        </Button>
+                        </NeoButton>
                     ) : (
-                        <Button
-                            variant="primary"
+                        <NeoButton
+                            variant="gradient"
                             onClick={handleSave}
                             className="flex-1"
                         >
                             <Save size={18} />
                             Salvar Ficha
-                        </Button>
+                        </NeoButton>
                     )}
                 </div>
             </motion.div>
@@ -602,10 +602,10 @@ export const AnamnesisViewModal: React.FC<{
                         </div>
                     )}
 
-                    <Button variant="primary" className="w-full mt-6" onClick={onClose}>
+                    <NeoButton variant="gradient" className="w-full mt-6" onClick={onClose}>
                         <CheckCircle size={18} />
                         Fechar
-                    </Button>
+                    </NeoButton>
                 </div>
             </motion.div>
         </div>

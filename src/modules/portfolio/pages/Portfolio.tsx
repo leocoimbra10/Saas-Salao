@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { cn, format } from '../../../shared/lib/utils';
 import { PortfolioItem } from '../../../shared/types/types';
-import { Card, Button, Badge, Progress, NeoSelect } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, NeoButton, Badge, Progress, NeoSelect } from '../../../shared/components/ui/NeoComponents';
 import { ActionBottomSheet } from '../../../shared/components/ui/BottomSheet';
 
 // Mock portfolio data - Beauty Salon themed images
@@ -370,14 +370,14 @@ export const Portfolio: React.FC = () => {
               <h1 className="text-display mb-2">Portfolio</h1>
               <p className="text-caption">Veja nossos trabalhos</p>
             </div>
-            <Button
-              variant="primary"
+            <NeoButton
+              variant="gradient"
               size="sm"
               onClick={() => setShowUpload(true)}
             >
               <Plus size={18} />
               Adicionar
-            </Button>
+            </NeoButton>
           </div>
 
           {/* Filter Dropdown */}
@@ -388,7 +388,7 @@ export const Portfolio: React.FC = () => {
                 ...PORTFOLIO_CATEGORIES
               ]}
               value={filter}
-              onChange={(value) => setFilter(value as 'all' | PortfolioCategory)}
+              onChange={(e) => setFilter(e.target.value as 'all' | PortfolioCategory)}
               className="w-full"
             />
           </div>

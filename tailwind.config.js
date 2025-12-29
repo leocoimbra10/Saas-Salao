@@ -19,21 +19,21 @@ export default {
       // ===== BRAND COLORS =====
       colors: {
         // Primary Brand Colors (Dynamic via CSS vars)
-        'brand-primary': 'var(--color-brand-primary, #E8A0B8)',
-        'brand-primary-light': 'var(--color-brand-primary-light, #F5CED8)',
-        'brand-primary-dark': 'var(--color-brand-primary-dark, #C67A94)',
-        'brand-gold': 'var(--color-brand-gold, #D4AF37)',
-        'brand-gold-light': 'var(--color-brand-gold-light, #F5E6C8)',
-        'brand-purple': 'var(--color-brand-purple, #8A2BE2)',
+        'brand-primary': 'hsl(var(--color-brand-primary) / <alpha-value>)',
+        'brand-primary-light': 'hsl(var(--color-brand-primary-light) / <alpha-value>)',
+        'brand-primary-dark': 'hsl(var(--color-brand-primary-dark) / <alpha-value>)',
+        'brand-gold': 'hsl(var(--color-brand-gold) / <alpha-value>)',
+        'brand-gold-light': 'hsl(var(--color-brand-gold-light) / <alpha-value>)',
+        'brand-purple': 'hsl(var(--color-brand-purple) / <alpha-value>)',
 
         // Neomorphic Base Theme
         'neo-bg': '#F0F0F3',
         'neo-surface': '#F0F0F3',
         'neo-text': '#4A4A58',
         'neo-text-secondary': '#8D8D99',
-        'neo-accent': 'var(--color-brand-primary, #E8A0B8)',
-        'neo-accent-light': 'var(--color-brand-primary-light, #F5CED8)',
-        'neo-accent-dark': 'var(--color-brand-primary-dark, #C67A94)',
+        'neo-accent': 'hsl(var(--color-brand-primary) / <alpha-value>)',
+        'neo-accent-light': 'hsl(var(--color-brand-primary-light) / <alpha-value>)',
+        'neo-accent-dark': 'hsl(var(--color-brand-primary-dark) / <alpha-value>)',
 
         // Semantic Colors
         'neo-success': '#50C878',
@@ -48,7 +48,7 @@ export default {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         primary: {
-          DEFAULT: 'var(--color-brand-primary, #E8A0B8)',
+          DEFAULT: 'hsl(var(--color-brand-primary) / <alpha-value>)',
           foreground: 'hsl(var(--primary-foreground))',
         },
         secondary: {
@@ -56,7 +56,7 @@ export default {
           foreground: 'hsl(var(--secondary-foreground))',
         },
         accent: {
-          DEFAULT: 'var(--color-brand-primary, #E8A0B8)',
+          DEFAULT: 'hsl(var(--color-brand-primary) / <alpha-value>)',
           foreground: 'hsl(var(--accent-foreground))',
         },
         destructive: {
@@ -90,8 +90,8 @@ export default {
         'neo-flat': '0px 0px 0px #D1D9E6, 0px 0px 0px #FFFFFF',
 
         // Glow Effects for Glassmorphic Buttons
-        'glow-brand': '0 0 8px var(--color-brand-primary, #E8A0B8), 0 0 16px var(--color-brand-primary, #E8A0B8), 0 0 24px var(--color-brand-gold, #D4AF37)',
-        'glow-intense': '0 0 16px #FF69B4, 0 0 32px #FF69B4, 0 0 48px var(--color-brand-gold, #D4AF37), 0 0 60px var(--color-brand-gold, #D4AF37)',
+        'glow-brand': '0 0 8px hsl(var(--color-brand-primary)), 0 0 16px hsl(var(--color-brand-primary)), 0 0 24px hsl(var(--color-brand-gold))',
+        'glow-intense': '0 0 16px #FF69B4, 0 0 32px #FF69B4, 0 0 48px hsl(var(--color-brand-gold)), 0 0 60px hsl(var(--color-brand-gold))',
 
         // Glass shadow
         'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
@@ -148,8 +148,8 @@ export default {
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
         pulseGlow: {
-          '0%, 100%': { boxShadow: '0 0 8px var(--color-brand-primary, #E8A0B8)' },
-          '50%': { boxShadow: '0 0 20px var(--color-brand-primary, #E8A0B8), 0 0 30px var(--color-brand-gold, #D4AF37)' },
+          '0%, 100%': { boxShadow: '0 0 8px hsl(var(--color-brand-primary))' },
+          '50%': { boxShadow: '0 0 20px hsl(var(--color-brand-primary)), 0 0 30px hsl(var(--color-brand-gold))' },
         },
         'accordion-down': {
           from: { height: 0 },

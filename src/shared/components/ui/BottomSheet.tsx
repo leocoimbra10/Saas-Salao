@@ -6,7 +6,7 @@ import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence, useDragControls, PanInfo } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import { X } from 'lucide-react';
-import { Button } from './NeoComponents';
+import { NeoButton } from './NeoComponents';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -204,16 +204,15 @@ export const ActionBottomSheet: React.FC<ActionBottomSheetProps> = ({
       {actions.length > 0 && (
         <div className="space-y-2">
           {actions.map((action, index) => (
-            <button
+            <NeoButton
               key={index}
+              variant="neu"
               onClick={() => {
                 action.onClick();
                 onClose();
               }}
               className={cn(
-                'w-full p-4 rounded-neo flex items-center gap-4',
-                'bg-neo-bg shadow-neo-out',
-                'active:shadow-neo-pressed transition-all',
+                'w-full h-auto p-4 flex items-center justify-start gap-4',
                 action.danger ? 'text-neo-danger' : 'text-neo-text'
               )}
             >
@@ -221,7 +220,7 @@ export const ActionBottomSheet: React.FC<ActionBottomSheetProps> = ({
                 {action.icon}
               </span>
               <span className="font-medium">{action.label}</span>
-            </button>
+            </NeoButton>
           ))}
         </div>
       )}
@@ -297,14 +296,14 @@ export const BookingBottomSheet: React.FC<BookingBottomSheetProps> = ({
       {showNavigation && (
         <div className="flex gap-4 pt-4 border-t border-neo-text-secondary/10">
           {step > 0 && onBack && (
-            <Button variant="ghost" onClick={onBack} className="flex-1">
+            <NeoButton variant="ghost" onClick={onBack} className="flex-1">
               {backLabel}
-            </Button>
+            </NeoButton>
           )}
           {onNext && (
-            <Button variant="primary" onClick={onNext} className="flex-1">
+            <NeoButton variant="gradient" onClick={onNext} className="flex-1">
               {nextLabel}
-            </Button>
+            </NeoButton>
           )}
         </div>
       )}

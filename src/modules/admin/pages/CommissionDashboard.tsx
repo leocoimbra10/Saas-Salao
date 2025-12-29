@@ -1,4 +1,4 @@
-/**
+﻿/**
  * COMMISSION CONTROL DASHBOARD
  * Professional commission management system
  * Style: Light Neomorphism with Gold highlights
@@ -21,7 +21,7 @@ import {
     Crown
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
-import { Card, Button, Badge, Progress } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, NeoButton, Badge, Progress, Typography } from '../../../shared/components/ui/NeoComponents';
 
 // Brand Colors - Rose Pink
 const ROSE = 'var(--color-brand-primary)';
@@ -155,11 +155,11 @@ const ProfessionalCard: React.FC<{
     const paidPercent = summary.netPayout > 0 ? (summary.paid / summary.netPayout) * 100 : 0;
 
     return (
-        <Card className="overflow-hidden">
+        <NeoCard className="overflow-hidden">
             {/* Header */}
-            <button
+            <NeoButton
                 onClick={onToggle}
-                className="w-full p-4 flex items-center justify-between"
+                className="w-full p-4 flex items-center justify-between hover:bg-neo-bg-secondary transition-colors"
             >
                 <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-neo-bg rounded-full shadow-neo-out flex items-center justify-center">
@@ -170,8 +170,8 @@ const ProfessionalCard: React.FC<{
                         )}
                     </div>
                     <div className="text-left">
-                        <p className="font-semibold text-neo-text">{professional.name}</p>
-                        <p className="text-xs text-neo-text-secondary">{professional.role}</p>
+                        <Typography variant="h6">{professional.name}</Typography>
+                        <Typography variant="caption">{professional.role}</Typography>
                         <Badge variant="neutral" className="mt-1 text-[10px]">
                             {(professional.commissionRate * 100).toFixed(0)}% comissão
                         </Badge>
@@ -179,10 +179,10 @@ const ProfessionalCard: React.FC<{
                 </div>
 
                 <div className="text-right">
-                    <p className="text-xl font-bold" style={{ color: GOLD }}>
+                    <Typography variant="h4" style={{ color: GOLD }}>
                         {formatCurrency(summary.pending)}
-                    </p>
-                    <p className="text-[10px] text-neo-text-secondary">a pagar</p>
+                    </Typography>
+                    <Typography variant="label" className="text-[10px] text-neo-text-secondary uppercase">a pagar</Typography>
                     <ChevronDown
                         size={16}
                         className={cn(
@@ -191,30 +191,30 @@ const ProfessionalCard: React.FC<{
                         )}
                     />
                 </div>
-            </button>
+            </NeoButton>
 
             {/* Summary Stats */}
             <div className="px-4 pb-4">
                 <div className="grid grid-cols-3 gap-2 text-center p-3 bg-neo-bg rounded-neo shadow-neo-in">
                     <div>
-                        <p className="text-lg font-bold text-neo-text">{summary.totalAppointments}</p>
-                        <p className="text-[10px] text-neo-text-secondary">Atendimentos</p>
+                        <Typography variant="h4">{summary.totalAppointments}</Typography>
+                        <Typography variant="label" className="text-[10px] text-neo-text-secondary uppercase">Atendimentos</Typography>
                     </div>
                     <div>
-                        <p className="text-lg font-bold text-neo-text">{formatCurrency(summary.totalGross)}</p>
-                        <p className="text-[10px] text-neo-text-secondary">Faturado</p>
+                        <Typography variant="h4">{formatCurrency(summary.totalGross)}</Typography>
+                        <Typography variant="label" className="text-[10px] text-neo-text-secondary uppercase">Faturado</Typography>
                     </div>
                     <div>
-                        <p className="text-lg font-bold text-green-600">{formatCurrency(summary.paid)}</p>
-                        <p className="text-[10px] text-neo-text-secondary">Pago</p>
+                        <Typography variant="h4" className="text-green-600">{formatCurrency(summary.paid)}</Typography>
+                        <Typography variant="label" className="text-[10px] text-neo-text-secondary uppercase">Pago</Typography>
                     </div>
                 </div>
 
                 {/* Progress */}
                 <div className="mt-3">
                     <div className="flex justify-between text-xs mb-1">
-                        <span className="text-neo-text-secondary">Pagamento</span>
-                        <span className="text-neo-text">{paidPercent.toFixed(0)}%</span>
+                        <Typography variant="caption" className="text-neo-text-secondary">Pagamento</Typography>
+                        <Typography variant="label">{paidPercent.toFixed(0)}%</Typography>
                     </div>
                     <Progress value={paidPercent} />
                 </div>
@@ -230,9 +230,9 @@ const ProfessionalCard: React.FC<{
                         className="overflow-hidden"
                     >
                         <div className="px-4 pb-4 border-t border-neo-text-secondary/10">
-                            <h4 className="text-sm font-semibold text-neo-text py-3">
+                            <Typography variant="h6" className="py-3">
                                 Serviços Realizados
-                            </h4>
+                            </Typography>
 
                             <div className="space-y-2">
                                 {proServices.map(service => {
@@ -253,29 +253,31 @@ const ProfessionalCard: React.FC<{
                                             )}
                                         >
                                             <div>
-                                                <p className="text-sm font-medium text-neo-text">{service.clientName}</p>
-                                                <p className="text-xs text-neo-text-secondary">{service.serviceName}</p>
-                                                <p className="text-[10px] text-neo-text-secondary">
+                                                <Typography variant="body" className="font-medium">{service.clientName}</Typography>
+                                                <Typography variant="caption">{service.serviceName}</Typography>
+                                                <Typography variant="label" className="text-[10px] text-neo-text-secondary">
                                                     {service.date.toLocaleDateString('pt-BR')} •
                                                     Bruto: {formatCurrency(service.grossValue)} -
                                                     Mat: {formatCurrency(service.materialCost)}
-                                                </p>
+                                                </Typography>
                                             </div>
                                             <div className="text-right">
-                                                <p className="font-semibold" style={{ color: GOLD }}>
+                                                <Typography variant="body" className="font-semibold" style={{ color: GOLD }}>
                                                     {formatCurrency(professionalGets)}
-                                                </p>
+                                                </Typography>
                                                 {service.isPaid ? (
                                                     <Badge variant="success" className="text-[10px]">
                                                         <Check size={10} /> Pago
                                                     </Badge>
                                                 ) : (
-                                                    <button
+                                                    <NeoButton
+                                                        variant="ghost"
+                                                        size="sm"
                                                         onClick={() => onMarkPaid(service.id)}
-                                                        className="text-[10px] text-neo-accent font-medium"
+                                                        className="text-[10px] text-neo-accent h-auto p-0 hover:bg-transparent"
                                                     >
                                                         Marcar Pago
-                                                    </button>
+                                                    </NeoButton>
                                                 )}
                                             </div>
                                         </div>
@@ -283,22 +285,22 @@ const ProfessionalCard: React.FC<{
                                 })}
                             </div>
 
-                            {/* Pay All Button */}
+                            {/* Pay All NeoButton */}
                             {summary.pending > 0 && (
-                                <Button
-                                    variant="primary"
+                                <NeoButton
+                                    variant="gradient"
                                     className="w-full mt-4"
                                     style={{ backgroundColor: GOLD }}
                                 >
                                     <DollarSign size={18} />
                                     Pagar {formatCurrency(summary.pending)}
-                                </Button>
+                                </NeoButton>
                             )}
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
-        </Card>
+        </NeoCard>
     );
 };
 
@@ -355,8 +357,8 @@ export const CommissionDashboard: React.FC = () => {
                             <DollarSign size={24} style={{ color: GOLD }} />
                         </div>
                         <div>
-                            <h1 className="text-display">Comissões</h1>
-                            <p className="text-caption">Controle de pagamentos</p>
+                            <Typography variant="h2" className="text-display">Comissões</Typography>
+                            <Typography variant="caption">Controle de pagamentos</Typography>
                         </div>
                     </div>
 
@@ -367,83 +369,79 @@ export const CommissionDashboard: React.FC = () => {
                             { id: 'fortnight', label: 'Quinzena' },
                             { id: 'month', label: 'Mês' },
                         ].map(filter => (
-                            <button
+                            <NeoButton
                                 key={filter.id}
+                                variant={dateFilter === filter.id ? 'gradient' : 'neu'}
                                 onClick={() => setDateFilter(filter.id as DateFilter)}
-                                className={cn(
-                                    'flex-1 py-2 rounded-neo text-sm font-medium transition-all',
-                                    dateFilter === filter.id
-                                        ? 'shadow-neo-pressed text-neo-accent'
-                                        : 'shadow-neo-out text-neo-text-secondary'
-                                )}
+                                className="flex-1 py-2 text-sm"
                             >
                                 {filter.label}
-                            </button>
+                            </NeoButton>
                         ))}
                     </div>
 
-                    {/* Total Stats Card */}
-                    <Card className="p-4 mb-6" style={{ backgroundColor: GOLD_LIGHT }}>
+                    {/* Total Stats NeoCard */}
+                    <NeoCard className="p-4 mb-6" style={{ backgroundColor: GOLD_LIGHT }}>
                         <div className="flex items-center gap-2 mb-4">
                             <TrendingUp size={18} style={{ color: GOLD }} />
-                            <span className="font-semibold text-neo-text">Resumo do Período</span>
+                            <Typography variant="body" className="font-semibold">Resumo do Período</Typography>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-white/50 rounded-neo p-3 text-center">
-                                <p className="text-2xl font-bold text-neo-text">
+                                <Typography variant="h3">
                                     {formatCurrency(totalStats.totalGross)}
-                                </p>
-                                <p className="text-[10px] text-neo-text-secondary">Faturamento Total</p>
+                                </Typography>
+                                <Typography variant="label" className="text-[10px] text-neo-text-secondary uppercase">Faturamento Total</Typography>
                             </div>
                             <div className="bg-white/50 rounded-neo p-3 text-center">
-                                <p className="text-2xl font-bold" style={{ color: GOLD }}>
+                                <Typography variant="h3" style={{ color: GOLD }}>
                                     {formatCurrency(totalStats.totalPending)}
-                                </p>
-                                <p className="text-[10px] text-neo-text-secondary">A Pagar</p>
+                                </Typography>
+                                <Typography variant="label" className="text-[10px] text-neo-text-secondary uppercase">A Pagar</Typography>
                             </div>
                         </div>
 
                         <div className="flex justify-between mt-4 text-sm">
-                            <span className="text-green-600">
-                                <Check size={14} className="inline mr-1" />
+                            <Typography variant="caption" className="text-green-600 flex items-center">
+                                <Check size={14} className="mr-1" />
                                 Pago: {formatCurrency(totalStats.totalPaid)}
-                            </span>
-                            <span className="text-neo-text-secondary">
+                            </Typography>
+                            <Typography variant="caption" className="text-neo-text-secondary">
                                 Total Comissões: {formatCurrency(totalStats.totalCommission)}
-                            </span>
+                            </Typography>
                         </div>
 
                         {/* Team Goal Thermometer */}
                         <div className="mt-6 pt-6 border-t border-neo-text-secondary/10">
                             <div className="flex justify-between items-center mb-2">
-                                <h4 className="text-xs font-bold text-neo-text flex items-center gap-2">
+                                <Typography variant="h6" className="flex items-center gap-2">
                                     <TrendingUp size={14} className="text-neo-accent" />
                                     META DA EQUIPE
-                                </h4>
-                                <span className="text-xs font-bold text-neo-accent">
+                                </Typography>
+                                <Typography variant="label" className="text-neo-accent">
                                     {Math.round((totalStats.totalGross / 25000) * 100)}%
-                                </span>
+                                </Typography>
                             </div>
                             <Progress
                                 value={(totalStats.totalGross / 25000) * 100}
                                 className="h-3 shadow-neo-in bg-white/30"
                             />
                             <div className="flex justify-between mt-1">
-                                <span className="text-[10px] text-neo-text-secondary">R$ 0</span>
-                                <p className="text-[10px] text-neo-text-secondary italic">Faltam {formatCurrency(Math.max(0, 25000 - totalStats.totalGross))} para o bônus!</p>
-                                <span className="text-[10px] text-neo-text-secondary">R$ 25k</span>
+                                <Typography variant="label" className="text-[10px] text-neo-text-secondary uppercase">R$ 0</Typography>
+                                <Typography variant="caption" className="text-[10px] text-neo-text-secondary italic">Faltam {formatCurrency(Math.max(0, 25000 - totalStats.totalGross))} para o bônus!</Typography>
+                                <Typography variant="label" className="text-[10px] text-neo-text-secondary uppercase">R$ 25k</Typography>
                             </div>
                         </div>
-                    </Card>
+                    </NeoCard>
                 </header>
 
                 {/* Professionals List */}
                 <main className="px-4 space-y-4">
-                    <h2 className="text-subtitle flex items-center gap-2">
+                    <Typography variant="h2" className="flex items-center gap-2">
                         <Users size={18} style={{ color: GOLD }} />
                         Profissionais
-                    </h2>
+                    </Typography>
 
                     {professionals.map(pro => {
                         const summary = calculateProfessionalSummary(pro, filteredServices);
@@ -466,3 +464,4 @@ export const CommissionDashboard: React.FC = () => {
 };
 
 export default CommissionDashboard;
+

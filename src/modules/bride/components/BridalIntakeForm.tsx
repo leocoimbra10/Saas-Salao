@@ -14,7 +14,7 @@ import {
     Save,
     Check
 } from 'lucide-react';
-import { Card, Button, Input, Select, Checkbox } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, NeoButton, NeoInput, NeoSelect, Checkbox } from '../../../shared/components/ui/NeoComponents';
 import { cn } from '../../../shared/lib/utils';
 
 export const BridalIntakeForm: React.FC<{ brideId: string; onClose: () => void }> = ({ brideId, onClose }) => {
@@ -54,7 +54,7 @@ export const BridalIntakeForm: React.FC<{ brideId: string; onClose: () => void }
                             Pele e Maquiagem
                         </h3>
 
-                        <Select
+                        <NeoSelect
                             label="Seu tipo de pele"
                             options={[
                                 { value: 'normal', label: 'Normal' },
@@ -66,7 +66,7 @@ export const BridalIntakeForm: React.FC<{ brideId: string; onClose: () => void }
                             onChange={(e) => setFormData({ ...formData, skinType: e.target.value })}
                         />
 
-                        <Input
+                        <NeoInput
                             label="Alergias ou Sensibilidades"
                             placeholder="Ex: Níquel, látex, fragrâncias..."
                             icon={<AlertCircle size={18} />}
@@ -127,14 +127,14 @@ export const BridalIntakeForm: React.FC<{ brideId: string; onClose: () => void }
                             </div>
                         </div>
 
-                        <Input
+                        <NeoInput
                             label="Descrição do Cabelo"
                             placeholder="Ex: Longo, fino, com luzes..."
                             value={formData.hairText}
                             onChange={(e) => setFormData({ ...formData, hairText: e.target.value })}
                         />
 
-                        <Input
+                        <NeoInput
                             label="Vibe do Casamento"
                             placeholder="Ex: Boho, Clássico, Minimalista..."
                             icon={<Heart size={18} />}
@@ -155,7 +155,7 @@ export const BridalIntakeForm: React.FC<{ brideId: string; onClose: () => void }
                 animate={{ scale: 1, opacity: 1 }}
                 className="w-full max-w-md"
             >
-                <Card className="p-8 relative overflow-hidden">
+                <NeoCard className="p-8 relative overflow-hidden">
                     {/* Header */}
                     <div className="flex justify-between items-center mb-8">
                         <div>
@@ -177,31 +177,31 @@ export const BridalIntakeForm: React.FC<{ brideId: string; onClose: () => void }
                     <div className="flex gap-4 mt-8">
                         {step === 2 ? (
                             <>
-                                <Button
+                                <NeoButton
                                     variant="ghost"
                                     onClick={() => setStep(1)}
                                     className="flex-1"
                                 >
                                     Voltar
-                                </Button>
-                                <Button
-                                    variant="primary"
+                                </NeoButton>
+                                <NeoButton
+                                    variant="gradient"
                                     onClick={handleSave}
                                     className="flex-[2]"
                                     loading={isSaving}
                                     disabled={isSaved}
                                 >
                                     {isSaved ? <Check size={20} /> : <><Save size={18} /> Salvar Ficha</>}
-                                </Button>
+                                </NeoButton>
                             </>
                         ) : (
-                            <Button
-                                variant="primary"
+                            <NeoButton
+                                variant="gradient"
                                 onClick={() => setStep(2)}
                                 className="w-full"
                             >
                                 Continuar
-                            </Button>
+                            </NeoButton>
                         )}
                     </div>
 
@@ -211,7 +211,7 @@ export const BridalIntakeForm: React.FC<{ brideId: string; onClose: () => void }
                     >
                         Fechar
                     </button>
-                </Card>
+                </NeoCard>
             </motion.div>
         </div>
     );

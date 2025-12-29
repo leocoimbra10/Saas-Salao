@@ -5,7 +5,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Plus, TrendingUp } from 'lucide-react';
-import { Card, Button } from './NeoComponents';
+import { NeoCard, NeoButton } from './NeoComponents';
 import { getSmartUpsell, AISuggestion } from '../../services/AIService';
 
 interface SmartUpsellProps {
@@ -26,7 +26,7 @@ export const SmartUpsell: React.FC<SmartUpsellProps> = ({ selectedServices, onAd
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="mt-6"
             >
-                <Card className="p-5 border-2 border-neo-accent/30 bg-gradient-to-br from-neo-bg to-neo-accent/5 overflow-hidden relative">
+                <NeoCard className="p-5 border-2 border-neo-accent/30 bg-gradient-to-br from-neo-bg to-neo-accent/5 overflow-hidden relative">
                     {/* AI Badge */}
                     <div className="absolute top-0 right-0 px-3 py-1 bg-neo-accent text-white text-[10px] font-bold rounded-bl-neo shadow-sm flex items-center gap-1">
                         <Sparkles size={12} />
@@ -48,21 +48,21 @@ export const SmartUpsell: React.FC<SmartUpsellProps> = ({ selectedServices, onAd
                                 <span className="text-[10px] text-neo-accent font-bold uppercase tracking-widest">
                                     + RECOMENDADO
                                 </span>
-                                <Button
+                                <NeoButton
                                     size="sm"
                                     variant="glass"
                                     className="h-8 px-4 text-xs"
                                     onClick={() => onAddService(suggestion.serviceId)}
                                 >
                                     <Plus size={14} /> Adicionar
-                                </Button>
+                                </NeoButton>
                             </div>
                         </div>
                     </div>
 
                     {/* Subtle Glow Background */}
                     <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-neo-accent/10 blur-3xl rounded-full" />
-                </Card>
+                </NeoCard>
             </motion.div>
         </AnimatePresence>
     );

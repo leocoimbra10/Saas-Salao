@@ -2,36 +2,36 @@
  * BEAUTY SALON NEOMORPHIC APP - Firebase Hooks
  */
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  collection, 
-  doc, 
-  getDocs, 
-  getDoc, 
-  addDoc, 
-  updateDoc, 
+import {
+  collection,
+  doc,
+  getDocs,
+  getDoc,
+  addDoc,
+  updateDoc,
   deleteDoc,
-  query, 
-  where, 
+  query,
+  where,
   orderBy,
   onSnapshot,
-  Timestamp 
+  Timestamp
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { 
-  signInWithEmailAndPassword, 
+import {
+  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
   User
 } from 'firebase/auth';
-import { db, auth, storage } from './firebase';
-import { 
-  Service, 
-  Appointment, 
-  Client, 
-  PortfolioItem, 
-  SERVICES_DATA 
-} from './types';
+import { db, auth, storage } from '../lib/firebase';
+import {
+  Service,
+  Appointment,
+  Client,
+  PortfolioItem,
+  SERVICES_DATA
+} from '../types/types';
 
 // Initialize services in Firestore if not exists
 export function useInitializeServices() {
@@ -40,7 +40,7 @@ export function useInitializeServices() {
       try {
         const servicesRef = collection(db, 'services');
         const snapshot = await getDocs(servicesRef);
-        
+
         if (snapshot.empty) {
           // Add initial services
           for (const service of SERVICES_DATA) {
@@ -341,9 +341,9 @@ export function useAnalytics(month?: number, year?: number) {
           .map(doc => doc.data())
           .filter(apt => {
             const aptDate = new Date(apt.date);
-            return aptDate.getMonth() === targetMonth && 
-                   aptDate.getFullYear() === targetYear &&
-                   apt.status !== 'cancelled';
+            return aptDate.getMonth() === targetMonth &&
+              aptDate.getFullYear() === targetYear &&
+              apt.status !== 'cancelled';
           });
 
         const monthlyRevenue = monthlyAppointments.reduce(
@@ -365,8 +365,8 @@ export function useAnalytics(month?: number, year?: number) {
         const returningClients = monthlyAppointments.filter(
           (apt, idx, arr) => arr.findIndex(a => a.clientId === apt.clientId) !== idx
         ).length;
-        const retention = uniqueClients > 0 
-          ? Math.round((returningClients / uniqueClients) * 100) 
+        const retention = uniqueClients > 0
+          ? Math.round((returningClients / uniqueClients) * 100)
           : 0;
 
         setStats({

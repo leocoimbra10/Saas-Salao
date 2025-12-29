@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BEAUTY SALON NEOMORPHIC APP - Client Booking Page
  */
 import React, { useState, useMemo } from 'react';
@@ -20,10 +20,12 @@ import {
 import { cn, formatCurrency, formatTime, getWeekday, isWeekdayDiscount, generateId } from '../../../shared/lib/utils';
 import { Service, Appointment } from '../../../shared/types/types';
 import { SERVICES_DATA } from '../../../shared/types/types';
-import { Card, Button, Badge, Avatar, Input, Divider } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, NeoButton, Badge, Avatar, NeoInput, NeoTextarea, Divider, Typography } from '../../../shared/components/ui/NeoComponents';
 import { Calendar as CalendarComponent } from '../../booking/components/Calendar';
 import { ServiceCard, ServiceSummary } from '../../booking/components/ServiceCard';
 import { BookingBottomSheet, ActionBottomSheet } from '../../../shared/components/ui/BottomSheet';
+import { useNavigate } from 'react-router-dom';
+import { APP_TEXTS } from '../../../shared/lib/constants';
 
 // Service Selection Step
 const StepServices: React.FC<{
@@ -38,16 +40,16 @@ const StepServices: React.FC<{
 
   return (
     <div className="space-y-6">
-      <p className="text-neo-text-secondary text-sm">
+      <Typography variant="body" className="text-neo-text-secondary text-sm">
         Selecione os serviços desejados. Aplicamos 10% de desconto de segunda a quinta!
-      </p>
+      </Typography>
 
       {/* Makeup Section */}
       <div>
-        <h3 className="text-sm font-semibold text-neo-text-secondary mb-3 flex items-center gap-2">
+        <Typography variant="h6" className="text-sm font-semibold text-neo-text-secondary mb-3 flex items-center gap-2">
           <Sparkles size={16} className="text-neo-accent" />
           Maquiagem
-        </h3>
+        </Typography>
         <div className="space-y-3">
           {makeupServices.map(service => (
             <ServiceCard
@@ -64,10 +66,10 @@ const StepServices: React.FC<{
 
       {/* Hairstyle Section */}
       <div>
-        <h3 className="text-sm font-semibold text-neo-text-secondary mb-3 flex items-center gap-2">
+        <Typography variant="h6" className="text-sm font-semibold text-neo-text-secondary mb-3 flex items-center gap-2">
           <Heart size={16} className="text-neo-info" />
           Cabelos
-        </h3>
+        </Typography>
         <div className="space-y-3">
           {hairstyleServices.map(service => (
             <ServiceCard
@@ -115,9 +117,9 @@ const StepDateTime: React.FC<{
 
   return (
     <div className="space-y-6">
-      <p className="text-neo-text-secondary text-sm">
+      <Typography variant="body" className="text-neo-text-secondary text-sm">
         Escolha a melhor data e horário para seu atendimento.
-      </p>
+      </Typography>
 
       {/* Calendar */}
       <CalendarComponent
@@ -129,37 +131,38 @@ const StepDateTime: React.FC<{
       />
 
       {/* Time Slots */}
-      <div className="bg-neo-bg rounded-neo shadow-neo-in p-4">
-        <h4 className="text-sm font-semibold text-neo-text-secondary mb-4">
+      <NeoCard className="p-4 bg-neo-bg shadow-neo-in">
+        <Typography variant="h6" className="text-sm font-semibold text-neo-text-secondary mb-4">
           Horários disponíveis para {format(selectedDate, "dd 'de' MMMM", { locale: ptBR })}
-        </h4>
+        </Typography>
 
         <div className="grid grid-cols-3 gap-2">
           {timeSlots.map(time => (
-            <motion.button
+            <NeoButton
               key={time}
-              whileTap={{ scale: 0.95 }}
+              variant={selectedTime === time ? 'neu' : 'glass'}
+              size="sm"
               onClick={() => onTimeSelect(time)}
               className={cn(
-                'p-3 rounded-neo-sm text-center transition-all duration-200',
+                'rounded-neo-sm text-center transition-all duration-200',
                 selectedTime === time
                   ? 'bg-neo-bg shadow-neo-pressed border-2 border-neo-accent text-neo-accent'
                   : 'bg-neo-bg shadow-neo-out hover:shadow-neo-out-lg text-neo-text'
               )}
             >
-              <span className="text-sm font-medium">{formatTime(time)}</span>
-            </motion.button>
+              <Typography variant="body" className="text-sm font-medium">{formatTime(time)}</Typography>
+            </NeoButton>
           ))}
         </div>
-      </div>
+      </NeoCard>
 
       {/* Info Banner */}
       {isWeekdayDiscount(getWeekday(selectedDate)) && (
         <div className="bg-neo-success/10 rounded-neo-sm p-3 flex items-center gap-3">
           <Sparkles size={20} className="text-neo-success" />
-          <p className="text-sm text-neo-success">
+          <Typography variant="body" className="text-sm text-neo-success">
             Você ganhou 10% de desconto! Aplique no checkout.
-          </p>
+          </Typography>
         </div>
       )}
     </div>
@@ -183,11 +186,11 @@ const StepClientInfo: React.FC<{
 }> = ({ formData, onChange }) => {
   return (
     <div className="space-y-4">
-      <p className="text-neo-text-secondary text-sm">
+      <Typography variant="body" className="text-neo-text-secondary text-sm">
         Precisamos de algumas informações para confirmar seu agendamento.
-      </p>
+      </Typography>
 
-      <Input
+      <NeoInput
         label="Nome Completo"
         placeholder="Seu nome"
         value={formData.name}
@@ -195,7 +198,7 @@ const StepClientInfo: React.FC<{
         icon={<User size={18} />}
       />
 
-      <Input
+      <NeoInput
         label="Telefone (WhatsApp)"
         placeholder="(11) 99999-9999"
         value={formData.phone}
@@ -203,7 +206,7 @@ const StepClientInfo: React.FC<{
         icon={<Phone size={18} />}
       />
 
-      <Input
+      <NeoInput
         label="E-mail (opcional)"
         placeholder="seu@email.com"
         value={formData.email}
@@ -211,37 +214,33 @@ const StepClientInfo: React.FC<{
         icon={<MessageSquare size={18} />}
       />
 
-      <div className="w-full">
-        <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-          Observações (opcional)
-        </label>
-        <textarea
-          className="w-full bg-neo-bg rounded-neo shadow-neo-in px-4 py-3 text-neo-text placeholder:text-neo-text-secondary outline-none focus:ring-2 focus:ring-neo-accent/20 transition-all resize-none h-24"
-          placeholder="Algo que devemos saber sobre seu atendimento..."
-          value={formData.notes}
-          onChange={(e) => onChange('notes', e.target.value)}
-        />
-      </div>
+      <NeoTextarea
+        label="Observações (opcional)"
+        placeholder="Algo que devemos saber sobre seu atendimento..."
+        value={formData.notes}
+        onChange={(e) => onChange('notes', e.target.value)}
+        className="h-24 resize-none"
+      />
 
-      {/* Summary Card */}
-      <Card className="p-4">
-        <h4 className="font-semibold text-neo-text mb-3">Resumo</h4>
+      {/* Summary NeoCard */}
+      <NeoCard className="p-4">
+        <Typography variant="h4" className="font-semibold text-neo-text mb-3">Resumo</Typography>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <span className="text-neo-text-secondary">Data</span>
-            <span className="text-neo-text">{formData.date || '-'}</span>
+            <Typography variant="caption" className="text-neo-text-secondary">Data</Typography>
+            <Typography variant="body" className="text-neo-text">{formData.date || '-'}</Typography>
           </div>
           <div className="flex justify-between">
-            <span className="text-neo-text-secondary">Horário</span>
-            <span className="text-neo-text">{formData.time || '-'}</span>
+            <Typography variant="caption" className="text-neo-text-secondary">Horário</Typography>
+            <Typography variant="body" className="text-neo-text">{formData.time || '-'}</Typography>
           </div>
           <Divider />
           <div className="flex justify-between font-bold">
-            <span className="text-neo-text">Total</span>
-            <span className="text-neo-accent">{formatCurrency(formData.total || 0)}</span>
+            <Typography variant="body" className="text-neo-text">Total</Typography>
+            <Typography variant="h5" className="text-neo-accent">{formatCurrency(formData.total || 0)}</Typography>
           </div>
         </div>
-      </Card>
+      </NeoCard>
     </div>
   );
 };
@@ -265,36 +264,36 @@ const StepConfirmation: React.FC<{
         <div className="w-20 h-20 bg-neo-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <Check size={40} className="text-neo-success" />
         </div>
-        <h3 className="text-lg font-semibold text-neo-text">Quase lá!</h3>
-        <p className="text-neo-text-secondary text-sm mt-1">
+        <Typography variant="h3" className="text-lg font-semibold text-neo-text">Quase lá!</Typography>
+        <Typography variant="body" className="text-neo-text-secondary text-sm mt-1">
           Revise as informações do seu agendamento
-        </p>
+        </Typography>
       </div>
 
       {/* Client Info */}
-      <Card className="p-4">
-        <h4 className="font-semibold text-neo-text mb-3">Seus Dados</h4>
+      <NeoCard className="p-4">
+        <Typography variant="h4" className="font-semibold text-neo-text mb-3">Seus Dados</Typography>
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2">
             <User size={16} className="text-neo-text-secondary" />
-            <span className="text-neo-text">{formData.name}</span>
+            <Typography variant="body" className="text-neo-text">{formData.name}</Typography>
           </div>
           <div className="flex items-center gap-2">
             <Phone size={16} className="text-neo-text-secondary" />
-            <span className="text-neo-text">{formData.phone}</span>
+            <Typography variant="body" className="text-neo-text">{formData.phone}</Typography>
           </div>
           {formData.email && (
             <div className="flex items-center gap-2">
               <MessageSquare size={16} className="text-neo-text-secondary" />
-              <span className="text-neo-text">{formData.email}</span>
+              <Typography variant="body" className="text-neo-text">{formData.email}</Typography>
             </div>
           )}
         </div>
-      </Card>
+      </NeoCard>
 
       {/* Appointment Info */}
-      <Card className="p-4">
-        <h4 className="font-semibold text-neo-text mb-3">Agendamento</h4>
+      <NeoCard className="p-4">
+        <Typography variant="h4" className="font-semibold text-neo-text mb-3">Agendamento</Typography>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-neo-text-secondary">Data</span>
@@ -305,280 +304,225 @@ const StepConfirmation: React.FC<{
             <span className="text-neo-text">{formData.time}</span>
           </div>
         </div>
-      </Card>
+      </NeoCard>
 
-      {/* Services */}
-      <Card className="p-4">
-        <h4 className="font-semibold text-neo-text mb-3">Serviços</h4>
-        <div className="space-y-2">
-          {selectedServicesData.map(service => (
-            <div key={service.id} className="flex justify-between text-sm">
-              <span className="text-neo-text">{service.name}</span>
-              <span className="text-neo-text-secondary">{formatCurrency(service.price)}</span>
-            </div>
-          ))}
-          {discount > 0 && (
-            <div className="flex justify-between text-sm text-neo-success">
-              <span>Desconto (10%)</span>
-              <span>-{formatCurrency(discount)}</span>
-            </div>
-          )}
+      {/* Services & Total */}
+      <NeoCard className="p-4">
+        <Typography variant="h4" className="font-semibold text-neo-text mb-3">Serviços</Typography>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            {selectedServicesData.map(s => (
+              <div key={s.id} className="flex justify-between text-sm">
+                <span className="text-neo-text-secondary">{s.name}</span>
+                <span className="text-neo-text">{formatCurrency(s.price)}</span>
+              </div>
+            ))}
+          </div>
           <Divider />
-          <div className="flex justify-between font-bold">
+          <div className="flex justify-between text-sm">
+            <span className="text-neo-text-secondary">Subtotal</span>
+            <span className="text-neo-text">{formatCurrency(subtotal)}</span>
+          </div>
+          <div className="flex justify-between text-sm text-neo-success">
+            <span>Desconto (10%)</span>
+            <span>- {formatCurrency(discount)}</span>
+          </div>
+          <Divider />
+          <div className="flex justify-between font-bold text-lg">
             <span className="text-neo-text">Total</span>
             <span className="text-neo-accent">{formatCurrency(total)}</span>
           </div>
         </div>
-      </Card>
-
-      {/* Confirm Button */}
-      <Button
-        variant="primary"
-        size="lg"
-        onClick={onConfirm}
-        loading={loading}
-        className="w-full"
-      >
-        Confirmar Agendamento
-      </Button>
-
-      <p className="text-xs text-neo-text-secondary text-center">
-        Você receberá a confirmação por WhatsApp
-      </p>
+      </NeoCard>
     </div>
   );
 };
 
-// Main Client Booking Page
+// Main Component
 export const ClientBooking: React.FC = () => {
-  const services = SERVICES_DATA;
-
-  // Booking state
-  const [step, setStep] = useState(0);
+  const navigate = useNavigate();
+  // State
+  const [step, setStep] = useState(1);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedTime, setSelectedTime] = useState('');
-  const [formData, setFormData] = useState({
+  const [selectedTime, setSelectedTime] = useState<string>('');
+  const [formData, setFormData] = useState<FormDataType>({
     name: '',
     phone: '',
     email: '',
-    notes: '',
-    date: format(selectedDate, "dd 'de' MMMM", { locale: ptBR }),
-    time: '',
-    total: 0,
+    notes: ''
   });
-  const [loading, setLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const totalSteps = 4;
-  const isDiscounted = isWeekdayDiscount(getWeekday(selectedDate));
+  // Handlers
+  const handleServiceToggle = (id: string) => {
+    setSelectedServices(prev =>
+      prev.includes(id)
+        ? prev.filter(sid => sid !== id)
+        : [...prev, id]
+    );
+  };
 
-  // Calculate totals
-  const subtotal = selectedServices.reduce((sum, id) => {
-    const service = services.find(s => s.id === id);
-    return sum + (service?.price || 0);
-  }, 0);
-  const discount = isDiscounted ? subtotal * 0.10 : 0;
-  const total = subtotal - discount;
+  const handleNextStep = () => {
+    if (step === 1 && selectedServices.length === 0) return;
+    if (step === 2 && !selectedTime) return;
+    if (step === 3 && (!formData.name || !formData.phone)) return;
 
-  const handleNext = () => {
-    if (step < totalSteps - 1) {
-      setStep(step + 1);
+    if (step === 3) {
+      // Calculate total
+      const selectedServicesData = SERVICES_DATA.filter(s => selectedServices.includes(s.id));
+      const subtotal = selectedServicesData.reduce((sum, s) => sum + s.price, 0);
+      const discount = subtotal * 0.10;
+      setFormData(prev => ({
+        ...prev,
+        date: format(selectedDate, "dd/MM/yyyy"),
+        time: selectedTime,
+        total: subtotal - discount
+      }));
+      setStep(4);
+    } else {
+      setStep(prev => prev + 1);
     }
   };
 
-  const handleBack = () => {
-    if (step > 0) {
-      setStep(step - 1);
-    }
-  };
-
-  const handleConfirm = async () => {
-    setLoading(true);
+  const handleBooking = async () => {
+    setIsProcessing(true);
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setLoading(false);
-    setShowSuccess(true);
+    setTimeout(() => {
+      setIsProcessing(false);
+      // Navigate to success page instead of showing modal
+      navigate('/agendar/sucesso', {
+        state: {
+          booking: {
+            id: generateId(),
+            serviceName: SERVICES_DATA.find(s => s.id === selectedServices[0])?.name || 'Serviços Diversos',
+            date: format(selectedDate, 'dd/MM/yyyy'),
+            time: selectedTime,
+            professional: 'Marcela',
+            status: 'confirmed',
+            clientName: formData.name,
+            clientPhone: formData.phone,
+            price: formData.total || 0,
+            totalAmount: formData.total || 0,
+            depositAmount: (formData.total || 0) * 0.3, // Assuming 30% deposit
+            duration: 60
+          }
+        }
+      });
+    }, 2000);
   };
 
-  const stepTitles = ['Serviços', 'Data & Hora', 'Seus Dados', 'Confirmação'];
+  // Render Logic
+  const getStepTitle = () => {
+    switch (step) {
+      case 1: return APP_TEXTS.BOOKING_STEP_SERVICES_TITLE;
+      case 2: return APP_TEXTS.BOOKING_STEP_DATETIME_TITLE;
+      case 3: return APP_TEXTS.BOOKING_STEP_INFO_TITLE;
+      case 4: return APP_TEXTS.BOOKING_STEP_CONFIRM_TITLE;
+      default: return '';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-neo-bg pb-24">
       {/* Header */}
-      <header className="p-6">
-        <h1 className="text-display mb-2">Agendamento</h1>
-        <p className="text-caption">Reserve seu horário conosco</p>
+      <header className="sticky top-0 z-10 bg-neo-bg/90 backdrop-blur-lg border-b border-white/20 px-4 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {step > 1 && (
+            <NeoButton variant="neu" size="icon" onClick={() => setStep(prev => prev - 1)}>
+              <ChevronLeft size={20} className="text-neo-text-secondary" />
+            </NeoButton>
+          )}
+          <div>
+            <Typography variant="h3" className="text-lg font-display font-bold text-neo-text">{getStepTitle()}</Typography>
+            <Typography variant="caption" className="text-xs text-neo-text-secondary">Passo {step} de 4</Typography>
+          </div>
+        </div>
+        <div className="w-10 h-10 rounded-full bg-neo-bg shadow-neo-out flex items-center justify-center">
+          <User size={20} className="text-neo-accent" />
+        </div>
       </header>
 
-      {/* Progress */}
-      <div className="px-6 mb-6">
-        <div className="flex items-center justify-between">
-          {stepTitles.map((title, idx) => (
-            <div key={idx} className="flex flex-col items-center">
-              <div className={cn(
-                'w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium',
-                idx < step
-                  ? 'bg-neo-accent text-white'
-                  : idx === step
-                    ? 'bg-neo-bg shadow-neo-pressed text-neo-accent'
-                    : 'bg-neo-bg shadow-neo-out text-neo-text-secondary'
-              )}>
-                {idx < step ? <Check size={16} /> : idx + 1}
-              </div>
-              <span className={cn(
-                'text-[10px] mt-1 hidden sm:block',
-                idx === step ? 'text-neo-accent' : 'text-neo-text-secondary'
-              )}>
-                {title}
-              </span>
-            </div>
-          ))}
-        </div>
-        {/* Progress Bar */}
-        <div className="mt-4 h-2 bg-neo-bg rounded-full shadow-neo-in overflow-hidden">
-          <motion.div
-            className="h-full bg-neo-accent rounded-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${((step + 1) / totalSteps) * 100}%` }}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
+      {/* Progress Bar */}
+      <div className="h-1 bg-neo-bg shadow-neo-in w-full">
+        <motion.div
+          className="h-full bg-brand-gradient"
+          initial={{ width: '25%' }}
+          animate={{ width: `${step * 25}%` }}
+          transition={{ duration: 0.3 }}
+        />
       </div>
 
       {/* Content */}
-      <main className="px-6">
+      <main className="p-4 container mx-auto max-w-lg">
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.3 }}
           >
-            {step === 0 && (
+            {step === 1 && (
               <StepServices
-                services={services}
+                services={SERVICES_DATA}
                 selectedIds={selectedServices}
-                onToggle={(id) => {
-                  setSelectedServices(prev =>
-                    prev.includes(id)
-                      ? prev.filter(s => s !== id)
-                      : [...prev, id]
-                  );
-                }}
-                onNext={handleNext}
+                onToggle={handleServiceToggle}
+                onNext={handleNextStep}
                 date={selectedDate}
               />
             )}
 
-            {step === 1 && (
+            {step === 2 && (
               <StepDateTime
                 selectedDate={selectedDate}
-                onDateSelect={(date) => {
-                  setSelectedDate(date);
-                  setFormData(prev => ({
-                    ...prev,
-                    date: format(date, "dd 'de' MMMM", { locale: ptBR }),
-                  }));
-                }}
+                onDateSelect={setSelectedDate}
                 selectedTime={selectedTime}
-                onTimeSelect={(time) => {
-                  setSelectedTime(time);
-                  setFormData(prev => ({
-                    ...prev,
-                    time: formatTime(time),
-                  }));
-                }}
-              />
-            )}
-
-            {step === 2 && (
-              <StepClientInfo
-                formData={{ ...formData, total }}
-                onChange={(field, value) => {
-                  setFormData(prev => ({ ...prev, [field]: value }));
-                }}
+                onTimeSelect={setSelectedTime}
               />
             )}
 
             {step === 3 && (
+              <StepClientInfo
+                formData={formData}
+                onChange={(field, value) => setFormData(prev => ({ ...prev, [field]: value }))}
+              />
+            )}
+
+            {step === 4 && (
               <StepConfirmation
-                formData={{ ...formData, total }}
+                formData={formData}
                 selectedServices={selectedServices}
-                services={services}
-                onConfirm={handleConfirm}
-                loading={loading}
+                services={SERVICES_DATA}
+                onConfirm={handleBooking}
+                loading={isProcessing}
               />
             )}
           </motion.div>
         </AnimatePresence>
       </main>
 
-      {/* Navigation */}
-      {step < 3 && (
-        <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] bg-neo-bg rounded-t-neo-lg shadow-neo-out-lg p-4 pb-safe z-50">
-          <div className="flex gap-4">
-            {step > 0 && (
-              <Button variant="ghost" onClick={handleBack} className="flex-1">
-                <ChevronLeft size={20} />
-                Voltar
-              </Button>
-            )}
-            <Button
-              variant="primary"
-              onClick={handleNext}
-              className={cn(step === 0 ? 'hidden' : 'flex-1')}
-              disabled={step === 0 && selectedServices.length === 0}
+      {/* Bottom Action Bar */}
+      {step !== 1 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-neo-bg/90 backdrop-blur-lg border-t border-white/20 p-4 z-20">
+          <div className="container mx-auto max-w-lg">
+            <NeoButton
+              variant="gradient"
+              fullWidth
+              size="lg"
+              onClick={step === 4 ? handleBooking : handleNextStep}
+              loading={isProcessing}
+              disabled={
+                (step === 2 && !selectedTime) ||
+                (step === 3 && (!formData.name || !formData.phone))
+              }
             >
-              {step === 2 ? 'Revisar' : 'Continuar'}
-              {step < 2 && <ChevronRight size={20} />}
-            </Button>
+              {step === 4 ? APP_TEXTS.BTN_CONFIRM : APP_TEXTS.BTN_CONTINUE}
+            </NeoButton>
           </div>
         </div>
       )}
-
-      {/* Success Modal */}
-      <ActionBottomSheet
-        isOpen={showSuccess}
-        onClose={() => setShowSuccess(false)}
-        title=""
-        actions={[]}
-      >
-        <div className="text-center py-6">
-          <div className="w-24 h-24 bg-neo-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Check size={48} className="text-neo-success" />
-          </div>
-          <h3 className="text-xl font-semibold text-neo-text mb-2">
-            Agendamento Confirmado!
-          </h3>
-          <p className="text-neo-text-secondary text-sm mb-6">
-            Você receberá a confirmação por WhatsApp em instantes.
-          </p>
-          <Button
-            variant="primary"
-            onClick={() => {
-              setShowSuccess(false);
-              // Reset form
-              setStep(0);
-              setSelectedServices([]);
-              setSelectedTime('');
-              setFormData({
-                name: '',
-                phone: '',
-                email: '',
-                notes: '',
-                date: '',
-                time: '',
-                total: 0,
-              });
-            }}
-            className="w-full"
-          >
-            Fazer Novo Agendamento
-          </Button>
-        </div>
-      </ActionBottomSheet>
     </div>
   );
 };
