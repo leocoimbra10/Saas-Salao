@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
 import { Card, Button, Badge, Progress, Skeleton } from '../../../shared/components/ui/NeoComponents';
+import { BridalIntakeForm } from '../components/BridalIntakeForm';
 
 // Brand Colors
 const ROSE = '#E8A0B8';
@@ -730,6 +731,14 @@ const ContactSpecialist: React.FC = () => (
 export const BridePortalPage: React.FC = () => {
     const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
+    const [showIntakeForm, setShowIntakeForm] = useState(false);
+
+    // If no ID in URL, redirect to onboarding
+    React.useEffect(() => {
+        if (!id) {
+            navigate('/noiva/cadastro');
+        }
+    }, [id, navigate]);
 
     const { data: bride, isLoading } = useQuery({
         queryKey: ['bride_full_data', id],
@@ -737,6 +746,7 @@ export const BridePortalPage: React.FC = () => {
         enabled: !!id,
     });
 
+    if (!id) return null; // Will redirect
     if (isLoading) return <BridePortalSkeleton />;
     if (!bride) return <div className="p-8 text-center">Noiva não encontrada</div>;
 
@@ -786,6 +796,24 @@ export const BridePortalPage: React.FC = () => {
                     weddingDate={bride.weddingDate}
                     onEditDate={() => { }}
                 />
+
+                {/* Digital Intake CTA */}
+                <Card className="p-4 mb-6 bg-gradient-to-br from-neo-bg to-neo-accent/5 border border-neo-accent/20">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-white shadow-neo-out flex items-center justify-center text-neo-accent">
+                                <FileText size={20} />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-bold text-neo-text">Ficha de Noiva</h4>
+                                <p className="text-[10px] text-neo-text-secondary italic">Conte-nos seus desejos e preferências</p>
+                            </div>
+                        </div>
+                        <Button size="sm" onClick={() => setShowIntakeForm(true)}>
+                            Preencher
+                        </Button>
+                    </div>
+                </Card>
 
                 {/* Timeline */}
                 <JourneyTimeline steps={timeline.map(m => ({
@@ -857,6 +885,15 @@ export const BridePortalPage: React.FC = () => {
                 {/* Contact */}
                 <ContactSpecialist />
             </main>
+            {/* Intake Form Modal */}
+            <AnimatePresence>
+                {showIntakeForm && (
+                    <BridalIntakeForm
+                        brideId={id || ''}
+                        onClose={() => setShowIntakeForm(false)}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 };

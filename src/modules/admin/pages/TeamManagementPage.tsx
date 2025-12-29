@@ -5,8 +5,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Plus } from 'lucide-react';
 import { UserProfile, UserPermissions } from '../../../shared/types/types';
 import { Skeleton } from '../../../shared/components/ui/NeoComponents';
+import { cn } from '../../../shared/lib/utils';
 import { addEmployee, getUserProfile, onAuthChange } from '../../auth/services/authService';
 
 // Permission labels in Portuguese
@@ -464,11 +466,19 @@ export const TeamManagementPage: React.FC = () => {
             {isOwner && (
                 <button
                     onClick={() => setShowAddModal(true)}
-                    className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 shadow-neo-out-lg flex items-center justify-center text-white active:shadow-neo-pressed transition-all z-40"
+                    className={cn(
+                        "fixed bottom-24 right-6 z-40",
+                        "w-14 h-14 rounded-full",
+                        "bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37]",
+                        "text-white shadow-[0_8px_32px_rgba(232,160,184,0.5)]",
+                        "flex items-center justify-center",
+                        "hover:scale-110 hover:shadow-[0_12px_40px_rgba(232,160,184,0.6)] active:scale-95",
+                        "transition-all duration-300",
+                        "border-2 border-white/30 backdrop-blur-md"
+                    )}
+                    title="Adicionar Membro"
                 >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M12 5v14M5 12h14" />
-                    </svg>
+                    <Plus size={26} strokeWidth={2.5} />
                 </button>
             )}
 

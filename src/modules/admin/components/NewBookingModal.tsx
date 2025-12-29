@@ -1,486 +1,545 @@
 /**
- * BEAUTY SALON NEOMORPHIC APP - New Booking Modal
- * "The Glass Box" - Premium Assistant Experience
+ * BEAUTY SALON NEOMORPHIC APP - New Booking Modal (Redesigned)
+ * Neomorphic style with client type selection and payment link generation
  */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     X,
-    Search,
+    Crown,
     User,
+    Mail,
+    Phone,
     Calendar as CalendarIcon,
     Clock,
+    Plus,
+    Trash2,
+    Copy,
     Check,
-    Sparkles,
-    Scissors,
-    CreditCard,
-    QrCode,
-    DollarSign
+    ChevronDown
 } from 'lucide-react';
-import { format, addMinutes, isSameDay } from 'date-fns';
+import { format, addHours } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn, formatCurrency } from '../../../shared/lib/utils';
-import { Service, Staff, Appointment } from '../../../shared/types/types';
-import { Avatar, Badge, Button, Toggle } from '../../../shared/components/ui/NeoComponents';
+import { cn } from '../../../shared/lib/utils';
+import { Service } from '../../../shared/types/types';
 import { db } from '../../../shared/lib/firebase';
-import { useBranding } from '../../organization/context/BrandingContext';
-import { useAppointmentMutations } from '../../booking/hooks/useAppointments';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { CheckoutView } from '../../booking/components/CheckoutView';
-import { BrideOnboarding } from '../../bride/components/BrideOnboarding';
-import { updateBridalPackage, createBridalPackage } from '../../bride/services/brideService';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface NewBookingModalProps {
     isOpen: boolean;
     onClose: () => void;
     selectedDate: Date;
-    initialTime?: string;
-    initialStaffId?: string;
-    initialAppointment?: Appointment | null;
     services: Service[];
-    staff: Staff[];
     onSuccess: () => void;
 }
 
-// Client Search Result Type
-interface ClientResult {
+type ClientType = 'bride' | 'regular' | null;
+type Step = 1 | 2 | 3 | 4;
+
+interface ClientData {
+    name: string;
+    email: string;
+    phone: string;
+}
+
+interface SelectedService {
     id: string;
     name: string;
-    phone: string;
-    lastVisit?: string;
+    price: number;
+    duration: number;
 }
 
 export const NewBookingModal: React.FC<NewBookingModalProps> = ({
     isOpen,
     onClose,
     selectedDate,
-    initialTime,
-    initialStaffId,
-    initialAppointment,
     services,
-    staff,
     onSuccess
 }) => {
-    // --- Context & State ---
-    const { organization } = useBranding();
-    const [step, setStep] = useState<1 | 2 | 3>(1); // 1: Client/Service, 2: Time/Staff, 3: Payment
-    const [clientSearch, setClientSearch] = useState(initialAppointment?.clientName || '');
-    const [selectedClient, setSelectedClient] = useState<ClientResult | null>(
-        initialAppointment ? {
-            id: initialAppointment.clientId,
-            name: initialAppointment.clientName,
-            phone: initialAppointment.clientPhone
-        } : null
-    );
-    const [searchResults, setSearchResults] = useState<ClientResult[]>([]);
-    const [isSearching, setIsSearching] = useState(false);
+    const [step, setStep] = useState<Step>(1);
+    const [clientType, setClientType] = useState<ClientType>(null);
+    const [clientData, setClientData] = useState<ClientData>({
+        name: '',
+        email: '',
+        phone: ''
+    });
+    const [selectedServices, setSelectedServices] = useState<SelectedService[]>([]);
+    const [selectedTime, setSelectedTime] = useState('10:00');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [paymentLink, setPaymentLink] = useState('');
+    const [linkCopied, setLinkCopied] = useState(false);
 
-    const [selectedServices, setSelectedServices] = useState<string[]>(initialAppointment?.services || []);
-    const [selectedStaffId, setSelectedStaffId] = useState<string>(initialAppointment?.staffId || initialStaffId || '');
-    const [selectedTime, setSelectedTime] = useState<string>(initialAppointment?.time || initialTime || '');
-
-    const [depositPaid, setDepositPaid] = useState(false);
-    const [showCheckout, setShowCheckout] = useState(false);
-    const [showBrideOnboarding, setShowBrideOnboarding] = useState(false);
-    const { createAppointment: createAppt, isPending: isSubmitting } = useAppointmentMutations(organization?.id);
-    const [showSuccess, setShowSuccess] = useState(false);
-
-    // --- Real Client Search ---
+    // Reset state when modal closes
     useEffect(() => {
-        if (!organization) return;
+        if (!isOpen) {
+            setTimeout(() => {
+                setStep(1);
+                setClientType(null);
+                setClientData({ name: '', email: '', phone: '' });
+                setSelectedServices([]);
+                setSelectedTime('10:00');
+                setPaymentLink('');
+                setLinkCopied(false);
+            }, 300);
+        }
+    }, [isOpen]);
 
-        const searchClients = async () => {
-            if (clientSearch.length < 3) {
-                setSearchResults([]);
-                return;
-            }
+    // Filter services by client type
+    const filteredServices = services.filter(service => {
+        // Check if service is bridal-related by name or tags
+        const isBridalService = service.name.toLowerCase().includes('noiva') ||
+            service.name.toLowerCase().includes('casamento') ||
+            (service.tags && service.tags.some(tag => tag.toLowerCase().includes('noiva')));
 
-            setIsSearching(true);
-            try {
-                const q = query(
-                    collection(db, 'clients'),
-                    where('orgId', '==', organization.id)
-                );
+        if (clientType === 'bride') {
+            return isBridalService;
+        } else if (clientType === 'regular') {
+            return !isBridalService;
+        }
+        return false;
+    });
 
-                const snapshot = await getDocs(q);
-                const results = snapshot.docs
-                    .map(doc => ({ id: doc.id, ...doc.data() } as ClientResult))
-                    .filter(c => c.name.toLowerCase().includes(clientSearch.toLowerCase()));
+    // Add service to selection
+    const addService = (serviceId: string) => {
+        const service = services.find(s => s.id === serviceId);
+        if (service) {
+            setSelectedServices(prev => [...prev, {
+                id: service.id,
+                name: service.name,
+                price: service.price,
+                duration: service.duration
+            }]);
+        }
+    };
 
-                setSearchResults(results.slice(0, 5));
-            } catch (error) {
-                console.error("Error searching clients:", error);
-            } finally {
-                setIsSearching(false);
-            }
-        };
+    // Remove service from selection
+    const removeService = (index: number) => {
+        setSelectedServices(prev => prev.filter((_, i) => i !== index));
+    };
 
-        const timer = setTimeout(searchClients, 500);
-        return () => clearTimeout(timer);
-    }, [clientSearch, organization]);
-
-    // --- Calculations ---
-    const selectedServiceObjects = useMemo(() =>
-        services.filter(s => selectedServices.includes(s.id)),
-        [selectedServices, services]);
-
-    const totalDuration = useMemo(() =>
-        selectedServiceObjects.reduce((acc, s) => acc + s.duration, 0),
-        [selectedServiceObjects]);
-
-    const totalAmount = useMemo(() =>
-        selectedServiceObjects.reduce((acc, s) => acc + s.price, 0),
-        [selectedServiceObjects]);
-
+    // Calculate totals
+    const totalAmount = selectedServices.reduce((sum, s) => sum + s.price, 0);
     const depositAmount = totalAmount * 0.3;
 
-    // --- Handlers ---
-    const handleServiceToggle = (serviceId: string) => {
-        setSelectedServices(prev =>
-            prev.includes(serviceId)
-                ? prev.filter(id => id !== serviceId)
-                : [...prev, serviceId]
-        );
-    };
-
-    const handleConfirm = () => {
-        if (!selectedClient || selectedServices.length === 0) return;
-        setShowCheckout(true);
-    };
-
-    const handleSubmit = async () => {
-        if (!organization || !selectedClient) return;
-
-        createAppt({
-            orgId: organization.id,
-            clientId: selectedClient.id,
-            clientName: selectedClient.name,
-            clientPhone: selectedClient.phone,
-            date: format(selectedDate, 'yyyy-MM-dd'),
-            time: selectedTime,
-            staffId: selectedStaffId,
-            services: selectedServices,
-            totalAmount,
-            depositPaid: depositPaid ? depositAmount : 0,
-            status: 'confirmed',
-        } as any);
-
-        const isBrideService = selectedServiceObjects.some(s => s.category === 'makeup' && s.name.toLowerCase().includes('noiva'));
-
-        if (isBrideService) {
-            setShowBrideOnboarding(true);
-        } else {
-            setShowSuccess(true);
-            setTimeout(() => {
-                onSuccess();
-                onClose();
-                setShowSuccess(false);
-                setStep(1);
-                setSelectedClient(null);
-                setSelectedServices([]);
-                setClientSearch('');
-            }, 2000);
-        }
-    };
-
-    const handleBrideComplete = async (brideData: any) => {
-        if (!organization || !selectedClient) return;
-
+    // Generate payment link
+    const generatePaymentLink = async () => {
+        setIsGenerating(true);
         try {
-            // 1. Check if bride package already exists
-            const existingPkg = await updateBridalPackage(selectedClient.id, {
-                weddingDate: new Date(brideData.weddingDate),
-                organizationId: organization.id
-            } as any);
-
-            // 2. Or create new if service detected
-            await createBridalPackage({
-                clientId: selectedClient.id,
-                clientName: selectedClient.name,
-                clientPhone: selectedClient.phone,
-                orgId: organization.id,
-                weddingDate: new Date(brideData.weddingDate)
+            // Create payment link in Firestore
+            const paymentLinkDoc = await addDoc(collection(db, 'paymentLinks'), {
+                clientType,
+                clientName: clientData.name,
+                clientEmail: clientData.email,
+                clientPhone: clientData.phone,
+                appointmentDate: format(selectedDate, 'yyyy-MM-dd'),
+                appointmentTime: selectedTime,
+                services: selectedServices.map(s => ({
+                    id: s.id,
+                    name: s.name,
+                    price: s.price
+                })),
+                totalAmount,
+                depositAmount,
+                paymentDeadline: addHours(new Date(), 48),
+                status: 'pending',
+                createdAt: serverTimestamp(),
+                orgId: 'default'
             });
 
-            console.log("Bride Journey created/updated successfully");
+            const link = `${window.location.origin}/pagamento/${paymentLinkDoc.id}`;
+            setPaymentLink(link);
+            setStep(4);
         } catch (error) {
-            console.error("Error updating bride journey:", error);
+            console.error('Error generating payment link:', error);
+            alert('Erro ao gerar link de pagamento. Tente novamente.');
+        } finally {
+            setIsGenerating(false);
         }
-
-        setShowBrideOnboarding(false);
-        setShowSuccess(true);
-        setTimeout(() => {
-            onSuccess();
-            onClose();
-            setShowSuccess(false);
-            setStep(1);
-            setSelectedClient(null);
-            setSelectedServices([]);
-            setClientSearch('');
-        }, 2000);
     };
+
+    // Copy link to clipboard
+    const copyLink = () => {
+        navigator.clipboard.writeText(paymentLink);
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
+    };
+
+    // Handle next step
+    const handleNext = () => {
+        if (step === 1 && clientType) {
+            setStep(2);
+        } else if (step === 2 && clientData.name && clientData.email && clientData.phone) {
+            setStep(3);
+        } else if (step === 3 && selectedServices.length > 0) {
+            generatePaymentLink();
+        }
+    };
+
+    // Neomorphic Input Component
+    const NeoInput: React.FC<{
+        icon: React.ReactNode;
+        label: string;
+        type?: string;
+        value: string;
+        onChange: (value: string) => void;
+        placeholder?: string;
+    }> = ({ icon, label, type = 'text', value, onChange, placeholder }) => (
+        <div className="mb-4">
+            <label className="block text-sm text-neo-text font-medium mb-2">{label}</label>
+            <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neo-text-secondary">
+                    {icon}
+                </div>
+                <input
+                    type={type}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    placeholder={placeholder}
+                    className="w-full pl-12 pr-4 py-3 rounded-neo bg-neo-bg shadow-neo-in text-neo-text placeholder:text-neo-text-secondary focus:outline-none focus:ring-2 focus:ring-neo-accent/20 transition-all"
+                />
+            </div>
+        </div>
+    );
 
     if (!isOpen) return null;
 
     return (
         <AnimatePresence>
-            {isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className="absolute inset-0 bg-black/60 backdrop-blur-md"
-                    />
+            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+                {/* Backdrop */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={onClose}
+                    className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                />
 
-                    {/* Silent Luxury Glass Modal */}
-                    <motion.div
-                        initial={{ scale: 0.95, opacity: 0, y: 30 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0.95, opacity: 0, y: 30 }}
-                        transition={{ type: "spring", damping: 30, stiffness: 350 }}
-                        className={cn(
-                            "relative w-full max-w-lg overflow-hidden",
-                            "rounded-neo",
-                            // Standard Neomorphism
-                            "bg-neo-bg shadow-neo-out border border-white/50"
-                        )}
-                    >
-                        {/* Header */}
-                        <div className="relative p-8 pb-4 text-center border-b border-neo-text-secondary/10">
-                            <h2 className="text-2xl font-serif text-neo-text tracking-tight">Novo Agendamento</h2>
-                            <p className="text-sm text-neo-text-secondary mt-1 uppercase tracking-widest font-medium">
-                                {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
-                                {selectedTime && ` • ${selectedTime}`}
-                            </p>
-
-                            <button
-                                onClick={onClose}
-                                className="absolute top-6 right-6 p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors"
-                            >
-                                <X size={20} />
-                            </button>
+                {/* Modal */}
+                <motion.div
+                    initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 50, scale: 0.95 }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                    className={cn(
+                        "relative w-full max-w-lg mx-4 max-h-[85vh] overflow-hidden",
+                        "bg-neo-bg rounded-t-3xl sm:rounded-3xl",
+                        "shadow-neo-out border border-white/40"
+                    )}
+                >
+                    {/* Header */}
+                    <div className="relative flex items-center gap-3 p-6 pb-4 border-b border-neo-text-secondary/10">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] flex items-center justify-center shadow-lg shrink-0">
+                            <CalendarIcon className="text-white" size={20} />
                         </div>
 
-                        {/* Content Area */}
-                        <div className="p-8 space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                        <div className="flex-1">
+                            <h2 className="text-xl font-serif text-neo-text tracking-tight">Novo Agendamento</h2>
+                            <p className="text-xs text-neo-text-secondary mt-0.5">
+                                {format(selectedDate, "d 'de' MMMM", { locale: ptBR })}
+                            </p>
+                        </div>
 
-                            {/* Step 1: Who & What */}
-                            <div className={cn("space-y-6 transition-opacity duration-300", step !== 1 && "opacity-50 pointer-events-none hidden")}>
+                        <button
+                            onClick={onClose}
+                            className="p-2 text-neo-text-secondary hover:text-neo-text transition-colors shrink-0 rounded-full hover:bg-neo-bg-secondary"
+                        >
+                            <X size={18} />
+                        </button>
+                    </div>
 
-                                {/* Client Search */}
-                                <div className="space-y-3">
-                                    <label className="text-xs uppercase tracking-widest text-neo-accent font-bold ml-1">
-                                        Cliente
-                                    </label>
-                                    <div className="relative z-20">
-                                        <div className="relative group">
-                                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neo-text-secondary group-focus-within:text-neo-accent transition-colors" size={18} />
-                                            <input
-                                                type="text"
-                                                value={selectedClient ? selectedClient.name : clientSearch}
-                                                onChange={(e) => {
-                                                    setClientSearch(e.target.value);
-                                                    setSelectedClient(null);
-                                                }}
-                                                placeholder="Buscar cliente..."
-                                                className="w-full pl-12 pr-4 py-4 bg-neo-bg rounded-neo shadow-neo-in border-none text-neo-text placeholder:text-neo-text-secondary focus:outline-none focus:ring-2 focus:ring-neo-accent/20 transition-all"
-                                            />
-                                            {selectedClient && (
-                                                <button
-                                                    onClick={() => { setSelectedClient(null); setClientSearch(''); }}
-                                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
-                                                >
-                                                    <X size={16} />
-                                                </button>
-                                            )}
-                                        </div>
-
-                                        {/* Search Results Dropdown */}
-                                        <AnimatePresence>
-                                            {isSearching || searchResults.length > 0 && !selectedClient ? (
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: -10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: -10 }}
-                                                    className="absolute top-full left-0 right-0 mt-2 bg-[#1a1a1a]/90 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden shadow-2xl z-30"
-                                                >
-                                                    {searchResults.map(client => (
-                                                        <button
-                                                            key={client.id}
-                                                            onClick={() => {
-                                                                setSelectedClient(client);
-                                                                setSearchResults([]);
-                                                            }}
-                                                            className="w-full text-left px-5 py-4 hover:bg-white/5 transition-colors flex items-center justify-between border-b border-white/5 last:border-0"
-                                                        >
-                                                            <span className="font-medium text-white">{client.name}</span>
-                                                            <span className="text-xs text-white/40">{client.phone}</span>
-                                                        </button>
-                                                    ))}
-                                                    {searchResults.length === 0 && !isSearching && clientSearch.length > 2 && (
-                                                        <div className="p-4 text-center">
-                                                            <p className="text-sm text-white/40">Cliente não encontrado</p>
-                                                        </div>
-                                                    )}
-                                                </motion.div>
-                                            ) : null}
-                                        </AnimatePresence>
+                    {/* Content */}
+                    <div className="p-6 overflow-y-auto max-h-[calc(85vh-180px)] custom-scrollbar">
+                        <AnimatePresence mode="wait">
+                            {/* Step 1: Client Type Selection */}
+                            {step === 1 && (
+                                <motion.div
+                                    key="step1"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-6"
+                                >
+                                    <div className="text-center mb-6">
+                                        <h3 className="text-lg font-serif text-neo-text mb-2">Tipo de Cliente</h3>
+                                        <p className="text-sm text-neo-text-secondary">Selecione o tipo de atendimento</p>
                                     </div>
-                                </div>
 
-                                {/* Services */}
-                                <div className="space-y-3">
-                                    <label className="text-xs uppercase tracking-widest text-[#D4AF37] font-bold ml-1">
-                                        Serviços
-                                    </label>
-                                    <div className="grid grid-cols-1 gap-2">
-                                        {services.map(service => {
-                                            const isSelected = selectedServices.includes(service.id);
-                                            return (
-                                                <button
-                                                    key={service.id}
-                                                    onClick={() => handleServiceToggle(service.id)}
-                                                    className={cn(
-                                                        "flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 text-left group",
-                                                        isSelected
-                                                            ? "bg-[#D4AF37]/20 border-[#D4AF37]/50"
-                                                            : "bg-white/5 border-white/5 hover:bg-white/10"
-                                                    )}
-                                                >
-                                                    <div className={cn(
-                                                        "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                                                        isSelected ? "bg-[#D4AF37] text-white" : "bg-white/10 text-white/60"
-                                                    )}>
-                                                        {service.category === 'makeup' ? <Sparkles size={16} /> : <Scissors size={16} />}
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <p className={cn("text-base font-medium", isSelected ? "text-white" : "text-white/80")}>{service.name}</p>
-                                                        <p className="text-xs text-white/40 mt-0.5">
-                                                            {service.duration} min • {formatCurrency(service.price)}
-                                                        </p>
-                                                    </div>
-                                                    {isSelected && <div className="w-6 h-6 rounded-full bg-[#D4AF37] flex items-center justify-center">
-                                                        <Check size={14} className="text-white" />
-                                                    </div>}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            {/* Step 2: Confirmation */}
-                            <div className={cn("space-y-8 transition-opacity duration-300", step !== 2 && "opacity-50 pointer-events-none hidden")}>
-                                {/* Staff Selection (Horizontal Scroll) */}
-                                <div className="space-y-3">
-                                    <label className="text-xs uppercase tracking-widest text-[#D4AF37] font-bold ml-1">
-                                        Profissional
-                                    </label>
-                                    <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-                                        {staff.map(member => {
-                                            const isSelected = selectedStaffId === member.id;
-                                            return (
-                                                <button
-                                                    key={member.id}
-                                                    onClick={() => setSelectedStaffId(member.id)}
-                                                    className="relative flex flex-col items-center gap-2 group min-w-[70px]"
-                                                >
-                                                    <div className={cn(
-                                                        "w-16 h-16 rounded-full border-2 transition-all p-0.5",
-                                                        isSelected ? "border-[#D4AF37] scale-110" : "border-transparent group-hover:border-white/20"
-                                                    )}>
-                                                        <div className="w-full h-full rounded-full bg-white/10 overflow-hidden">
-                                                            <Avatar size="md" src={member.photo} />
-                                                        </div>
-                                                    </div>
-                                                    <span className={cn(
-                                                        "text-xs font-medium transition-colors",
-                                                        isSelected ? "text-[#D4AF37]" : "text-white/60"
-                                                    )}>
-                                                        {member.name}
-                                                    </span>
-                                                </button>
-                                            )
-                                        })}
-                                    </div>
-                                </div>
-
-                                {/* Summary Card */}
-                                <div className="bg-black/20 rounded-2xl p-6 border border-white/5 space-y-4">
-                                    <div className="flex justify-between items-center text-white/80">
-                                        <span className="text-sm">Total Estimado</span>
-                                        <span className="text-xl font-serif">{formatCurrency(totalAmount)}</span>
-                                    </div>
-                                    <div className="w-full h-px bg-white/10" />
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-[#D4AF37]">Sinal (30%)</span>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {/* Bride Card */}
                                         <button
-                                            onClick={() => setDepositPaid(!depositPaid)}
+                                            onClick={() => setClientType('bride')}
                                             className={cn(
-                                                "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all",
-                                                depositPaid
-                                                    ? "bg-[#D4AF37]/20 border-[#D4AF37] text-[#D4AF37]"
-                                                    : "bg-transparent border-white/20 text-white/40 hover:border-white/40"
+                                                "p-6 rounded-neo transition-all duration-300 flex flex-col items-center gap-3",
+                                                clientType === 'bride'
+                                                    ? "shadow-neo-in bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] text-white"
+                                                    : "shadow-neo-out hover:shadow-neo-in"
                                             )}
                                         >
-                                            {depositPaid ? <Check size={14} /> : <div className="w-3.5 h-3.5 rounded-full border border-current" />}
-                                            <span className="text-xs font-bold">{formatCurrency(depositAmount)}</span>
+                                            <Crown size={32} className={clientType === 'bride' ? 'text-white' : 'text-neo-accent'} />
+                                            <span className={cn(
+                                                "text-sm font-medium",
+                                                clientType === 'bride' ? 'text-white' : 'text-neo-text'
+                                            )}>Noiva</span>
+                                        </button>
+
+                                        {/* Regular Client Card */}
+                                        <button
+                                            onClick={() => setClientType('regular')}
+                                            className={cn(
+                                                "p-6 rounded-neo transition-all duration-300 flex flex-col items-center gap-3",
+                                                clientType === 'regular'
+                                                    ? "shadow-neo-in bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] text-white"
+                                                    : "shadow-neo-out hover:shadow-neo-in"
+                                            )}
+                                        >
+                                            <User size={32} className={clientType === 'regular' ? 'text-white' : 'text-neo-accent'} />
+                                            <span className={cn(
+                                                "text-sm font-medium",
+                                                clientType === 'regular' ? 'text-white' : 'text-neo-text'
+                                            )}>Cliente Comum</span>
                                         </button>
                                     </div>
-                                </div>
-                            </div>
+                                </motion.div>
+                            )}
 
-                        </div>
+                            {/* Step 2: Client Data */}
+                            {step === 2 && (
+                                <motion.div
+                                    key="step2"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-4"
+                                >
+                                    <div className="text-center mb-6">
+                                        <h3 className="text-lg font-serif text-neo-text mb-2">Dados do Cliente</h3>
+                                        <p className="text-sm text-neo-text-secondary">Preencha as informações de contato</p>
+                                    </div>
 
-                        {/* Footer Action */}
-                        <div className="p-6 bg-white/5 border-t border-white/10">
-                            <Button
-                                className="w-full h-14 text-base font-medium tracking-wide shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)]"
-                                variant="primary"
-                                disabled={(!selectedClient || selectedServices.length === 0) && step === 1}
-                                onClick={() => {
-                                    if (step === 1) setStep(2);
-                                    else handleConfirm();
-                                }}
+                                    <NeoInput
+                                        icon={<User size={18} />}
+                                        label="Nome Completo"
+                                        value={clientData.name}
+                                        onChange={(v) => setClientData(prev => ({ ...prev, name: v }))}
+                                        placeholder="Ex: Maria Silva"
+                                    />
+                                    <NeoInput
+                                        icon={<Mail size={18} />}
+                                        label="E-mail"
+                                        type="email"
+                                        value={clientData.email}
+                                        onChange={(v) => setClientData(prev => ({ ...prev, email: v }))}
+                                        placeholder="maria@email.com"
+                                    />
+                                    <NeoInput
+                                        icon={<Phone size={18} />}
+                                        label="WhatsApp"
+                                        value={clientData.phone}
+                                        onChange={(v) => setClientData(prev => ({ ...prev, phone: v }))}
+                                        placeholder="(11) 99999-9999"
+                                    />
+                                </motion.div>
+                            )}
+
+                            {/* Step 3: Service Selection */}
+                            {step === 3 && (
+                                <motion.div
+                                    key="step3"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-4"
+                                >
+                                    <div className="text-center mb-6">
+                                        <h3 className="text-lg font-serif text-neo-text mb-2">Serviços</h3>
+                                        <p className="text-sm text-neo-text-secondary">Selecione os serviços desejados</p>
+                                    </div>
+
+                                    {/* Service Dropdown */}
+                                    <div className="mb-4">
+                                        <label className="block text-sm text-neo-text font-medium mb-2">Adicionar Serviço</label>
+                                        <div className="relative">
+                                            <select
+                                                onChange={(e) => {
+                                                    if (e.target.value) {
+                                                        addService(e.target.value);
+                                                        e.target.value = '';
+                                                    }
+                                                }}
+                                                className="w-full pl-4 pr-10 py-3 rounded-neo bg-neo-bg shadow-neo-in text-neo-text focus:outline-none focus:ring-2 focus:ring-neo-accent/20 appearance-none cursor-pointer"
+                                            >
+                                                <option value="">Selecione um serviço...</option>
+                                                {filteredServices.map(service => (
+                                                    <option key={service.id} value={service.id}>
+                                                        {service.name} - R$ {service.price.toFixed(2)}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-neo-text-secondary pointer-events-none" size={18} />
+                                        </div>
+                                    </div>
+
+                                    {/* Selected Services */}
+                                    {selectedServices.length > 0 && (
+                                        <div className="space-y-2 mb-4">
+                                            <label className="block text-sm text-neo-text font-medium mb-2">Serviços Selecionados</label>
+                                            {selectedServices.map((service, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex items-center justify-between p-3 rounded-neo bg-neo-bg shadow-neo-in"
+                                                >
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-medium text-neo-text">{service.name}</p>
+                                                        <p className="text-xs text-neo-text-secondary">{service.duration} min</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-sm font-semibold text-neo-text">
+                                                            R$ {service.price.toFixed(2)}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => removeService(index)}
+                                                            className="p-1.5 rounded-full hover:bg-red-100 text-red-500 transition-colors"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Total */}
+                                    {selectedServices.length > 0 && (
+                                        <div className="p-4 rounded-neo bg-gradient-to-br from-[#E8A0B8]/10 to-[#D4AF37]/10 shadow-neo-out border border-neo-accent/20">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <span className="text-sm text-neo-text-secondary">Total</span>
+                                                <span className="text-2xl font-bold text-neo-text">R$ {totalAmount.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs text-neo-text-secondary">Sinal (30%)</span>
+                                                <span className="text-sm font-semibold text-neo-accent">R$ {depositAmount.toFixed(2)}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Time Selection */}
+                                    <div className="mb-4">
+                                        <label className="block text-sm text-neo-text font-medium mb-2">Horário</label>
+                                        <div className="relative">
+                                            <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-neo-text-secondary" size={18} />
+                                            <input
+                                                type="time"
+                                                value={selectedTime}
+                                                onChange={(e) => setSelectedTime(e.target.value)}
+                                                className="w-full pl-12 pr-4 py-3 rounded-neo bg-neo-bg shadow-neo-in text-neo-text focus:outline-none focus:ring-2 focus:ring-neo-accent/20"
+                                            />
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* Step 4: Payment Link Generated */}
+                            {step === 4 && (
+                                <motion.div
+                                    key="step4"
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="space-y-6 text-center"
+                                >
+                                    <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] flex items-center justify-center shadow-lg">
+                                        <Check size={40} className="text-white" />
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-lg font-serif text-neo-text mb-2">Link Gerado!</h3>
+                                        <p className="text-sm text-neo-text-secondary">
+                                            Envie este link para {clientData.name} via WhatsApp
+                                        </p>
+                                    </div>
+
+                                    <div className="p-4 rounded-neo bg-neo-bg shadow-neo-in">
+                                        <p className="text-xs text-neo-text-secondary mb-2">Link de Pagamento</p>
+                                        <p className="text-sm text-neo-text break-all mb-3">{paymentLink}</p>
+                                        <button
+                                            onClick={copyLink}
+                                            className={cn(
+                                                "w-full py-3 rounded-neo font-medium transition-all flex items-center justify-center gap-2",
+                                                linkCopied
+                                                    ? "bg-green-500 text-white shadow-neo-in"
+                                                    : "bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] text-white shadow-neo-out hover:shadow-neo-in"
+                                            )}
+                                        >
+                                            {linkCopied ? (
+                                                <>
+                                                    <Check size={18} />
+                                                    Copiado!
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Copy size={18} />
+                                                    Copiar Link
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+
+                                    <div className="p-3 rounded-neo bg-yellow-50 shadow-neo-in border border-yellow-200">
+                                        <p className="text-xs text-yellow-800">
+                                            ⏱️ O cliente tem <strong>48 horas</strong> para efetuar o pagamento do sinal
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
+                    {/* Footer */}
+                    {step < 4 && (
+                        <div className="p-6 pt-4 border-t border-neo-text-secondary/10 flex gap-3">
+                            {step > 1 && (
+                                <button
+                                    onClick={() => setStep((step - 1) as Step)}
+                                    className="px-6 py-3 rounded-neo bg-neo-bg shadow-neo-out hover:shadow-neo-in text-neo-text font-medium transition-all"
+                                >
+                                    Voltar
+                                </button>
+                            )}
+                            <button
+                                onClick={handleNext}
+                                disabled={
+                                    (step === 1 && !clientType) ||
+                                    (step === 2 && (!clientData.name || !clientData.email || !clientData.phone)) ||
+                                    (step === 3 && selectedServices.length === 0) ||
+                                    isGenerating
+                                }
+                                className={cn(
+                                    "flex-1 py-3 rounded-neo font-medium transition-all",
+                                    "bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] text-white",
+                                    "shadow-neo-out hover:shadow-neo-in",
+                                    "disabled:opacity-50 disabled:cursor-not-allowed"
+                                )}
                             >
-                                {step === 1 ? 'Continuar' : isSubmitting ? 'Confirmando...' : 'Confirmar Agendamento'}
-                            </Button>
+                                {isGenerating ? 'Gerando...' : step === 3 ? 'Gerar Link de Pagamento' : 'Continuar'}
+                            </button>
                         </div>
+                    )}
 
-                        {/* Checkout View Overlay */}
-                        <CheckoutView
-                            isOpen={showCheckout}
-                            onClose={() => setShowCheckout(false)}
-                            amount={totalAmount}
-                            appointmentId="" // Will generate ID in service if needed
-                            onSuccess={() => {
-                                setShowCheckout(false);
-                                handleSubmit();
-                            }}
-                        />
-
-                        {/* Bride Onboarding Overlay */}
-                        <BrideOnboarding
-                            isOpen={showBrideOnboarding}
-                            onClose={() => setShowBrideOnboarding(false)}
-                            clientId={selectedClient?.id || ''}
-                            onComplete={handleBrideComplete}
-                        />
-
-                        {/* Loading Overlay */}
-                        {isSubmitting && (
-                            <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                                <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
-                            </div>
-                        )}
-
-                    </motion.div>
-                </div>
-            )}
+                    {step === 4 && (
+                        <div className="p-6 pt-4 border-t border-neo-text-secondary/10">
+                            <button
+                                onClick={() => {
+                                    onSuccess();
+                                    onClose();
+                                }}
+                                className="w-full py-3 rounded-neo bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] text-white font-medium shadow-neo-out hover:shadow-neo-in transition-all"
+                            >
+                                Concluir
+                            </button>
+                        </div>
+                    )}
+                </motion.div>
+            </div>
         </AnimatePresence>
     );
 };

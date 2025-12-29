@@ -166,7 +166,8 @@ export async function registerBusiness(
 export async function createClientAccount(
     email: string,
     password: string,
-    displayName?: string
+    displayName?: string,
+    preferredName?: string
 ): Promise<UserCredential> {
     if (!auth || !auth.app) {
         throw new Error("Sistema de autenticação indisponível (Firebase não configurado).");
@@ -179,7 +180,15 @@ export async function createClientAccount(
             await updateProfile(userCredential.user, { displayName });
         }
 
+        // Create user profile with preferredName
         await createUserProfile(userCredential.user, 'client');
+
+        // Update profile with preferredName if provided
+        if (preferredName) {
+            const userRef = doc(db, 'users', userCredential.user.uid);
+            await setDoc(userRef, { preferredName }, { merge: true });
+        }
+
         return userCredential;
     } catch (error: any) {
         console.error("Create Account Error:", error);

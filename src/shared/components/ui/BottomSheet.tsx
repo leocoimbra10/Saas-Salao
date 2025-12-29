@@ -13,6 +13,7 @@ interface BottomSheetProps {
   onClose: () => void;
   children: React.ReactNode;
   title?: string;
+  headerIcon?: React.ReactNode;
   showHandle?: boolean;
   snapPoints?: number[];
   initialSnap?: number;
@@ -24,6 +25,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   onClose,
   children,
   title,
+  headerIcon,
   showHandle = true,
   snapPoints = [0.3, 0.5, 0.7, 0.95],
   initialSnap = 1,
@@ -91,7 +93,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             onDragStart={() => setIsDragging(true)}
             onDragEnd={handleDragEnd}
             className={cn(
-              'fixed inset-x-0 bottom-0 bg-neo-bg rounded-t-neo-lg',
+              'fixed inset-x-0 bottom-0 bg-neo-bg rounded-t-3xl',
               'shadow-neo-out-lg z-50',
               'max-h-[95vh] overflow-hidden',
               className
@@ -99,7 +101,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           >
             {/* Handle */}
             {showHandle && (
-              <div 
+              <div
                 className="w-full flex justify-center py-3 cursor-grab active:cursor-grabbing"
                 onPointerDown={(e) => e.stopPropagation()}
               >
@@ -107,16 +109,21 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               </div>
             )}
 
-            {/* Header */}
-            {(title || isDragging) && (
-              <div className="px-6 pb-2">
-                <div className="flex items-center justify-between">
+            {/* Header with pink icon */}
+            {(title || headerIcon) && (
+              <div className="px-6 pb-4">
+                <div className="flex items-center gap-3">
+                  {headerIcon && (
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37] flex items-center justify-center shadow-lg shrink-0">
+                      {headerIcon}
+                    </div>
+                  )}
                   {title && (
-                    <h2 className="text-lg font-semibold text-neo-text">{title}</h2>
+                    <h2 className="text-xl font-semibold text-neo-text flex-1">{title}</h2>
                   )}
                   <button
                     onClick={onClose}
-                    className="w-10 h-10 bg-neo-bg rounded-full shadow-neo-out flex items-center justify-center text-neo-text-secondary active:shadow-neo-pressed transition-all"
+                    className="p-2 text-neo-text-secondary hover:text-neo-text transition-colors shrink-0"
                   >
                     <X size={20} />
                   </button>
@@ -172,6 +179,7 @@ interface ActionBottomSheetProps {
     danger?: boolean;
   }[];
   title?: string;
+  headerIcon?: React.ReactNode;
   children?: React.ReactNode;
 }
 
@@ -180,21 +188,19 @@ export const ActionBottomSheet: React.FC<ActionBottomSheetProps> = ({
   onClose,
   actions = [],
   title,
+  headerIcon,
   children,
 }) => {
   return (
     <BottomSheet
       isOpen={isOpen}
       onClose={onClose}
+      title={title}
+      headerIcon={headerIcon}
       showHandle={false}
       snapPoints={[0, 0.6]}
       initialSnap={1}
     >
-      {title && (
-        <h3 className="text-sm font-medium text-neo-text-secondary mb-4 px-2">
-          {title}
-        </h3>
-      )}
       {actions.length > 0 && (
         <div className="space-y-2">
           {actions.map((action, index) => (

@@ -21,6 +21,7 @@ export const LoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [displayName, setDisplayName] = useState('');
+    const [preferredName, setPreferredName] = useState(''); // Nickname field
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -93,7 +94,7 @@ export const LoginPage: React.FC = () => {
         setIsLoading(true);
 
         try {
-            await createClientAccount(email, password, displayName);
+            await createClientAccount(email, password, displayName, preferredName);
             setSuccessMessage('Conta criada com sucesso! Redirecionando...');
             setTimeout(() => navigate('/'), 1500);
         } catch (err: any) {
@@ -300,6 +301,35 @@ export const LoginPage: React.FC = () => {
                                     />
                                 </div>
                             </div>
+
+                            {/* Preferred Name Field (Register Only - User tab) */}
+                            {authMode === 'register' && activeTab === 'user' && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="mb-6"
+                                >
+                                    <label className="block text-sm font-medium text-neo-text-secondary mb-2">
+                                        Como gostaria de ser chamada? (opcional)
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neo-text-secondary">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                                <circle cx="12" cy="7" r="4" />
+                                            </svg>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={preferredName}
+                                            onChange={(e) => setPreferredName(e.target.value)}
+                                            placeholder="Ex: Mari, Bel, etc."
+                                            className="w-full neo-input pl-12"
+                                        />
+                                    </div>
+                                </motion.div>
+                            )}
 
                             {/* Password Field */}
                             <div className="mb-6">
@@ -513,8 +543,8 @@ export const LoginPage: React.FC = () => {
                 </motion.div>
             )}
 
-            {/* Create Account Button - Prominent CTA */}
-            {authMode === 'login' && (
+            {/* Create Account Button - Prominent CTA (Cliente Only) */}
+            {authMode === 'login' && activeTab === 'user' && (
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}

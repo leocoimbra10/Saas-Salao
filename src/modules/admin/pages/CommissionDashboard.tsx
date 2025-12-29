@@ -413,6 +413,28 @@ export const CommissionDashboard: React.FC = () => {
                                 Total Comissões: {formatCurrency(totalStats.totalCommission)}
                             </span>
                         </div>
+
+                        {/* Team Goal Thermometer */}
+                        <div className="mt-6 pt-6 border-t border-neo-text-secondary/10">
+                            <div className="flex justify-between items-center mb-2">
+                                <h4 className="text-xs font-bold text-neo-text flex items-center gap-2">
+                                    <TrendingUp size={14} className="text-neo-accent" />
+                                    META DA EQUIPE
+                                </h4>
+                                <span className="text-xs font-bold text-neo-accent">
+                                    {Math.round((totalStats.totalGross / 25000) * 100)}%
+                                </span>
+                            </div>
+                            <Progress
+                                value={(totalStats.totalGross / 25000) * 100}
+                                className="h-3 shadow-neo-in bg-white/30"
+                            />
+                            <div className="flex justify-between mt-1">
+                                <span className="text-[10px] text-neo-text-secondary">R$ 0</span>
+                                <p className="text-[10px] text-neo-text-secondary italic">Faltam {formatCurrency(Math.max(0, 25000 - totalStats.totalGross))} para o bônus!</p>
+                                <span className="text-[10px] text-neo-text-secondary">R$ 25k</span>
+                            </div>
+                        </div>
                     </Card>
                 </header>
 

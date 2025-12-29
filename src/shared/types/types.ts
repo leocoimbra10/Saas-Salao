@@ -14,10 +14,12 @@ export interface Service {
   id: string;
   name: string;
   price: number;
-  duration: number; // in minutes
   category: 'makeup' | 'hairstyle';
+  duration: number; // in minutes
   description?: string;
-  active: boolean;
+  tags?: string[]; // For additional categorization (e.g., 'noiva', 'festa', etc.)
+  orgId: string;
+  createdAt?: Date;
 }
 
 export interface Appointment {
@@ -112,6 +114,7 @@ export interface UserProfile {
   uid: string;
   email: string;
   displayName: string | null;
+  preferredName?: string; // Nickname or preferred name
   photoURL: string | null;
   orgId: string;
   role: UserRole;

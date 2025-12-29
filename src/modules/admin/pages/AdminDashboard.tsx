@@ -19,7 +19,12 @@ import {
   Phone,
   MessageSquare,
   CheckCircle,
-  Clock
+  Clock,
+  Search,
+  Filter,
+  AlertTriangle,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import { cn, formatCurrency, getStatusColor } from '../../../shared/lib/utils';
 import { Service, Appointment, Staff, STATS_INITIAL } from '../../../shared/types/types';
@@ -33,6 +38,7 @@ import { AppointmentCard, AppointmentActions, AppointmentDetails } from '../../b
 import { subscribeToAppointments } from '../../booking/services/appointmentService';
 import { subscribeToStaff } from '../services/staffService';
 import { subscribeToServices } from '../services/serviceService';
+import { getChurnAlerts } from '../../../shared/services/AIService';
 
 
 // Stats Panel Component (Props interface if needed)
@@ -115,6 +121,15 @@ const ProStatsPanel: React.FC = () => {
     ],
   };
 
+  // Dummy stats for the new section, replace with actual data if available
+  const stats = [
+    { title: 'Receita Mensal', value: formatCurrency(12850), icon: DollarSign, trend: '+12% vs último mês' },
+    { title: 'Agendamentos', value: '45', icon: CalendarIcon, trend: 'este mês' },
+    { title: 'Retenção', value: '78%', icon: TrendingUp, trend: '' },
+    { title: 'Novos Clientes', value: '8', icon: Users, trend: 'este mês' },
+  ];
+
+
   return (
     <div className="mb-6">
       <button
@@ -162,6 +177,51 @@ const ProStatsPanel: React.FC = () => {
                   </p>
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {stats.map((stat) => (
+                  <Card key={stat.title} className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-neo-bg rounded-neo shadow-neo-in">
+                        <stat.icon size={24} className="text-neo-accent" />
+                      </div>
+                      <span className="text-xs font-medium text-neo-success">{stat.trend}</span>
+                    </div>
+                    <h3 className="text-sm font-medium text-neo-text-secondary mb-1">{stat.title}</h3>
+                    <p className="text-2xl font-bold text-neo-text">{stat.value}</p>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Marcela AI: Churn Insights */}
+              <section className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles size={20} className="text-neo-accent" />
+                  <h2 className="text-xl font-display font-bold text-neo-text">Insights - Marcela AI</h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {getChurnAlerts().map((alert, idx) => (
+                    <Card key={idx} className="p-5 border-l-4 border-neo-warning relative overflow-hidden">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <AlertTriangle size={16} className="text-neo-warning" />
+                            <span className="text-xs font-bold text-neo-warning tracking-widest uppercase">Risco de Churn: {alert.risk}</span>
+                          </div>
+                          <h4 className="font-bold text-lg text-neo-text">{alert.clientName}</h4>
+                          <p className="text-sm text-neo-text-secondary">Última visita há {alert.lastVisit}</p>
+                        </div>
+                        <Button size="sm" variant="secondary" className="shadow-neo-out text-xs gap-2">
+                          Falar com Cliente <ArrowRight size={14} />
+                        </Button>
+                      </div>
+                      <div className="mt-4 p-3 bg-neo-warning/5 rounded-neo border border-neo-warning/10">
+                        <p className="text-xs font-medium text-neo-warning/80 italic">Ação sugerida: {alert.action}</p>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </section>
 
               <div className="mt-4 pt-4 border-t border-neo-text-secondary/10">
                 <div className="flex items-center justify-between text-sm">
@@ -226,11 +286,123 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
   // View State for Calendar Mode
   const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('day');
 
+  // ====== TEST DATA - Remove after verification ======
+  const TEST_APPOINTMENTS: Appointment[] = [
+    {
+      id: 'test-1',
+      orgId: organization?.id || 'org-1',
+      clientId: 'client-1',
+      clientName: 'Ana Paula Silva',
+      clientEmail: 'ana@email.com',
+      clientPhone: '11987654321',
+      date: format(new Date(), 'yyyy-MM-dd'),
+      time: '09:00',
+      services: services.filter(s => s.name.includes('Maquiagem')).map(s => s.id) || ['service-1'],
+      staffId: staff[0]?.id || 'staff-1',
+      status: 'confirmed',
+      depositPaid: 100,
+      totalAmount: 250,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 'test-2',
+      orgId: organization?.id || 'org-1',
+      clientId: 'client-2',
+      clientName: 'Mariana Costa',
+      clientEmail: 'mariana@email.com',
+      clientPhone: '11976543210',
+      date: format(new Date(), 'yyyy-MM-dd'),
+      time: '10:30',
+      services: services.filter(s => s.name.toLowerCase().includes('cabelo')).map(s => s.id) || ['service-2'],
+      staffId: staff[0]?.id || 'staff-1',
+      status: 'pending',
+      depositPaid: 0,
+      totalAmount: 180,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 'test-3',
+      orgId: organization?.id || 'org-1',
+      clientId: 'client-3',
+      clientName: 'Juliana Noiva',
+      clientEmail: 'juliana@email.com',
+      clientPhone: '11965432109',
+      date: format(new Date(), 'yyyy-MM-dd'),
+      time: '14:00',
+      services: services.filter(s => s.name.toLowerCase().includes('noiva')).map(s => s.id) || ['service-3'],
+      staffId: staff[0]?.id || 'staff-1',
+      status: 'confirmed',
+      depositPaid: 300,
+      totalAmount: 800,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 'test-4',
+      orgId: organization?.id || 'org-1',
+      clientId: 'client-4',
+      clientName: 'Beatriz Santos',
+      clientEmail: 'bia@email.com',
+      clientPhone: '11954321098',
+      date: format(new Date(), 'yyyy-MM-dd'),
+      time: '15:30',
+      services: services.filter(s => s.name.toLowerCase().includes('depila')).map(s => s.id) || ['service-4'],
+      staffId: staff[0]?.id || 'staff-1',
+      status: 'confirmed',
+      depositPaid: 50,
+      totalAmount: 120,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 'test-5',
+      orgId: organization?.id || 'org-1',
+      clientId: 'client-5',
+      clientName: 'Carolina Oliveira',
+      clientEmail: 'carol@email.com',
+      clientPhone: '11943210987',
+      date: format(new Date(), 'yyyy-MM-dd'),
+      time: '17:00',
+      services: services.filter(s => s.name.toLowerCase().includes('unhas')).map(s => s.id) || ['service-5'],
+      staffId: staff[0]?.id || 'staff-1',
+      status: 'pending',
+      depositPaid: 0,
+      totalAmount: 90,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 'test-6',
+      orgId: organization?.id || 'org-1',
+      clientId: 'client-6',
+      clientName: 'Fernanda Lima',
+      clientEmail: 'fernanda@email.com',
+      clientPhone: '11932109876',
+      date: format(new Date(), 'yyyy-MM-dd'),
+      time: '18:30',
+      services: services.filter(s => s.name.toLowerCase().includes('maquiagem')).map(s => s.id) || ['service-1'],
+      staffId: staff[0]?.id || 'staff-1',
+      status: 'confirmed',
+      depositPaid: 80,
+      totalAmount: 200,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+  ];
+
+  // Merge test data with real appointments (only if not in production)
+  const allAppointments = process.env.NODE_ENV === 'development'
+    ? [...appointments, ...TEST_APPOINTMENTS]
+    : appointments;
+  // ====== END TEST DATA ======
+
   const todaysAppointments = useMemo(() => {
-    return appointments.filter(apt =>
+    return allAppointments.filter(apt =>
       isSameDay(new Date(apt.date), selectedDate)
     ).sort((a, b) => a.time.localeCompare(b.time));
-  }, [appointments, selectedDate]);
+  }, [allAppointments, selectedDate]);
 
   const handleAppointmentClick = (apt: Appointment) => {
     setSelectedAppointment(apt);
@@ -321,7 +493,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
             <AgendaView
               selectedDate={selectedDate}
               onDateChange={setSelectedDate}
-              appointments={appointments}
+              appointments={allAppointments}
               services={services}
               staff={staff}
               onAppointmentClick={handleAppointmentClick}

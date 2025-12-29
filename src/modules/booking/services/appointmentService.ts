@@ -16,7 +16,7 @@ import {
     getDocs,
     QuerySnapshot
 } from 'firebase/firestore';
-import { db } from '@/shared/lib/firebase';
+import { db as firebaseDb, checkFirestoreReady } from '@/shared/lib/firebase';
 import { Appointment } from '@/shared/types/types';
 
 const APPOINTMENTS_COLLECTION = 'appointments';
@@ -27,6 +27,7 @@ const APPOINTMENTS_COLLECTION = 'appointments';
  * @returns Unsubscribe function to stop listening
  */
 export const subscribeToAppointments = (orgId: string, onUpdate: (appointments: Appointment[]) => void) => {
+    const db = checkFirestoreReady();
     const q = query(
         collection(db, APPOINTMENTS_COLLECTION),
         where('orgId', '==', orgId),
@@ -55,6 +56,7 @@ export const subscribeToAppointments = (orgId: string, onUpdate: (appointments: 
  * Get appointments once (for TanStack Query)
  */
 export const getAppointments = async (orgId: string): Promise<Appointment[]> => {
+    const db = checkFirestoreReady();
     const q = query(
         collection(db, APPOINTMENTS_COLLECTION),
         where('orgId', '==', orgId),
@@ -79,6 +81,7 @@ export const getAppointments = async (orgId: string): Promise<Appointment[]> => 
  */
 export const createAppointment = async (appointment: Omit<Appointment, 'id'>) => {
     try {
+        const db = checkFirestoreReady();
         // Pre-check for availability (Simplified, real atomicity would need a transaction or separate slot collection)
         const q = query(
             collection(db, APPOINTMENTS_COLLECTION),
@@ -110,6 +113,7 @@ export const createAppointment = async (appointment: Omit<Appointment, 'id'>) =>
  */
 export const updateAppointment = async (id: string, updates: Partial<Appointment>) => {
     try {
+        const db = checkFirestoreReady();
         const docRef = doc(db, APPOINTMENTS_COLLECTION, id);
         await updateDoc(docRef, {
             ...updates,
@@ -126,6 +130,7 @@ export const updateAppointment = async (id: string, updates: Partial<Appointment
  */
 export const deleteAppointment = async (id: string) => {
     try {
+        const db = checkFirestoreReady();
         const docRef = doc(db, APPOINTMENTS_COLLECTION, id);
         await deleteDoc(docRef);
     } catch (error) {

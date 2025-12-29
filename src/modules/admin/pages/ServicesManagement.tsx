@@ -59,6 +59,7 @@ const ServiceEditor: React.FC<{
       isOpen={isOpen}
       onClose={onClose}
       title={service ? 'Editar Serviço' : 'Novo Serviço'}
+      headerIcon={<Sparkles className="text-white" size={24} />}
       actions={[]}
     >
       <div className="space-y-4">
@@ -400,9 +401,18 @@ export const ServicesManagement: React.FC = () => {
               setEditingService(undefined);
               setShowEditor(true);
             }}
-            className="w-12 h-12 rounded-full shadow-neo-out bg-neo-accent flex items-center justify-center active:shadow-neo-pressed transition-all hover:scale-105"
+            className={cn(
+              "w-14 h-14 rounded-full",
+              "bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37]",
+              "text-white shadow-[0_8px_32px_rgba(232,160,184,0.5)]",
+              "flex items-center justify-center",
+              "hover:scale-110 hover:shadow-[0_12px_40px_rgba(232,160,184,0.6)] active:scale-95",
+              "transition-all duration-300",
+              "border-2 border-white/30 backdrop-blur-md"
+            )}
+            title="Adicionar Serviço"
           >
-            <Plus size={24} className="text-white" />
+            <Plus size={26} strokeWidth={2.5} />
           </button>
         </div>
 

@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
 import { Card, Button, Badge, Progress } from '../../../shared/components/ui/NeoComponents';
+import { SmartUpsell } from '../../../shared/components/ui/SmartUpsell';
+import { WaitlistButton } from '../components/WaitlistButton';
 import { paymentService } from '../services/paymentService';
 
 // Brand Colors - Rose Pink
@@ -109,6 +111,7 @@ const ServiceSelection: React.FC<{
     onSelect: (id: string) => void;
 }> = ({ services, selected, onSelect }) => {
     const [filter, setFilter] = useState<'all' | 'makeup' | 'hairstyle' | 'combo'>('all');
+    const selectedServiceDetails = services.filter(s => selected.includes(s.id));
 
     const filteredServices = filter === 'all'
         ? services
@@ -225,6 +228,18 @@ const ServiceSelection: React.FC<{
                     );
                 })}
             </div>
+
+            {/* Smart Upsell (Marcela AI) */}
+            <SmartUpsell
+                selectedServices={selectedServiceDetails.map(s => s.name)}
+                onAddService={(serviceId) => {
+                    // Find service name from ID and add to selection
+                    const service = SERVICES.find(s => s.id === serviceId);
+                    if (service && !selected.includes(service.id)) {
+                        onSelect(service.id);
+                    }
+                }}
+            />
         </div>
     );
 };
@@ -291,7 +306,8 @@ const DateTimeSelection: React.FC<{
     selectedTime: string | null;
     onDateSelect: (date: Date) => void;
     onTimeSelect: (time: string) => void;
-}> = ({ selectedDate, selectedTime, onDateSelect, onTimeSelect }) => {
+    selectedServices: string[];
+}> = ({ selectedDate, selectedTime, onDateSelect, onTimeSelect, selectedServices }) => {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const timeSlots = useMemo(() => generateTimeSlots(), [selectedDate]);
 
@@ -403,6 +419,12 @@ const DateTimeSelection: React.FC<{
                             </button>
                         ))}
                     </div>
+
+                    {/* Waitlist Option if slots are limited */}
+                    <WaitlistButton
+                        serviceId={selectedServices[0]}
+                        date={selectedDate.toLocaleDateString('pt-BR')}
+                    />
                 </motion.div>
             )}
         </div>
@@ -656,6 +678,7 @@ export const OnlineBookingPage: React.FC = () => {
                                     selectedTime={selectedTime}
                                     onDateSelect={setSelectedDate}
                                     onTimeSelect={setSelectedTime}
+                                    selectedServices={selectedServices}
                                 />
                             )}
                             {currentStep === 3 && (

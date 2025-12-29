@@ -40,6 +40,7 @@ import { BrandingProvider } from './modules/organization/context/BrandingContext
 // Lazy Loaded Pages
 const LoginPage = React.lazy(() => import('./modules/auth/pages/LoginPage').then(m => ({ default: m.LoginPage })));
 const RegisterBusinessPage = React.lazy(() => import('./modules/organization/pages/RegisterBusinessPage').then(m => ({ default: m.RegisterBusinessPage })));
+const ClientDashboard = React.lazy(() => import('./modules/booking/pages/ClientDashboard').then(m => ({ default: m.ClientDashboard })));
 const ClientBooking = React.lazy(() => import('./modules/booking/pages/ClientBooking').then(m => ({ default: m.ClientBooking })));
 const OnlineBookingPage = React.lazy(() => import('./modules/booking/pages/OnlineBookingPage').then(m => ({ default: m.OnlineBookingPage })));
 const BookingSuccessPage = React.lazy(() => import('./modules/booking/pages/BookingSuccessPage').then(m => ({ default: m.BookingSuccessPage })));
@@ -56,6 +57,7 @@ const FinancialDashboard = React.lazy(() => import('./modules/admin/pages/Financ
 const AnalyticsDashboard = React.lazy(() => import('./modules/admin/pages/AnalyticsDashboard').then(m => ({ default: m.AnalyticsDashboard })));
 const BrideCommandCenter = React.lazy(() => import('./modules/bride/pages/BrideCommandCenter').then(m => ({ default: m.BrideCommandCenter })));
 const SalonSettingsPage = React.lazy(() => import('./modules/admin/pages/SalonSettingsPage'));
+const PaymentPage = React.lazy(() => import('./modules/payment/pages/PaymentPage').then(m => ({ default: m.PaymentPage })));
 
 // Fallback Loader
 const PageLoader = () => (
@@ -303,7 +305,7 @@ const App: React.FC = () => {
                     <Route path="/register-business" element={<RegisterBusinessPage />} />
 
                     {/* Client Routes */}
-                    <Route path="/" element={<HomePage />} />
+                    <Route path="/" element={<ClientDashboard />} />
                     <Route path="/booking" element={<ClientBooking />} />
                     <Route path="/booking/online" element={<OnlineBookingPage />} />
                     <Route path="/booking/success" element={<BookingSuccessPage />} />
@@ -314,6 +316,9 @@ const App: React.FC = () => {
                     <Route path="/noiva/cadastro" element={<BrideSelfOnboardingPage />} />
                     <Route path="/noiva/colecao" element={<BrideCollectionPage />} />
                     <Route path="/bride-portal" element={<BridePortalPage />} /> {/* Legacy alias */}
+
+                    {/* Payment Route - Public */}
+                    <Route path="/pagamento/:id" element={<PaymentPage />} />
 
                     {/* Admin Routes */}
                     <Route path="/admin" element={<AdminDashboard />} />

@@ -100,12 +100,12 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                                     </motion.div>
                                 ))
                             ) : (
-                                <div className="flex flex-col items-center justify-center py-20 opacity-60">
-                                    <p className="text-xl font-serif text-white/80 italic text-center">
-                                        Your schedule is clear for today
+                                <div className="flex flex-col items-center justify-center py-20">
+                                    <p className="text-xl font-serif text-neo-text/70 italic text-center">
+                                        Agenda livre para hoje
                                     </p>
-                                    <p className="text-xs text-white/40 mt-2 tracking-widest uppercase">
-                                        No appointments scheduled
+                                    <p className="text-xs text-neo-text-secondary mt-2 tracking-widest uppercase">
+                                        Nenhum agendamento
                                     </p>
                                 </div>
                             )}
@@ -114,20 +114,24 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                 </div>
             </div>
 
-            {/* Floating Action Button */}
+
+            {/* Floating Action Button - Repositioned near calendar */}
             <button
                 onClick={onAddAppointment}
                 className={cn(
-                    "absolute bottom-8 right-8 z-30",
-                    "w-16 h-16 rounded-full",
-                    "bg-[#D4AF37] text-white",
-                    "shadow-[0_8px_32px_rgba(212,175,55,0.4)]",
+                    "absolute top-4 right-6 z-30",
+                    "w-14 h-14 rounded-full",
+                    "bg-gradient-to-br from-[#E8A0B8] to-[#D4AF37]",
+                    "text-white shadow-[0_8px_32px_rgba(232,160,184,0.5)]",
                     "flex items-center justify-center",
-                    "hover:scale-110 active:scale-95 transition-all duration-300",
-                    "group border-4 border-white/10 backdrop-blur-md"
+                    "hover:scale-110 hover:shadow-[0_12px_40px_rgba(232,160,184,0.6)] active:scale-95",
+                    "transition-all duration-300",
+                    "group border-2 border-white/30 backdrop-blur-md",
+                    "animate-in fade-in slide-in-from-top-4 duration-500"
                 )}
+                title="Novo Agendamento"
             >
-                <Plus size={28} className="group-hover:rotate-90 transition-transform duration-300" />
+                <Plus size={26} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform duration-300" />
             </button>
 
         </div>
