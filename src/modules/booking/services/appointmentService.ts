@@ -77,6 +77,30 @@ export const getAppointments = async (orgId: string): Promise<Appointment[]> => 
 };
 
 /**
+ * Get appointments for a specific client
+ */
+export const getClientAppointments = async (clientId: string): Promise<Appointment[]> => {
+    const db = checkFirestoreReady();
+    const q = query(
+        collection(db, APPOINTMENTS_COLLECTION),
+        where('clientId', '==', clientId),
+        orderBy('date', 'desc'), // Most recent first for history
+        orderBy('time', 'asc')
+    );
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(data.createdAt),
+            updatedAt: data.updatedAt instanceof Timestamp ? data.updatedAt.toDate() : new Date(data.updatedAt),
+        } as Appointment;
+    });
+};
+
+/**
  * Create a new appointment with availability check
  */
 export const createAppointment = async (appointment: Omit<Appointment, 'id'>) => {

@@ -306,8 +306,13 @@ const ServiceListItem: React.FC<{
 const ServiceStats: React.FC<{ services: Service[] }> = ({ services }) => {
   const makeupServices = services.filter(s => s.category === 'makeup' && s.active);
   const hairstyleServices = services.filter(s => s.category === 'hairstyle' && s.active);
-  const avgPrice = services.filter(s => s.active).reduce((sum, s) => sum + s.price, 0) / services.filter(s => s.active).length;
-  const avgDuration = services.filter(s => s.active).reduce((sum, s) => sum + s.duration, 0) / services.filter(s => s.active).length;
+  const activeServices = services.filter(s => s.active);
+  const avgPrice = activeServices.length > 0
+    ? activeServices.reduce((sum, s) => sum + s.price, 0) / activeServices.length
+    : 0;
+  const avgDuration = activeServices.length > 0
+    ? activeServices.reduce((sum, s) => sum + s.duration, 0) / activeServices.length
+    : 0;
 
   return (
     <div className="grid grid-cols-2 gap-4 mb-6">

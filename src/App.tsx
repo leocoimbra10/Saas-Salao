@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+// import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster, toast } from 'sonner';
 
 // Shared Components/Context/Lib
@@ -51,6 +51,12 @@ const PaymentPage = React.lazy(() => import('./modules/payment/pages/PaymentPage
 const CreateCollectionPage = React.lazy(() => import('./modules/bride/pages/BrideCollectionPage').then(m => ({ default: m.BrideCollectionPage })));
 const ReceiptPDF = React.lazy(() => import('./modules/payment/components/ReceiptPDF'));
 const DesignSystemPage = React.lazy(() => import('./modules/admin/pages/DesignSystemPage').then(m => ({ default: m.DesignSystemPage })));
+
+// New Pages
+const AdminCalendarPage = React.lazy(() => import('./modules/admin/pages/AdminCalendarPage').then(m => ({ default: m.AdminCalendarPage })));
+const AdminClientsPage = React.lazy(() => import('./modules/admin/pages/AdminClientsPage').then(m => ({ default: m.AdminClientsPage })));
+const AdminPortfolioPage = React.lazy(() => import('./modules/admin/pages/AdminPortfolioPage').then(m => ({ default: m.AdminPortfolioPage })));
+const ProfilePage = React.lazy(() => import('./modules/client/pages/ProfilePage').then(m => ({ default: m.ProfilePage })));
 
 // ENHANCED Config Guard Component
 const ConfigGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -132,6 +138,17 @@ const PageLoader = () => (
 // Home Page (Landing)
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, profile, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && user && profile) {
+      if (profile.role === 'owner' || profile.role === 'employee') {
+        navigate(ROUTES.ADMIN_DASHBOARD);
+      } else {
+        navigate(ROUTES.CLIENT_DASHBOARD);
+      }
+    }
+  }, [user, profile, loading, navigate]);
 
   return (
     <div className="min-h-screen bg-neo-bg flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -239,14 +256,18 @@ function App() {
                 <Route path={ROUTES.CLIENT_DASHBOARD} element={
                   <React.Suspense fallback={<PageLoader />}>
                     <ProtectedRoute allowedRoles={['client']}>
-                      <ClientDashboard />
+                      <AppLayout>
+                        <ClientDashboard />
+                      </AppLayout>
                     </ProtectedRoute>
                   </React.Suspense>
                 } />
                 <Route path={ROUTES.CLIENT_BOOKING} element={
                   <React.Suspense fallback={<PageLoader />}>
                     <ProtectedRoute allowedRoles={['client']}>
-                      <ClientBooking />
+                      <AppLayout>
+                        <ClientBooking />
+                      </AppLayout>
                     </ProtectedRoute>
                   </React.Suspense>
                 } />
@@ -255,35 +276,45 @@ function App() {
                 <Route path="/noiva" element={
                   <React.Suspense fallback={<PageLoader />}>
                     <ProtectedRoute allowedRoles={['client', 'owner']}>
-                      <BridePortalPage />
+                      <AppLayout>
+                        <BridePortalPage />
+                      </AppLayout>
                     </ProtectedRoute>
                   </React.Suspense>
                 } />
                 <Route path="/noiva/:brideId" element={
                   <React.Suspense fallback={<PageLoader />}>
                     <ProtectedRoute allowedRoles={['client', 'owner']}>
-                      <BridePortalPage />
+                      <AppLayout>
+                        <BridePortalPage />
+                      </AppLayout>
                     </ProtectedRoute>
                   </React.Suspense>
                 } />
                 <Route path="/noiva-onboarding" element={
                   <React.Suspense fallback={<PageLoader />}>
                     <ProtectedRoute allowedRoles={['client']}>
-                      <BrideSelfOnboardingPage />
+                      <AppLayout>
+                        <BrideSelfOnboardingPage />
+                      </AppLayout>
                     </ProtectedRoute>
                   </React.Suspense>
                 } />
                 <Route path="/noiva/:brideId/colecao" element={
                   <React.Suspense fallback={<PageLoader />}>
                     <ProtectedRoute allowedRoles={['client', 'owner']}>
-                      <CreateCollectionPage />
+                      <AppLayout>
+                        <CreateCollectionPage />
+                      </AppLayout>
                     </ProtectedRoute>
                   </React.Suspense>
                 } />
                 <Route path="/noiva/pacotes" element={
                   <React.Suspense fallback={<PageLoader />}>
                     <ProtectedRoute allowedRoles={['client', 'owner']}>
-                      <BrideCollectionPage />
+                      <AppLayout>
+                        <BrideCollectionPage />
+                      </AppLayout>
                     </ProtectedRoute>
                   </React.Suspense>
                 } />
@@ -320,7 +351,9 @@ function App() {
                 <Route path={ROUTES.ADMIN_DASHBOARD} element={
                   <ProtectedRoute allowedRoles={['owner', 'employee']}>
                     <React.Suspense fallback={<PageLoader />}>
-                      <AdminDashboard />
+                      <AppLayout>
+                        <AdminDashboard />
+                      </AppLayout>
                     </React.Suspense>
                   </ProtectedRoute>
                 } />
@@ -328,7 +361,9 @@ function App() {
                 <Route path={ROUTES.ADMIN_DESIGN_SYSTEM} element={
                   <ProtectedRoute allowedRoles={['owner', 'employee']}>
                     <React.Suspense fallback={<PageLoader />}>
-                      <DesignSystemPage />
+                      <AppLayout>
+                        <DesignSystemPage />
+                      </AppLayout>
                     </React.Suspense>
                   </ProtectedRoute>
                 } />
@@ -336,49 +371,101 @@ function App() {
                 <Route path="/admin/services" element={
                   <ProtectedRoute allowedRoles={['owner']}>
                     <React.Suspense fallback={<PageLoader />}>
-                      <ServicesManagement />
+                      <AppLayout>
+                        <ServicesManagement />
+                      </AppLayout>
                     </React.Suspense>
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/team" element={
                   <ProtectedRoute allowedRoles={['owner']}>
                     <React.Suspense fallback={<PageLoader />}>
-                      <TeamManagementPage />
+                      <AppLayout>
+                        <TeamManagementPage />
+                      </AppLayout>
                     </React.Suspense>
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/commissions" element={
                   <ProtectedRoute allowedRoles={['owner']}>
                     <React.Suspense fallback={<PageLoader />}>
-                      <CommissionDashboard />
+                      <AppLayout>
+                        <CommissionDashboard />
+                      </AppLayout>
                     </React.Suspense>
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/financial" element={
                   <ProtectedRoute allowedRoles={['owner']}>
                     <React.Suspense fallback={<PageLoader />}>
-                      <FinancialDashboard />
+                      <AppLayout>
+                        <FinancialDashboard />
+                      </AppLayout>
                     </React.Suspense>
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/analytics" element={
                   <ProtectedRoute allowedRoles={['owner']}>
                     <React.Suspense fallback={<PageLoader />}>
-                      <AnalyticsDashboard />
+                      <AppLayout>
+                        <AnalyticsDashboard />
+                      </AppLayout>
+                    </React.Suspense>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/calendar" element={
+                  <ProtectedRoute allowedRoles={['owner', 'employee']}>
+                    <React.Suspense fallback={<PageLoader />}>
+                      <AppLayout>
+                        <AdminCalendarPage />
+                      </AppLayout>
+                    </React.Suspense>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/clients" element={
+                  <ProtectedRoute allowedRoles={['owner', 'employee']}>
+                    <React.Suspense fallback={<PageLoader />}>
+                      <AppLayout>
+                        <AdminClientsPage />
+                      </AppLayout>
+                    </React.Suspense>
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/portfolio" element={
+                  <ProtectedRoute allowedRoles={['owner', 'employee']}>
+                    <React.Suspense fallback={<PageLoader />}>
+                      <AppLayout>
+                        <AdminPortfolioPage />
+                      </AppLayout>
                     </React.Suspense>
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/settings" element={
                   <ProtectedRoute allowedRoles={['owner']}>
                     <React.Suspense fallback={<PageLoader />}>
-                      <SalonSettingsPage />
+                      <AppLayout>
+                        <SalonSettingsPage />
+                      </AppLayout>
                     </React.Suspense>
                   </ProtectedRoute>
                 } />
                 <Route path="/admin/bride-center" element={
                   <ProtectedRoute allowedRoles={['owner']}>
                     <React.Suspense fallback={<PageLoader />}>
-                      <BrideCommandCenter />
+                      <AppLayout>
+                        <BrideCommandCenter />
+                      </AppLayout>
+                    </React.Suspense>
+                  </ProtectedRoute>
+                } />
+
+                {/* Client Profile */}
+                <Route path="/profile" element={
+                  <ProtectedRoute allowedRoles={['client', 'owner', 'employee']}>
+                    <React.Suspense fallback={<PageLoader />}>
+                      <AppLayout>
+                        <ProfilePage />
+                      </AppLayout>
                     </React.Suspense>
                   </ProtectedRoute>
                 } />
@@ -388,7 +475,7 @@ function App() {
               </Routes>
             </BrowserRouter>
             <Toaster richColors position="top-right" />
-            <ReactQueryDevtools initialIsOpen={false} />
+            {/* <ReactQueryDevtools initialIsOpen={false} /> */}
           </ConfigGuard>
         </BrandingProvider>
       </AuthProvider>

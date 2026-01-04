@@ -360,26 +360,22 @@ export const NewBookingModal: React.FC<NewBookingModalProps> = ({
 
                                     {/* Service Dropdown */}
                                     <div className="mb-4">
-                                        <label className="block text-sm text-neo-text font-medium mb-2">Adicionar Serviço</label>
-                                        <div className="relative">
-                                            <select
-                                                onChange={(e) => {
-                                                    if (e.target.value) {
-                                                        addService(e.target.value);
-                                                        e.target.value = '';
-                                                    }
-                                                }}
-                                                className="w-full pl-4 pr-10 py-3 rounded-neo bg-neo-bg shadow-neo-in text-neo-text focus:outline-none focus:ring-2 focus:ring-neo-accent/20 appearance-none cursor-pointer"
-                                            >
-                                                <option value="">Selecione um serviço...</option>
-                                                {filteredServices.map(service => (
-                                                    <option key={service.id} value={service.id}>
-                                                        {service.name} - R$ {service.price.toFixed(2)}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-neo-text-secondary pointer-events-none" size={18} />
-                                        </div>
+                                        <Select
+                                            label="Adicionar Serviço"
+                                            value=""
+                                            onChange={(e) => {
+                                                if (e.target.value) {
+                                                    addService(e.target.value);
+                                                }
+                                            }}
+                                            options={[
+                                                { value: "", label: "Selecione um serviço..." },
+                                                ...filteredServices.map(service => ({
+                                                    value: service.id,
+                                                    label: `${service.name} - R$ ${service.price.toFixed(2)}`
+                                                }))
+                                            ]}
+                                        />
                                     </div>
 
                                     {/* Selected Services */}

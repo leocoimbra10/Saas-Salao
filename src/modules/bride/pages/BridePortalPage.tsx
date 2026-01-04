@@ -364,7 +364,15 @@ const MoodboardSection: React.FC<{
                         key={photo.id}
                         className="aspect-square rounded-neo shadow-neo-out overflow-hidden relative group"
                     >
-                        <img src={photo.imageUrl} alt="" className="w-full h-full object-cover" />
+                        <img
+                            src={photo.imageUrl}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                                e.currentTarget.onerror = null; // Prevent infinite loop
+                                e.currentTarget.src = 'https://ui-avatars.com/api/?name=No+Image&background=F3F4F6&color=9CA3AF';
+                            }}
+                        />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <Trash2 size={16} className="text-white cursor-pointer" />
                         </div>
@@ -815,7 +823,7 @@ export const BridePortalPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-neo-bg pb-24 overflow-x-hidden">
+        <div className="min-h-screen bg-neo-bg pb-32 overflow-x-hidden">
             <header className="p-4 bg-neo-bg/80 backdrop-blur-md sticky top-0 z-30">
                 <div className="w-full max-w-[480px] mx-auto flex items-center justify-between">
                     <NeoButton

@@ -19,6 +19,8 @@ import { cn } from '../../../shared/lib/utils';
 import { useAuth } from '../../auth/context/AuthContext';
 import { signOutUser, getUserProfile } from '../../auth/services/authService';
 import { UserProfile } from '../../../shared/types/types';
+import { useClientAppointments } from '../hooks/useAppointments';
+import { ROUTES } from '../../../shared/lib/constants';
 
 const ROSE = 'var(--color-brand-primary)';
 const ROSE_LIGHT = '#F5CED8';
@@ -35,16 +37,28 @@ export const ClientDashboard: React.FC = () => {
         }
     }, [user]);
 
-    // Mock data for loyalty
+    // Fetch Client Appointments
+    const { data: appointments = [], isLoading } = useClientAppointments(user?.uid);
+
+    // Calculate Loyalty Stats
+    const totalSpent = appointments
+        .filter(app => app.status === 'completed' || app.status === 'confirmed')
+        .reduce((sum, app) => sum + (Number(app.totalAmount) || 0), 0);
+
+    // Simple fidelity: 1 point per 1 BRL
+    const points = Math.floor(totalSpent);
+    const nextRewardAt = 1000;
+    const visits = appointments.filter(app => app.status === 'completed' || app.status === 'confirmed').length;
+
     const loyaltyData = {
-        points: 850,
-        nextRewardAt: 1000,
-        tier: 'Gold',
-        visits: 8,
-        referralCode: 'BEAUTY-MARCELA-850'
+        points: points,
+        nextRewardAt: nextRewardAt,
+        tier: points > 2000 ? 'Platinum' : points > 1000 ? 'Gold' : 'Silver',
+        visits: visits,
+        referralCode: userProfile?.displayName ? `BEAUTY-${userProfile.displayName.split(' ')[0].toUpperCase()}-${points}` : 'BEAUTY-VIP'
     };
 
-    const progress = (loyaltyData.points / loyaltyData.nextRewardAt) * 100;
+    const progress = Math.min((loyaltyData.points / loyaltyData.nextRewardAt) * 100, 100);
 
     const handleLogout = async () => {
         try {
@@ -137,15 +151,15 @@ export const ClientDashboard: React.FC = () => {
                     <section className="grid grid-cols-2 gap-4">
                         <NeoButton
                             variant="neu"
-                            className="h-auto py-6 flex flex-col gap-3 shadow-neo-out border-2 border-white/40"
-                            onClick={() => navigate('/booking')}
+                            className="h-auto py-6 flex flex-col gap-3 shadow-neo-out border-2 border-white/40 hover:scale-105 transition-transform cursor-pointer"
+                            onClick={() => navigate(ROUTES.CLIENT_BOOKING)}
                         >
                             <Calendar size={24} className="text-neo-info" />
                             <Typography variant="label" className="text-sm">Novo Agendamento</Typography>
                         </NeoButton>
                         <NeoButton
                             variant="neu"
-                            className="h-auto py-6 flex flex-col gap-3 shadow-neo-out border-2 border-white/40"
+                            className="h-auto py-6 flex flex-col gap-3 shadow-neo-out border-2 border-white/40 hover:scale-105 transition-transform cursor-pointer"
                             onClick={() => navigate('/portfolio')}
                         >
                             <ImageIcon size={24} className="text-neo-accent" />

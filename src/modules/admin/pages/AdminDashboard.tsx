@@ -55,18 +55,13 @@ interface AdminDashboardProps {
   initialView?: 'calendar' | 'schedule';
 }
 // Stats Panel Component
-const StatsPanel: React.FC = () => {
-  const stats = {
-    monthlyRevenue: 12850,
-    monthlyAppointments: 45,
-    clientRetention: 78,
-    topServices: [
-      { name: 'Maquiagem', count: 18 },
-      { name: 'Coque', count: 12 },
-      { name: 'Combo', count: 8 },
-    ],
-  };
+// Stats Panel Component (Props interface if needed)
+interface StatsPanelProps {
+  stats: any; // Ideally import DashboardStats interface but 'any' allows quick integration if types not exported
+}
 
+// Stats Panel Component
+const StatsPanel: React.FC<StatsPanelProps> = ({ stats }) => {
   return (
     <div className="grid grid-cols-2 gap-4 mb-6">
       <NeoCard className="p-4">
@@ -77,7 +72,9 @@ const StatsPanel: React.FC = () => {
         <Typography variant="h4" className="text-xl font-bold">
           {formatCurrency(stats.monthlyRevenue)}
         </Typography>
-        <Typography variant="caption" className="text-xs text-neo-success mt-1">+12% vs último mês</Typography>
+        <Typography variant="caption" className="text-xs text-neo-success mt-1">
+          {stats.revenueGrowth > 0 ? '+' : ''}{stats.revenueGrowth}% vs último mês
+        </Typography>
       </NeoCard>
 
       <NeoCard className="p-4">
@@ -88,7 +85,9 @@ const StatsPanel: React.FC = () => {
         <Typography variant="h4" className="text-xl font-bold">
           {stats.monthlyAppointments}
         </Typography>
-        <Typography variant="caption" className="text-xs mt-1">este mês</Typography>
+        <Typography variant="caption" className="text-xs mt-1">
+          {stats.appointmentGrowth > 0 ? '+' : ''}{stats.appointmentGrowth}% este mês
+        </Typography>
       </NeoCard>
 
       <NeoCard className="p-4">
@@ -107,7 +106,7 @@ const StatsPanel: React.FC = () => {
           <Users size={18} className="text-neo-warning" />
           <Typography variant="caption" className="text-xs">Novos Clientes</Typography>
         </div>
-        <Typography variant="h4" className="text-xl font-bold">8</Typography>
+        <Typography variant="h4" className="text-xl font-bold">{stats.newClients}</Typography>
         <Typography variant="caption" className="text-xs text-neo-success mt-1">este mês</Typography>
       </NeoCard>
     </div>
@@ -115,27 +114,24 @@ const StatsPanel: React.FC = () => {
 };
 
 // Pro Stats Panel (Hidden until toggled)
-const ProStatsPanel: React.FC = () => {
+const ProStatsPanel: React.FC<StatsPanelProps> = ({ stats }) => {
   const [isVisible, setIsVisible] = useState(false);
 
+  // Stats derived from props
   const projections = {
-    projectedRevenue: 18500,
-    projectedAppointments: 62,
-    averageTicket: 285,
-    conversionRate: 0.78,
-    topServices: [
-      { name: 'Maquiagem', count: 18 },
-      { name: 'Coque', count: 12 },
-      { name: 'Combo', count: 8 },
-    ],
+    projectedRevenue: stats.projectedRevenue,
+    projectedAppointments: stats.projectedAppointments,
+    averageTicket: stats.averageTicket,
+    conversionRate: 0.78, // Still hardcoded as we don't have lead data
+    topServices: stats.topServices,
   };
 
   // Dummy stats for the new section, replace with actual data if available
-  const stats = [
-    { title: 'Receita Mensal', value: formatCurrency(12850), icon: DollarSign, trend: '+12% vs último mês' },
-    { title: 'Agendamentos', value: '45', icon: CalendarIcon, trend: 'este mês' },
-    { title: 'Retenção', value: '78%', icon: TrendingUp, trend: '' },
-    { title: 'Novos Clientes', value: '8', icon: Users, trend: 'este mês' },
+  const simpleStats = [
+    { title: 'Receita Mensal', value: formatCurrency(stats.monthlyRevenue), icon: DollarSign, trend: `${stats.revenueGrowth}%` },
+    { title: 'Agendamentos', value: stats.monthlyAppointments.toString(), icon: CalendarIcon, trend: 'este mês' },
+    { title: 'Retenção', value: `${stats.clientRetention}%`, icon: TrendingUp, trend: '' },
+    { title: 'Novos Clientes', value: stats.newClients.toString(), icon: Users, trend: 'este mês' },
   ];
 
 
@@ -191,7 +187,7 @@ const ProStatsPanel: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {stats.map((stat) => (
+                {simpleStats.map((stat) => (
                   <NeoCard key={stat.title} className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="p-3 bg-neo-bg rounded-neo shadow-neo-in">
@@ -276,6 +272,7 @@ import { useBranding } from '../../../shared/context/BrandingContext';
 import { useAppointments, useAppointmentMutations } from '../../booking/hooks/useAppointments';
 import { useStaff } from '../hooks/useStaff';
 import { useServices } from '../hooks/useServices';
+import { useDashboardStats } from '../hooks/useDashboardStats';
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 'schedule' }) => {
   const { organization } = useBranding();
@@ -299,115 +296,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
   const [calendarView, setCalendarView] = useState<'day' | 'week' | 'month'>('day');
 
   // ====== TEST DATA - Remove after verification ======
-  const TEST_APPOINTMENTS: Appointment[] = [
-    {
-      id: 'test-1',
-      orgId: organization?.id || 'org-1',
-      clientId: 'client-1',
-      clientName: 'Ana Paula Silva',
-      clientEmail: 'ana@email.com',
-      clientPhone: '11987654321',
-      date: format(new Date(), 'yyyy-MM-dd'),
-      time: '09:00',
-      services: services.filter(s => s.name.includes('Maquiagem')).map(s => s.id) || ['service-1'],
-      staffId: staff[0]?.id || 'staff-1',
-      status: 'confirmed',
-      depositPaid: 100,
-      totalAmount: 250,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: 'test-2',
-      orgId: organization?.id || 'org-1',
-      clientId: 'client-2',
-      clientName: 'Mariana Costa',
-      clientEmail: 'mariana@email.com',
-      clientPhone: '11976543210',
-      date: format(new Date(), 'yyyy-MM-dd'),
-      time: '10:30',
-      services: services.filter(s => s.name.toLowerCase().includes('cabelo')).map(s => s.id) || ['service-2'],
-      staffId: staff[0]?.id || 'staff-1',
-      status: 'pending',
-      depositPaid: 0,
-      totalAmount: 180,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: 'test-3',
-      orgId: organization?.id || 'org-1',
-      clientId: 'client-3',
-      clientName: 'Juliana Noiva',
-      clientEmail: 'juliana@email.com',
-      clientPhone: '11965432109',
-      date: format(new Date(), 'yyyy-MM-dd'),
-      time: '14:00',
-      services: services.filter(s => s.name.toLowerCase().includes('noiva')).map(s => s.id) || ['service-3'],
-      staffId: staff[0]?.id || 'staff-1',
-      status: 'confirmed',
-      depositPaid: 300,
-      totalAmount: 800,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: 'test-4',
-      orgId: organization?.id || 'org-1',
-      clientId: 'client-4',
-      clientName: 'Beatriz Santos',
-      clientEmail: 'bia@email.com',
-      clientPhone: '11954321098',
-      date: format(new Date(), 'yyyy-MM-dd'),
-      time: '15:30',
-      services: services.filter(s => s.name.toLowerCase().includes('depila')).map(s => s.id) || ['service-4'],
-      staffId: staff[0]?.id || 'staff-1',
-      status: 'confirmed',
-      depositPaid: 50,
-      totalAmount: 120,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: 'test-5',
-      orgId: organization?.id || 'org-1',
-      clientId: 'client-5',
-      clientName: 'Carolina Oliveira',
-      clientEmail: 'carol@email.com',
-      clientPhone: '11943210987',
-      date: format(new Date(), 'yyyy-MM-dd'),
-      time: '17:00',
-      services: services.filter(s => s.name.toLowerCase().includes('unhas')).map(s => s.id) || ['service-5'],
-      staffId: staff[0]?.id || 'staff-1',
-      status: 'pending',
-      depositPaid: 0,
-      totalAmount: 90,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: 'test-6',
-      orgId: organization?.id || 'org-1',
-      clientId: 'client-6',
-      clientName: 'Fernanda Lima',
-      clientEmail: 'fernanda@email.com',
-      clientPhone: '11932109876',
-      date: format(new Date(), 'yyyy-MM-dd'),
-      time: '18:30',
-      services: services.filter(s => s.name.toLowerCase().includes('maquiagem')).map(s => s.id) || ['service-1'],
-      staffId: staff[0]?.id || 'staff-1',
-      status: 'confirmed',
-      depositPaid: 80,
-      totalAmount: 200,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
-  ];
+  const { stats, isLoading: isLoadingStats } = useDashboardStats(organization?.id);
 
   // Merge test data with real appointments (only if not in production)
-  const allAppointments = process.env.NODE_ENV === 'development'
-    ? [...appointments, ...TEST_APPOINTMENTS]
-    : appointments;
+  const allAppointments = appointments;
   // ====== END TEST DATA ======
 
   const todaysAppointments = useMemo(() => {
@@ -467,8 +359,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialView = 's
               </div>
             ) : (
               <>
-                <StatsPanel />
-                <ProStatsPanel />
+                <StatsPanel stats={stats} />
+                <ProStatsPanel stats={stats} />
               </>
             )}
 

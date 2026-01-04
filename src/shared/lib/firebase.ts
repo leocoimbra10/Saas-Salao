@@ -3,86 +3,77 @@
  * Store-Ready Mobile Application
  */
 
-import { initializeApp, FirebaseApp } from 'firebase/app';
+import { initializeApp, FirebaseApp, FirebaseOptions } from 'firebase/app';
 import { getAuth, Auth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { getAnalytics, Analytics } from 'firebase/analytics';
 import { getFunctions, Functions } from 'firebase/functions';
 
-// Firebase configuration for Marcela Makeup project
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+// 1. Validate API Key immediately
+const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+if (!apiKey) {
+  throw new Error("Missing Firebase API Key. Check your .env file.");
+}
+
+// 2. Typed Configuration
+const firebaseConfig: FirebaseOptions = {
+  apiKey: apiKey,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || import.meta.env.VITE_GA_TRACKING_ID
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID?.trim(),
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET?.trim(),
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID?.trim(),
+  appId: import.meta.env.VITE_FIREBASE_APP_ID?.trim(),
+  measurementId: (import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || import.meta.env.VITE_GA_TRACKING_ID)?.trim()
 };
 
-// Environment Validation
-const requiredEnvVars = [
-  'VITE_FIREBASE_API_KEY',
-  'VITE_FIREBASE_AUTH_DOMAIN',
-  'VITE_FIREBASE_PROJECT_ID',
-  'VITE_FIREBASE_STORAGE_BUCKET',
-  'VITE_FIREBASE_MESSAGING_SENDER_ID',
-  'VITE_FIREBASE_APP_ID'
-];
+console.log('[Firebase Info] Initializing with Project ID:', firebaseConfig.projectId);
 
-const missingVars = requiredEnvVars.filter(key => !import.meta.env[key]);
-if (missingVars.length > 0) {
-  console.error(`[Firebase Config] CRITICAL: Missing environment variables: ${missingVars.join(', ')}`);
-  console.error('[Firebase Config] The application will not work without proper Firebase configuration.');
-}
-
-let app: FirebaseApp | undefined;
-let auth: Auth | undefined;
-let db: Firestore | undefined;
-let storage: FirebaseStorage | undefined;
+let app: FirebaseApp;
+let auth: Auth;
+let db: Firestore;
+let storage: FirebaseStorage;
 let analytics: Analytics | null = null;
-let functions: Functions | undefined;
-let initializationError: Error | null = null;
+let functions: Functions;
 
 try {
-  // Only attempt to initialize if we have at least an API key
-  if (firebaseConfig.apiKey) {
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-    storage = getStorage(app);
-    // analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
-    analytics = null; // Temporarily disabled to debug Auth
-    functions = getFunctions(app);
-    console.log('[Firebase] Successfully initialized');
-  } else {
-    throw new Error("Missing Firebase API Key - check your .env file");
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  storage = getStorage(app);
+  functions = getFunctions(app);
+
+  // Analytics only in browser
+  if (typeof window !== 'undefined') {
+    // analytics = getAnalytics(app); 
+    // Temporarily disabled to prevent ad-blocker issues during dev
+    analytics = null;
   }
+
+  console.log('[Firebase] Successfully initialized');
 } catch (error) {
-  console.error("[Firebase] Fatal Initialization Error:", error);
-  initializationError = error as Error;
-  // Don't create mock objects - let services handle undefined
+  console.error('[Firebase] Initialization Failed:', error);
+  throw error; // Re-throw to be caught by ErrorBoundary
 }
 
-// Helper function to ensure Firestore is ready
-export const checkFirestoreReady = (): Firestore => {
+// Export initialized services
+// Note: We are now exporting initialized instances directly. 
+// If init fails, the app should have crashed by now (expected behavior for critical config).
+export { auth, db, storage, analytics, functions };
+export { app };
+
+// Helper to check status (legacy support)
+export const isFirebaseInitialized = true;
+
+export const checkFirestoreReady = () => {
   if (!db) {
-    const errorMsg = initializationError
-      ? `Firebase initialization failed: ${initializationError.message}`
-      : 'Firebase Firestore not initialized. Check your environment variables.';
-    throw new Error(errorMsg);
+    throw new Error("Firestore not initialized. Check your environment variables and firebase.ts configuration.");
   }
   return db;
 };
 
-// Export initialized services (may be undefined if init failed)
-export { auth, db, storage, analytics, functions };
-export { app };
-
-export const isFirebaseInitialized = !!firebaseConfig.apiKey && !!db;
-
 // Auth providers
-export const googleProvider = auth ? new GoogleAuthProvider() : undefined;
+export const googleProvider = new GoogleAuthProvider();
 
 export default app;
+

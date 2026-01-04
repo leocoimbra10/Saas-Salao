@@ -12,7 +12,7 @@ import {
 } from '../../auth/services/authService';
 import { useAuth } from '../context/AuthContext';
 
-import { NeoCard, NeoButton, NeoInput, Badge } from '../../../shared/components/ui/NeoComponents';
+import { NeoCard, NeoButton, NeoInput, Badge, NeoTabs, NeoPasswordInput } from '../../../shared/components/ui/NeoComponents';
 type LoginType = 'user' | 'admin';
 type AuthMode = 'login' | 'register';
 
@@ -26,7 +26,6 @@ export const LoginPage: React.FC = () => {
     const [displayName, setDisplayName] = useState('');
     const [preferredName, setPreferredName] = useState(''); // Nickname field
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
@@ -200,30 +199,23 @@ export const LoginPage: React.FC = () => {
             >
                 <NeoCard className="p-8">
                     {/* Tab Switcher */}
-                    <div className="flex bg-neo-bg rounded-neo shadow-neo-in p-1 mb-8 gap-2">
-                        <NeoButton
-                            onClick={() => { setActiveTab('user'); setError(''); }}
-                            variant={activeTab === 'user' ? 'neu' : 'ghost'}
-                            className={`flex-1 flex items-center justify-center gap-2 ${activeTab === 'user' ? 'text-neo-accent' : 'text-neo-text-secondary'}`}
-                        >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                <circle cx="12" cy="7" r="4" />
-                            </svg>
-                            Cliente
-                        </NeoButton>
-                        <NeoButton
-                            onClick={() => { setActiveTab('admin'); setError(''); }}
-                            variant={activeTab === 'admin' ? 'neu' : 'ghost'}
-                            className={`flex-1 flex items-center justify-center gap-2 ${activeTab === 'admin' ? 'text-neo-accent' : 'text-neo-text-secondary'}`}
-                        >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M12 2l1 3h3l-2.5 2 1 3-2.5-2-2.5 2 1-3L8 5h3l1-3z" />
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                            </svg>
-                            Administrador
-                        </NeoButton>
+                    <div className="mb-8">
+                        <NeoTabs
+                            tabs={[
+                                {
+                                    id: 'user',
+                                    label: 'Cliente',
+                                    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                                },
+                                {
+                                    id: 'admin',
+                                    label: 'Administrador',
+                                    icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2l1 3h3l-2.5 2 1 3-2.5-2-2.5 2 1-3L8 5h3l1-3z" /><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                                }
+                            ]}
+                            activeTab={activeTab}
+                            onChange={(id) => { setActiveTab(id as LoginType); setError(''); }}
+                        />
                     </div>
 
                     {/* Form */}
@@ -320,42 +312,19 @@ export const LoginPage: React.FC = () => {
 
                                 {/* Password Field */}
                                 <div className="mb-6">
-                                    <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-                                        Senha
-                                    </label>
-                                    <div className="relative">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neo-text-secondary">
+                                    <NeoPasswordInput
+                                        label="Senha"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="••••••••"
+                                        required
+                                        icon={
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                                                 <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                                             </svg>
-                                        </div>
-                                        <input
-                                            type={showPassword ? 'text' : 'password'}
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            placeholder="••••••••"
-                                            className="w-full neo-input pl-12 pr-12"
-                                            required
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-neo-text-secondary hover:text-neo-text transition-colors"
-                                        >
-                                            {showPassword ? (
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                                                    <line x1="1" y1="1" x2="23" y2="23" />
-                                                </svg>
-                                            ) : (
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                                    <circle cx="12" cy="12" r="3" />
-                                                </svg>
-                                            )}
-                                        </button>
-                                    </div>
+                                        }
+                                    />
                                 </div>
 
                                 {/* Confirm Password (Register Only) */}
@@ -366,26 +335,20 @@ export const LoginPage: React.FC = () => {
                                         exit={{ opacity: 0, height: 0 }}
                                         className="mb-6"
                                     >
-                                        <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-                                            Confirmar Senha
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neo-text-secondary">
+                                        <NeoPasswordInput
+                                            label="Confirmar Senha"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            placeholder="••••••••"
+                                            required={authMode === 'register'}
+                                            icon={
                                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                                                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                                                     <path d="M15 11v-1" />
                                                 </svg>
-                                            </div>
-                                            <input
-                                                type={showPassword ? 'text' : 'password'}
-                                                value={confirmPassword}
-                                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                                placeholder="••••••••"
-                                                className="w-full neo-input pl-12"
-                                                required={authMode === 'register'}
-                                            />
-                                        </div>
+                                            }
+                                        />
                                     </motion.div>
                                 )}
 

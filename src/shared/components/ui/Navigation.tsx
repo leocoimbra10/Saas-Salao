@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import { Home, Calendar, Image, User, Settings, Users, BarChart3, Settings as SettingsIcon, LogOut, Sparkles, ChevronRight } from 'lucide-react';
 import { Typography, NeoButton } from './NeoComponents';
+import { ROUTES } from '../../lib/constants';
 
 // Feminine Rose Accent Color
 const ROSE = 'var(--color-brand-primary)';
@@ -20,8 +21,8 @@ interface BottomNavProps {
 
 export const BottomNav: React.FC<BottomNavProps> = ({ className }) => {
   const navItems = [
-    { path: '/', icon: Home, label: 'Início' },
-    { path: '/booking', icon: Calendar, label: 'Agendar' },
+    { path: ROUTES.CLIENT_DASHBOARD, icon: Home, label: 'Início' },
+    { path: ROUTES.CLIENT_BOOKING, icon: Calendar, label: 'Agendar' },
     { path: '/portfolio', icon: Image, label: 'Portfolio' },
     { path: '/profile', icon: User, label: 'Perfil' },
   ];
@@ -29,9 +30,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({ className }) => {
   return (
     <nav
       className={cn(
-        'fixed bottom-4 left-1/2 -translate-x-1/2 z-40',
+        'fixed bottom-6 left-1/2 -translate-x-1/2 z-50', // Fixed z-index and raised bottom slightly
         'px-2 py-2',
         'rounded-full',
+        'cursor-pointer', // Ensure cursor pointer
         // Glassmorphism effect
         'bg-slate-800/90 backdrop-blur-xl',
         'border border-white/10',
@@ -44,7 +46,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ className }) => {
           <NavLink
             key={item.path}
             to={item.path}
-            className="relative"
+            className="relative cursor-pointer" // Explicit cursor-pointer
           >
             {({ isActive }) => (
               <motion.div
@@ -95,13 +97,13 @@ export const AdminSidebar: React.FC<SidebarProps> = ({
   onNavigate,
 }) => {
   const menuItems = [
-    { id: '/admin', icon: Home, label: 'Dashboard' },
+    { id: ROUTES.ADMIN_DASHBOARD, icon: Home, label: 'Dashboard' },
     { id: '/admin/calendar', icon: Calendar, label: 'Calendário' },
     { id: '/admin/clients', icon: Users, label: 'Clientes' },
     { id: '/admin/services', icon: SettingsIcon, label: 'Serviços' },
     { id: '/admin/portfolio', icon: Image, label: 'Portfolio' },
     { id: '/admin/analytics', icon: BarChart3, label: 'Relatórios' },
-    { id: '/settings', icon: Settings, label: 'Configurações' },
+    { id: '/admin/settings', icon: Settings, label: 'Configurações' }, // Fixed path
   ];
 
   // Icons map is no longer needed as we use the components directly

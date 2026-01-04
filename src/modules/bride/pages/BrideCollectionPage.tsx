@@ -12,69 +12,20 @@ import {
     Sparkles,
     Check,
     ShoppingBag,
-    Plus
+    Plus,
+    X
 } from 'lucide-react';
 import { cn, formatCurrency } from '../../../shared/lib/utils';
 import { NeoCard, NeoButton, Badge } from '../../../shared/components/ui/NeoComponents';
-import { db } from '../../../shared/lib/firebase';
-import { collection, getDocs, doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { useBranding } from '../../../shared/context/BrandingContext';
+import { getBridalServices, BridalServiceData as BridalPackageOption } from '../../bride/services/brideService';
 
 // Brand Colors
 const ROSE = 'var(--color-brand-primary)';
 const GOLD = ROSE;
-const GOLD_LIGHT = '#F5CED8';
 
-// Types
-interface BridalPackageOption {
-    id: string;
-    name: string;
-    description: string;
-    features: string[];
-    price: number;
-    popular?: boolean;
-}
-
-interface BridalAddon {
-    id: string;
-    name: string;
-    price: number;
-}
-
-// Mock Data (Replace with Firestore fetch)
-const MOCK_PACKAGES: BridalPackageOption[] = [
-    {
-        id: 'classic',
-        name: 'Pacote Classic',
-        description: 'O essencial para o seu grande dia',
-        features: ['Maquiagem Noiva', 'Penteado Noiva', 'Prova de Cabelo e Make'],
-        price: 1200,
-    },
-    {
-        id: 'premium',
-        name: 'Pacote Premium',
-        description: 'A experiência completa para noivas exigentes',
-        features: ['Maquiagem Noiva HD', 'Penteado Noiva', 'Prova de Cabelo e Make', 'Kit de Retoque', 'Spa Day Relaxante'],
-        price: 2200,
-        popular: true,
-    },
-    {
-        id: 'exclusive',
-        name: 'Pacote Exclusive',
-        description: 'O máximo de exclusividade e cuidado',
-        features: ['Maquiagem Noiva VIP', 'Penteado Noiva Arquitetônico', 'Duas Provas Completas', 'Kit de Retoque Premium', 'Spa Day Deluxe', 'Ensaio Pré-Wedding'],
-        price: 3500,
-    },
-];
-
-const MOCK_ADDONS: BridalAddon[] = [
-    { id: 'spa-day', name: 'Spa Day Relaxante', price: 350 },
-    { id: 'retoque-festa', name: 'Retoque de Festa', price: 200 },
-    { id: 'madrinha-extra', name: 'Make/Penteado Madrinha Extra', price: 280 },
-    { id: 'mae-noivo', name: 'Mãe do Noivo (Make + Penteado)', price: 350 },
-    { id: 'ensaio-prewedding', name: 'Ensaio Pré-Wedding', price: 450 },
-    { id: 'kit-emergencia', name: 'Kit Emergência de Beleza', price: 150 },
-];
+// Local Type Alias for readability in this component
+type BridalAddon = BridalPackageOption;
 
 // Package Card Component
 const PackageCard: React.FC<{
@@ -93,12 +44,8 @@ const PackageCard: React.FC<{
         )}
         style={{ borderColor: isSelected ? GOLD : 'transparent' }}
     >
-        {/* Popular Badge */}
-        {pkg.popular && (
-            <Badge variant="warning" className="absolute top-3 right-3 text-[10px]">
-                <Sparkles size={10} className="mr-1" /> Mais Popular
-            </Badge>
-        )}
+        {/* Popular Badge (using customFields or hardcoded logic if needed) */}
+        {/* We could add a 'popular' flag to the service data structure later */}
 
         {/* Header */}
         <div className="flex items-start gap-3 mb-3">
@@ -117,19 +64,30 @@ const PackageCard: React.FC<{
             </div>
         </div>
 
-        {/* Features */}
-        <ul className="space-y-1.5 mb-4 pl-1">
-            {pkg.features.map((feature, idx) => (
-                <li key={idx} className="flex items-center gap-2 text-sm text-neo-text-secondary">
-                    <Check size={12} style={{ color: GOLD }} />
-                    {feature}
-                </li>
-            ))}
-        </ul>
+        {/* Features from Custom Fields */}
+        {pkg.customFields && pkg.customFields.length > 0 && (
+            <ul className="space-y-1.5 mb-4 pl-1">
+                {pkg.customFields.map((field: any, idx: number) => (
+                    <li key={idx} className="flex items-center gap-2 text-sm text-neo-text-secondary">
+                        <Check size={12} style={{ color: GOLD }} />
+                        {field.label}: {field.value}
+                    </li>
+                ))}
+            </ul>
+        )}
 
         {/* Price */}
         <div className="text-right">
-            <span className="text-2xl font-bold text-neo-text">{formatCurrency(pkg.price)}</span>
+            {pkg.hasDiscount ? (
+                <div className="flex flex-col items-end">
+                    <span className="text-sm text-neo-text-secondary line-through">{formatCurrency(pkg.price)}</span>
+                    <span className="text-2xl font-bold text-neo-text">
+                        {formatCurrency(pkg.price * (1 - pkg.discountPercentage / 100))}
+                    </span>
+                </div>
+            ) : (
+                <span className="text-2xl font-bold text-neo-text">{formatCurrency(pkg.price)}</span>
+            )}
         </div>
     </motion.div>
 );
@@ -171,63 +129,57 @@ export const BrideCollectionPage: React.FC = () => {
     const navigate = useNavigate();
     const { organization } = useBranding();
 
-    const [packages, setPackages] = useState<BridalPackageOption[]>(MOCK_PACKAGES);
-    const [addons, setAddons] = useState<BridalAddon[]>(MOCK_ADDONS);
+    const [packages, setPackages] = useState<BridalPackageOption[]>([]);
+    const [addons, setAddons] = useState<BridalAddon[]>([]);
     const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
     const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [dataRefreshed, setDataRefreshed] = useState(false);
 
     // Fetch real data from Firestore
     useEffect(() => {
         const fetchData = async () => {
+            if (!organization?.id) return;
             try {
-                // Fetch bridal packages (category === 'package')
-                const pkgSnap = await getDocs(collection(db, 'bridal_services'));
-                const pkgData = pkgSnap.docs
-                    .filter(d => d.data().category === 'package' && d.data().isActive !== false)
-                    .map(d => ({
-                        id: d.id,
-                        name: d.data().name,
-                        description: d.data().description || '',
-                        features: d.data().customFields?.map((f: any) => f.label) || [],
-                        price: d.data().price || 0,
-                        popular: d.data().popular || false
-                    } as BridalPackageOption));
+                const services = await getBridalServices(organization.id);
 
-                // Fetch add-ons (category !== 'package')
-                const addonData = pkgSnap.docs
-                    .filter(d => d.data().category !== 'package' && d.data().isActive !== false)
-                    .map(d => ({
-                        id: d.id,
-                        name: d.data().name,
-                        price: d.data().price || 0
-                    } as BridalAddon));
+                // Filter active services
+                const activeServices = services.filter(s => s.isActive);
 
-                // Only update if we have data, otherwise keep mock
-                if (pkgData.length > 0) setPackages(pkgData);
-                if (addonData.length > 0) setAddons(addonData);
+                // Separate packages and addons
+                const fetchedPackages = activeServices.filter(s => s.category === 'package');
+                const fetchedAddons = activeServices.filter(s => s.category !== 'package'); // All other services can be addons
 
-                // Trigger pulse animation on data refresh
-                setDataRefreshed(true);
-                setTimeout(() => setDataRefreshed(false), 600);
+                setPackages(fetchedPackages);
+                setAddons(fetchedAddons);
             } catch (error) {
-                console.warn('Using mock data - Firestore not configured:', error);
+                console.error('Error fetching bridal services:', error);
             } finally {
                 setIsLoading(false);
             }
         };
         fetchData();
-    }, []);
+    }, [organization?.id]);
 
     // Calculations
     const selectedPackage = useMemo(() => packages.find(p => p.id === selectedPackageId), [packages, selectedPackageId]);
+
+    // Calculate effective price (handling discounts)
+    const getEffectivePrice = (service: BridalPackageOption) => {
+        return service.hasDiscount
+            ? service.price * (1 - service.discountPercentage / 100)
+            : service.price;
+    };
+
     const totalAddonsPrice = useMemo(() =>
-        addons.filter(a => selectedAddonIds.includes(a.id)).reduce((sum, a) => sum + a.price, 0),
+        addons
+            .filter(a => selectedAddonIds.includes(a.id!))
+            .reduce((sum, a) => sum + getEffectivePrice(a), 0),
         [addons, selectedAddonIds]
     );
-    const totalPrice = (selectedPackage?.price || 0) + totalAddonsPrice;
+
+    const packagePrice = selectedPackage ? getEffectivePrice(selectedPackage) : 0;
+    const totalPrice = packagePrice + totalAddonsPrice;
     const depositAmount = totalPrice * 0.3;
 
     const handleToggleAddon = (addonId: string) => {
@@ -243,14 +195,7 @@ export const BrideCollectionPage: React.FC = () => {
         }
         setIsSubmitting(true);
         try {
-            // TODO: Save to Firestore `bride_journeys` collection
-            // await updateDoc(doc(db, 'bride_journeys', currentJourneyId), {
-            //     selectedPackageId,
-            //     selectedAddonIds,
-            //     totalPrice,
-            //     depositAmount,
-            //     servicesConfirmedAt: Timestamp.now()
-            // });
+            // Placeholder: In a real flow, this would update the bride's journey/cart
             console.log('Selection Confirmed:', { selectedPackageId, selectedAddonIds, totalPrice, depositAmount });
             alert('Seleção confirmada com sucesso!');
             navigate('/noiva'); // Navigate back to portal
@@ -261,6 +206,14 @@ export const BrideCollectionPage: React.FC = () => {
             setIsSubmitting(false);
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-neo-bg flex items-center justify-center">
+                <div className="w-10 h-10 border-4 border-neo-accent border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-neo-bg pb-32">
@@ -292,16 +245,22 @@ export const BrideCollectionPage: React.FC = () => {
                             <ShoppingBag size={18} style={{ color: GOLD }} />
                             Pacotes Principais
                         </h2>
-                        <div className="space-y-4">
-                            {packages.map(pkg => (
-                                <PackageCard
-                                    key={pkg.id}
-                                    pkg={pkg}
-                                    isSelected={selectedPackageId === pkg.id}
-                                    onSelect={() => setSelectedPackageId(pkg.id)}
-                                />
-                            ))}
-                        </div>
+                        {packages.length === 0 ? (
+                            <div className="p-6 text-center text-neo-text-secondary bg-neo-bg rounded-neo shadow-neo-in">
+                                Nenhum pacote disponível no momento.
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {packages.map(pkg => (
+                                    <PackageCard
+                                        key={pkg.id}
+                                        pkg={pkg}
+                                        isSelected={selectedPackageId === pkg.id}
+                                        onSelect={() => setSelectedPackageId(pkg.id!)}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </section>
 
                     {/* Addons Section */}
@@ -310,16 +269,22 @@ export const BrideCollectionPage: React.FC = () => {
                             <Plus size={18} style={{ color: GOLD }} />
                             Serviços Extras (Adicionais)
                         </h2>
-                        <div className="space-y-2">
-                            {addons.map(addon => (
-                                <AddonPill
-                                    key={addon.id}
-                                    addon={addon}
-                                    isSelected={selectedAddonIds.includes(addon.id)}
-                                    onToggle={() => handleToggleAddon(addon.id)}
-                                />
-                            ))}
-                        </div>
+                        {addons.length === 0 ? (
+                            <div className="p-6 text-center text-neo-text-secondary bg-neo-bg rounded-neo shadow-neo-in">
+                                Nenhum serviço adicional disponível.
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {addons.map(addon => (
+                                    <AddonPill
+                                        key={addon.id}
+                                        addon={addon}
+                                        isSelected={selectedAddonIds.includes(addon.id!)}
+                                        onToggle={() => handleToggleAddon(addon.id!)}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </section>
                 </main>
 

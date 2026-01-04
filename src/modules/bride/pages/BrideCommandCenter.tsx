@@ -34,7 +34,12 @@ const GOLD = ROSE; // Legacy alias
 const GOLD_LIGHT = ROSE_LIGHT; // Legacy alias
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getBridalPackagesByOrg, createBridalPackage, updateBridalPackage } from '../../bride/services/brideService';
+import {
+    getBridalPackagesByOrg,
+    createBridalPackage,
+    // updateBridalPackage, 
+    getBridalServices // New import
+} from '../../bride/services/brideService';
 import { useBranding } from '../../../shared/context/BrandingContext';
 import { notificationService } from '../../../shared/services/notificationService';
 import { toast } from 'sonner';
@@ -254,6 +259,12 @@ export const BrideCommandCenter: React.FC = () => {
     const { data: brides = [], isLoading: loadingBrides } = useQuery({
         queryKey: ['bridal_packages', org?.id],
         queryFn: () => (org?.id ? getBridalPackagesByOrg(org.id) : Promise.resolve([])),
+        enabled: !!org?.id,
+    });
+
+    const { data: services = [] } = useQuery({
+        queryKey: ['bridal_services', org?.id],
+        queryFn: () => (org?.id ? getBridalServices(org.id) : Promise.resolve([])),
         enabled: !!org?.id,
     });
 
@@ -655,50 +666,46 @@ export const BrideCommandCenter: React.FC = () => {
                                             <Typography variant="label" className="mb-2 block" style={{ color: GOLD }}>
                                                 Selecione os Serviços *
                                             </Typography>
-                                            <div className="space-y-2 max-h-48 overflow-y-auto p-2 rounded-neo shadow-neo-in">
-                                                {[
-                                                    { id: 'bride-day', name: 'Noiva Dia D (Make + Hair)', price: 850 },
-                                                    { id: 'bride-trial', name: 'Prova de Noiva', price: 350 },
-                                                    { id: 'bride-pre-wedding', name: 'Ensaio Pré-Wedding', price: 450 },
-                                                    { id: 'hair-only', name: 'Penteado Noiva', price: 400 },
-                                                    { id: 'makeup-only', name: 'Make Noiva', price: 450 },
-                                                    { id: 'attendant-combo', name: 'Acompanhante (Make + Hair)', price: 280 },
-                                                    { id: 'attendant-makeup', name: 'Acompanhante (Make)', price: 160 },
-                                                    { id: 'attendant-hair', name: 'Acompanhante (Penteado)', price: 140 },
-                                                    { id: 'mother-combo', name: 'Mãe da Noiva (Make + Hair)', price: 350 },
-                                                ].map(service => (
-                                                    <label
-                                                        key={service.id}
-                                                        className={`flex items-center justify-between p-3 rounded-neo cursor-pointer transition-all ${newBride.selectedServices.includes(service.id)
-                                                            ? 'shadow-neo-in bg-neo-bg'
-                                                            : 'shadow-neo-out hover:shadow-neo-flat'
-                                                            }`}
-                                                    >
-                                                        <div className="flex items-center gap-3">
-                                                            <Checkbox
-                                                                checked={newBride.selectedServices.includes(service.id)}
-                                                                onChange={(checked) => {
-                                                                    if (checked) {
-                                                                        setNewBride({
-                                                                            ...newBride,
-                                                                            selectedServices: [...newBride.selectedServices, service.id]
-                                                                        });
-                                                                    } else {
-                                                                        setNewBride({
-                                                                            ...newBride,
-                                                                            selectedServices: newBride.selectedServices.filter(s => s !== service.id)
-                                                                        });
-                                                                    }
-                                                                }}
-                                                            />
-                                                            <Typography variant="body">{service.name}</Typography>
-                                                        </div>
-                                                        <Typography variant="label" className="font-semibold text-neo-text-secondary">
-                                                            {formatCurrency(service.price)}
-                                                        </Typography>
-                                                    </label>
-                                                ))}
-                                            </div>
+                                            {services.length === 0 ? (
+                                                <div className="p-4 rounded-neo shadow-neo-in text-center text-sm text-neo-text-secondary">
+                                                    Nenhum serviço cadastrado. Vá em "Serviços" para adicionar.
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2 max-h-48 overflow-y-auto p-2 rounded-neo shadow-neo-in">
+                                                    {services.filter(s => s.isActive).map(service => (
+                                                        <label
+                                                            key={service.id}
+                                                            className={`flex items-center justify-between p-3 rounded-neo cursor-pointer transition-all ${newBride.selectedServices.includes(service.id!)
+                                                                ? 'shadow-neo-in bg-neo-bg'
+                                                                : 'shadow-neo-out hover:shadow-neo-flat'
+                                                                }`}
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <Checkbox
+                                                                    checked={newBride.selectedServices.includes(service.id!)}
+                                                                    onChange={(checked) => {
+                                                                        if (checked) {
+                                                                            setNewBride({
+                                                                                ...newBride,
+                                                                                selectedServices: [...newBride.selectedServices, service.id!]
+                                                                            });
+                                                                        } else {
+                                                                            setNewBride({
+                                                                                ...newBride,
+                                                                                selectedServices: newBride.selectedServices.filter(s => s !== service.id)
+                                                                            });
+                                                                        }
+                                                                    }}
+                                                                />
+                                                                <Typography variant="body">{service.name}</Typography>
+                                                            </div>
+                                                            <Typography variant="label" className="font-semibold text-neo-text-secondary">
+                                                                {formatCurrency(service.price)}
+                                                            </Typography>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Total Package Value */}
@@ -708,17 +715,8 @@ export const BrideCommandCenter: React.FC = () => {
                                                     <Typography variant="body" className="font-medium">Total do Pacote:</Typography>
                                                     <Typography variant="h4" style={{ color: GOLD }}>
                                                         {formatCurrency(
-                                                            [
-                                                                { id: 'bride-day', price: 850 },
-                                                                { id: 'bride-trial', price: 350 },
-                                                                { id: 'bride-pre-wedding', price: 450 },
-                                                                { id: 'hair-only', price: 400 },
-                                                                { id: 'makeup-only', price: 450 },
-                                                                { id: 'attendant-combo', price: 280 },
-                                                                { id: 'attendant-makeup', price: 160 },
-                                                                { id: 'attendant-hair', price: 140 },
-                                                                { id: 'mother-combo', price: 350 },
-                                                            ].filter(s => newBride.selectedServices.includes(s.id))
+                                                            services
+                                                                .filter(s => newBride.selectedServices.includes(s.id!))
                                                                 .reduce((sum, s) => sum + s.price, 0)
                                                         )}
                                                     </Typography>
@@ -739,20 +737,7 @@ export const BrideCommandCenter: React.FC = () => {
                                                     alert('Preencha todos os campos obrigatórios e selecione ao menos um serviço');
                                                     return;
                                                 }
-                                                const servicesData = [
-                                                    { id: 'bride-day', price: 850 },
-                                                    { id: 'bride-trial', price: 350 },
-                                                    { id: 'bride-pre-wedding', price: 450 },
-                                                    { id: 'hair-only', price: 400 },
-                                                    { id: 'makeup-only', price: 450 },
-                                                    { id: 'attendant-combo', price: 280 },
-                                                    { id: 'attendant-makeup', price: 160 },
-                                                    { id: 'attendant-hair', price: 140 },
-                                                    { id: 'mother-combo', price: 350 },
-                                                ];
-                                                const totalValue = servicesData
-                                                    .filter(s => newBride.selectedServices.includes(s.id))
-                                                    .reduce((sum, s) => sum + s.price, 0);
+                                                // Removed hardcoded servicesData, relies on 'services' query now
 
                                                 createBrideMutation.mutate({
                                                     clientId: `client-${Date.now()}`,
@@ -788,4 +773,3 @@ export const BrideCommandCenter: React.FC = () => {
 };
 
 export default BrideCommandCenter;
-

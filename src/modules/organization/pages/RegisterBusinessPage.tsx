@@ -19,6 +19,8 @@ import {
     Sparkles
 } from 'lucide-react';
 import { registerBusiness } from '../../auth/services/authService';
+import { NeoButton, NeoInput, NeoCard, Typography, Progress, NeoTextarea } from '../../../shared/components/ui';
+import { PageWrapper } from '../../../shared/components/ui/AppLayout';
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -177,15 +179,17 @@ export const RegisterBusinessPage: React.FC = () => {
         <div className="min-h-screen bg-neo-bg flex flex-col overflow-y-auto pb-24" style={{ maxHeight: '100dvh' }}>
             {/* Header */}
             <header className="p-6 flex items-center gap-4">
-                <button
+                <NeoButton
+                    variant="neu"
+                    size="icon"
                     onClick={handleBack}
-                    className="btn-neu-glass-light p-3"
+                    className="w-10 h-10"
                 >
                     <ChevronLeft size={20} />
-                </button>
+                </NeoButton>
                 <div className="flex-1">
-                    <h1 className="text-xl font-display font-bold text-neo-text">Criar Conta</h1>
-                    <p className="text-sm text-neo-text-secondary">Passo {step} de {TOTAL_STEPS}</p>
+                    <Typography variant="h3">Criar Conta</Typography>
+                    <Typography variant="caption">Passo {step} de {TOTAL_STEPS}</Typography>
                 </div>
             </header>
 
@@ -237,22 +241,19 @@ export const RegisterBusinessPage: React.FC = () => {
                     {/* Step 1: Business Name */}
                     {step === 1 && (
                         <div>
-                            <h2 className="text-2xl font-display font-bold text-neo-text mb-2">
+                            <Typography variant="h2" className="mb-2">
                                 Qual o nome do seu negócio?
-                            </h2>
-                            <p className="text-neo-text-secondary mb-6">
+                            </Typography>
+                            <Typography variant="body" className="text-neo-text-secondary mb-6">
                                 Este será o nome visível para seus clientes.
-                            </p>
+                            </Typography>
 
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-                                    Nome do Salão / Estúdio
-                                </label>
-                                <input
+                                <NeoInput
+                                    label="Nome do Salão / Estúdio"
                                     type="text"
                                     value={businessName}
                                     onChange={(e) => setBusinessName(e.target.value)}
-                                    className="w-full neo-input text-lg"
                                     placeholder="Ex: Studio Beleza Maria"
                                     autoFocus
                                 />
@@ -328,40 +329,30 @@ export const RegisterBusinessPage: React.FC = () => {
                     {/* Step 3: Personal Info */}
                     {step === 3 && (
                         <div>
-                            <h2 className="text-2xl font-display font-bold text-neo-text mb-2">
+                            <Typography variant="h2" className="mb-2">
                                 Seus dados pessoais
-                            </h2>
-                            <p className="text-neo-text-secondary mb-6">
+                            </Typography>
+                            <Typography variant="body" className="text-neo-text-secondary mb-6">
                                 Informações do proprietário do negócio.
-                            </p>
+                            </Typography>
 
                             <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-                                        Seu Nome
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={ownerName}
-                                        onChange={(e) => setOwnerName(e.target.value)}
-                                        className="w-full neo-input"
-                                        placeholder="Nome completo"
-                                        autoFocus
-                                    />
-                                </div>
+                                <NeoInput
+                                    label="Seu Nome"
+                                    type="text"
+                                    value={ownerName}
+                                    onChange={(e) => setOwnerName(e.target.value)}
+                                    placeholder="Nome completo"
+                                    autoFocus
+                                />
 
-                                <div>
-                                    <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-                                        Telefone / WhatsApp
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        value={phone}
-                                        onChange={(e) => setPhone(e.target.value)}
-                                        className="w-full neo-input"
-                                        placeholder="(00) 00000-0000"
-                                    />
-                                </div>
+                                <NeoInput
+                                    label="Telefone / WhatsApp"
+                                    type="tel"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="(00) 00000-0000"
+                                />
                             </div>
                         </div>
                     )}
@@ -369,16 +360,16 @@ export const RegisterBusinessPage: React.FC = () => {
                     {/* Step 4: Payment Configuration - Premium */}
                     {step === 4 && (
                         <div>
-                            <h2 className="text-2xl font-display font-bold text-neo-text mb-2">
+                            <Typography variant="h2" className="mb-2">
                                 Configure seus pagamentos
-                            </h2>
-                            <p className="text-neo-text-secondary mb-6">
+                            </Typography>
+                            <Typography variant="body" className="text-neo-text-secondary mb-6">
                                 Defina como você quer receber de seus clientes.
-                            </p>
+                            </Typography>
 
                             <div className="space-y-6">
                                 {/* SMART DEPOSIT */}
-                                <div className="p-4 rounded-neo bg-neo-bg shadow-neo-in">
+                                <NeoCard className="p-4">
                                     <label className="block text-sm font-semibold text-neo-text mb-3 flex items-center gap-2">
                                         <Sparkles size={14} style={{ color: ROSE }} />
                                         Tipo de Sinal (Depósito)
@@ -386,88 +377,63 @@ export const RegisterBusinessPage: React.FC = () => {
 
                                     {/* Toggle % vs R$ */}
                                     <div className="flex gap-2 mb-4">
-                                        <button
+                                        <NeoButton
+                                            variant={depositType === 'percentage' ? 'gradient' : 'neu'}
                                             onClick={() => setDepositType('percentage')}
-                                            className={`flex-1 py-3 rounded-neo text-sm font-semibold transition-all ${depositType === 'percentage'
-                                                ? 'shadow-neo-pressed'
-                                                : 'shadow-neo-out hover:shadow-neo-out-lg'
-                                                }`}
-                                            style={{ color: depositType === 'percentage' ? ROSE : undefined }}
+                                            className="flex-1"
                                         >
                                             Porcentagem %
-                                        </button>
-                                        <button
+                                        </NeoButton>
+                                        <NeoButton
+                                            variant={depositType === 'fixed' ? 'gradient' : 'neu'}
                                             onClick={() => setDepositType('fixed')}
-                                            className={`flex-1 py-3 rounded-neo text-sm font-semibold transition-all ${depositType === 'fixed'
-                                                ? 'shadow-neo-pressed'
-                                                : 'shadow-neo-out hover:shadow-neo-out-lg'
-                                                }`}
-                                            style={{ color: depositType === 'fixed' ? ROSE : undefined }}
+                                            className="flex-1"
                                         >
                                             Valor Fixo R$
-                                        </button>
+                                        </NeoButton>
                                     </div>
 
                                     {/* Value Input */}
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neo-text-secondary font-medium">
-                                            {depositType === 'percentage' ? '%' : 'R$'}
-                                        </span>
-                                        <input
-                                            type="text"
-                                            value={depositValue}
-                                            onChange={(e) => setDepositValue(e.target.value)}
-                                            className="w-full neo-input pl-12 text-lg font-semibold focus:ring-2 focus:ring-neo-accent/30"
-                                            placeholder={depositType === 'percentage' ? 'Ex: 30' : 'Ex: 100,00'}
-                                        />
-                                    </div>
-                                    <p className="text-xs text-neo-text-secondary mt-2">
+                                    <NeoInput
+                                        icon={<span className="text-neo-text-secondary font-medium">{depositType === 'percentage' ? '%' : 'R$'}</span>}
+                                        value={depositValue}
+                                        onChange={(e) => setDepositValue(e.target.value)}
+                                        placeholder={depositType === 'percentage' ? 'Ex: 30' : 'Ex: 100,00'}
+                                    />
+                                    <Typography variant="caption" className="mt-2 block">
                                         {depositType === 'percentage'
                                             ? 'Percentual do valor total cobrado como sinal.'
                                             : 'Valor fixo em reais cobrado como sinal.'}
-                                    </p>
-                                </div>
+                                    </Typography>
+                                </NeoCard>
 
                                 {/* PIX CONFIGURATION */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-neo-text mb-2">
-                                        Chave PIX
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={pixKey}
-                                        onChange={(e) => setPixKey(e.target.value)}
-                                        className="w-full neo-input focus:shadow-[inset_0_0_0_2px_rgba(232,160,184,0.3)]"
-                                        placeholder="CPF, e-mail ou chave aleatória"
-                                    />
-                                    <p className="text-xs text-neo-text-secondary mt-1">
-                                        Clientes verão esta chave para enviar o sinal.
-                                    </p>
-                                </div>
+                                <NeoInput
+                                    label="Chave PIX"
+                                    value={pixKey}
+                                    onChange={(e) => setPixKey(e.target.value)}
+                                    placeholder="CPF, e-mail ou chave aleatória"
+                                    helperText="Clientes verão esta chave para enviar o sinal."
+                                />
 
                                 {/* PAYMENT INSTRUCTIONS */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-neo-text mb-2">
-                                        Instruções de Pagamento
-                                    </label>
-                                    <textarea
-                                        value={paymentInstructions}
-                                        onChange={(e) => setPaymentInstructions(e.target.value)}
-                                        className="w-full neo-input min-h-[80px] resize-none focus:shadow-[inset_0_0_0_2px_rgba(232,160,184,0.3)]"
-                                        placeholder="Ex: Pix para confirmar. Aceito cartão no dia."
-                                    />
-                                </div>
+                                <NeoTextarea
+                                    label="Instruções de Pagamento"
+                                    value={paymentInstructions}
+                                    onChange={(e) => setPaymentInstructions(e.target.value)}
+                                    placeholder="Ex: Pix para confirmar. Aceito cartão no dia."
+                                />
 
                                 {/* CARD GATEWAY - LED TOGGLE */}
-                                <div className="p-4 rounded-neo bg-neo-bg shadow-neo-out">
+                                <NeoCard className="p-4">
                                     <div className="flex items-center justify-between mb-3">
                                         <div>
-                                            <label className="block text-sm font-semibold text-neo-text">
+                                            <Typography variant="label" className="block">
                                                 Aceitar Cartão de Crédito
-                                            </label>
-                                            <p className="text-xs text-neo-text-secondary">
+                                            </Typography>
+                                            <Typography variant="caption" className="block">
                                                 Integração com gateway de pagamento
-                                            </p>
+                                            </Typography>
                                         </div>
 
                                         {/* LED Toggle */}
@@ -499,23 +465,18 @@ export const RegisterBusinessPage: React.FC = () => {
                                             className="overflow-hidden"
                                         >
                                             <div className="pt-3 border-t border-neo-text/10">
-                                                <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-                                                    API Key / Token
-                                                </label>
-                                                <input
+                                                <NeoInput
+                                                    label="API Key / Token"
                                                     type="password"
                                                     value={gatewayApiKey}
                                                     onChange={(e) => setGatewayApiKey(e.target.value)}
-                                                    className="w-full neo-input text-sm"
                                                     placeholder="sk_live_... ou access_token"
+                                                    helperText="Compatível com Stripe ou Mercado Pago."
                                                 />
-                                                <p className="text-xs text-neo-text-secondary mt-1">
-                                                    Compatível com Stripe ou Mercado Pago.
-                                                </p>
                                             </div>
                                         </motion.div>
                                     )}
-                                </div>
+                                </NeoCard>
                             </div>
 
                             <button
@@ -530,53 +491,38 @@ export const RegisterBusinessPage: React.FC = () => {
                     {/* Step 5: Login Credentials */}
                     {step === 5 && (
                         <div>
-                            <h2 className="text-2xl font-display font-bold text-neo-text mb-2">
+                            <Typography variant="h2" className="mb-2">
                                 Crie sua conta
-                            </h2>
-                            <p className="text-neo-text-secondary mb-6">
+                            </Typography>
+                            <Typography variant="body" className="text-neo-text-secondary mb-6">
                                 Dados de acesso ao painel administrativo.
-                            </p>
+                            </Typography>
 
                             <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-                                        E-mail
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full neo-input"
-                                        placeholder="seu@email.com"
-                                        autoFocus
-                                    />
-                                </div>
+                                <NeoInput
+                                    label="E-mail"
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="seu@email.com"
+                                    autoFocus
+                                />
 
-                                <div>
-                                    <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-                                        Senha
-                                    </label>
-                                    <input
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full neo-input"
-                                        placeholder="Mínimo 6 caracteres"
-                                    />
-                                </div>
+                                <NeoInput
+                                    label="Senha"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Mínimo 6 caracteres"
+                                />
 
-                                <div>
-                                    <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-                                        Confirmar Senha
-                                    </label>
-                                    <input
-                                        type="password"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        className="w-full neo-input"
-                                        placeholder="Digite a senha novamente"
-                                    />
-                                </div>
+                                <NeoInput
+                                    label="Confirmar Senha"
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="Digite a senha novamente"
+                                />
                             </div>
                         </div>
                     )}
@@ -596,18 +542,16 @@ export const RegisterBusinessPage: React.FC = () => {
 
             {/* Footer Buttons */}
             <div className="p-6 pb-safe">
-                <button
+                <NeoButton
+                    variant="glass"
                     onClick={step === TOTAL_STEPS ? handleSubmit : handleNext}
                     disabled={loading}
-                    className="w-full btn-neu-glass-light py-4 font-semibold flex items-center justify-center gap-2 active"
+                    className="w-full py-4 font-semibold gap-2"
                     style={{ color: GOLD }}
                 >
                     {loading ? (
                         <>
-                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                            </svg>
+                            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                             Criando...
                         </>
                     ) : step === TOTAL_STEPS ? (
@@ -621,7 +565,7 @@ export const RegisterBusinessPage: React.FC = () => {
                             <ChevronRight size={18} />
                         </>
                     )}
-                </button>
+                </NeoButton>
             </div>
         </div>
     );

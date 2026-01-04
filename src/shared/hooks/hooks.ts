@@ -61,7 +61,8 @@ export function useInitializeServices() {
   }, []);
 }
 
-// Auth Hook
+// Auth Hook - REMOVED (Use AuthContext)
+/*
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,6 +90,8 @@ export function useAuth() {
 
   return { user, loading, login, register, logout };
 }
+*/
+
 
 // Services Hook
 export function useServices() {

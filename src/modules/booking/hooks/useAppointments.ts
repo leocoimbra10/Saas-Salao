@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getAppointments, createAppointment, updateAppointment, deleteAppointment } from '../services/appointmentService';
+import { getAppointments, createAppointment, updateAppointment, deleteAppointment, getClientAppointments } from '../services/appointmentService';
 import { Appointment } from '../../../shared/types/types';
 import { toast } from 'sonner';
 
@@ -8,6 +8,14 @@ export const useAppointments = (orgId: string | undefined) => {
         queryKey: ['appointments', orgId],
         queryFn: () => (orgId ? getAppointments(orgId) : Promise.resolve([])),
         enabled: !!orgId,
+    });
+};
+
+export const useClientAppointments = (clientId: string | undefined) => {
+    return useQuery<Appointment[]>({
+        queryKey: ['clientAppointments', clientId],
+        queryFn: () => (clientId ? getClientAppointments(clientId) : Promise.resolve([])),
+        enabled: !!clientId,
     });
 };
 

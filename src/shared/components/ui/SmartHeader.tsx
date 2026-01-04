@@ -21,56 +21,14 @@ import {
     Send
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { NeoButton, NeoInput, Badge } from './NeoComponents';
+
+import { NeoButton, NeoInput, Badge, NeoIconButton } from './NeoComponents';
 
 // Brand Colors - Rose Pink
-const PURPLE = '#8A2BE2';
-const ROSE = 'var(--color-brand-primary)';
-const GOLD = ROSE; // Legacy alias
-
-interface NavIconProps {
-    icon: React.ReactNode;
-    label: string;
-    isActive?: boolean;
-    onClick: () => void;
-}
-
-// Individual Nav Icon with Neomorphic styling
-const NavIcon: React.FC<NavIconProps> = ({ icon, label, isActive, onClick }) => {
-    const [isPressed, setIsPressed] = useState(false);
-
-    return (
-        <button
-            onClick={onClick}
-            onMouseDown={() => setIsPressed(true)}
-            onMouseUp={() => setIsPressed(false)}
-            onMouseLeave={() => setIsPressed(false)}
-            onTouchStart={() => setIsPressed(true)}
-            onTouchEnd={() => setIsPressed(false)}
-            className={cn(
-                'relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-150',
-                isPressed || isActive
-                    ? 'shadow-neo-pressed bg-neo-bg'
-                    : 'shadow-neo-out bg-neo-bg hover:shadow-neo-out-lg'
-            )}
-            style={{ color: isActive ? PURPLE : '#6B7280' }}
-            title={label}
-        >
-            {icon}
-
-            {/* Active indicator dot */}
-            {isActive && (
-                <motion.div
-                    layoutId="activeIndicator"
-                    className="absolute -bottom-1 w-1.5 h-1.5 rounded-full"
-                    style={{ backgroundColor: GOLD }}
-                    initial={false}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-            )}
-        </button>
-    );
-};
+// Brand Colors
+const ROSE = 'hsl(var(--color-brand-primary))';
+const GOLD = 'hsl(var(--color-brand-gold))';
+const PURPLE = 'hsl(var(--color-brand-purple))';
 
 // Search Overlay Component
 const SearchOverlay: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
@@ -326,13 +284,16 @@ export const SmartHeader: React.FC<SmartHeaderProps> = ({ onMenuClick }) => {
             <header className="sticky top-0 z-40 bg-neo-bg/95 backdrop-blur-lg border-b border-white/10">
                 <div className="flex items-center justify-between px-2 py-2 max-w-[480px] mx-auto">
                     {navItems.map((item) => (
-                        <NavIcon
+                        <NeoIconButton
                             key={item.id}
-                            icon={item.icon}
-                            label={item.label}
+                            tooltip={item.label}
                             isActive={item.isActive}
                             onClick={item.onClick}
-                        />
+                            activeColor={PURPLE}
+                            indicatorColor={GOLD}
+                        >
+                            {item.icon}
+                        </NeoIconButton>
                     ))}
                 </div>
             </header>

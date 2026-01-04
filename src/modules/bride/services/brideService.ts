@@ -21,6 +21,7 @@ import { db, storage } from '../../../shared/lib/firebase';
 import { BridalPackage, Attendant, MoodboardPhoto, TimelineMilestone, ATTENDANT_SERVICES } from '../types/brideTypes';
 
 const BRIDAL_PACKAGES_COLLECTION = 'bridal_packages';
+const BRIDAL_SERVICES_COLLECTION = 'bridal_services';
 
 // Convert Firestore timestamp to Date
 const convertTimestamp = (timestamp: any): Date => {
@@ -32,6 +33,8 @@ const convertTimestamp = (timestamp: any): Date => {
     }
     return new Date(timestamp);
 };
+
+// --- BRIDAL PACKAGES (Clients/Leads) OPERATIONS ---
 
 // Create a new bridal package
 export const createBridalPackage = async ({
@@ -190,7 +193,8 @@ export const addAttendant = async (
     };
 
     const updatedAttendants = [...pkg.attendants, newAttendant];
-    const totalAttendantValue = updatedAttendants.reduce((sum, a) => sum + a.totalPrice, 0);
+    // Recalculate based on services logic might be needed here if pricing is complex
+    // For now assuming totalPrice is passed correctly
 
     await updateBridalPackage(packageId, {
         attendants: updatedAttendants,
@@ -285,6 +289,9 @@ export const deleteMoodboardPhoto = async (packageId: string, photoId: string): 
 
 // Calculate attendant price based on services
 export const calculateAttendantPrice = (serviceIds: string[]): number => {
+    // This function relied on hardcoded ATTENDANT_SERVICES which we are moving away from.
+    // Ideally this should fetch from the new service catalog or be passed the service objects.
+    // For migration compatibility, we might leave it but warn.
     return serviceIds.reduce((total, serviceId) => {
         const service = ATTENDANT_SERVICES.find(s => s.id === serviceId);
         return total + (service?.price || 0);
@@ -322,4 +329,47 @@ export const checkIfBride = async (clientId: string, orgId: string): Promise<Bri
         createdAt: convertTimestamp(doc.data().createdAt),
         updatedAt: convertTimestamp(doc.data().updatedAt),
     } as BridalPackage;
+};
+
+// --- BRIDAL CATALOG SERVICES OPERATIONS (Admin Managed) ---
+
+export interface BridalServiceData {
+    id?: string;
+    name: string;
+    description: string;
+    price: number;
+    duration: number;
+    category: 'bride' | 'attendant' | 'mother' | 'trial' | 'package';
+    isActive: boolean;
+    hasDiscount: boolean;
+    discountPercentage: number;
+    customFields: any[];
+    order: number;
+    orgId: string;
+}
+
+export const getBridalServices = async (orgId: string): Promise<BridalServiceData[]> => {
+    const q = query(
+        collection(db, BRIDAL_SERVICES_COLLECTION),
+        where('orgId', '==', orgId),
+        orderBy('order', 'asc')
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BridalServiceData));
+};
+
+export const createBridalService = async (service: BridalServiceData): Promise<string> => {
+    const { id, ...data } = service; // Remove ID if present
+    const docRef = await addDoc(collection(db, BRIDAL_SERVICES_COLLECTION), data);
+    return docRef.id;
+};
+
+export const updateBridalService = async (serviceId: string, updates: Partial<BridalServiceData>): Promise<void> => {
+    const docRef = doc(db, BRIDAL_SERVICES_COLLECTION, serviceId);
+    await updateDoc(docRef, updates);
+};
+
+export const deleteBridalService = async (serviceId: string): Promise<void> => {
+    const docRef = doc(db, BRIDAL_SERVICES_COLLECTION, serviceId);
+    await deleteDoc(docRef);
 };

@@ -4,14 +4,16 @@
  */
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth, isFirebaseInitialized } from '../../../shared/lib/firebase';
-import { getUserProfile } from '../services/authService';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { auth, db, isFirebaseInitialized } from '../../../shared/lib/firebase';
+import { getUserProfile } from '../services/authService'; // Keep for other usages if any
 import { UserProfile, OWNER_PERMISSIONS } from '../../../shared/types/types';
 
 interface AuthContextType {
     user: User | null;
     profile: UserProfile | null;
     loading: boolean;
+    error: string | null;
     isAdmin: boolean;
     isOwner: boolean;
     loginAsTestUser: (role: 'client' | 'admin') => void;
@@ -21,6 +23,7 @@ const AuthContext = createContext<AuthContextType>({
     user: null,
     profile: null,
     loading: true,
+    error: null,
     isAdmin: false,
     isOwner: false,
     loginAsTestUser: () => { },
@@ -32,13 +35,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [isMocking, setIsMocking] = useState(false);
 
+    // Internal state to manage subscriptions
+    const [currentState, setCurrentState] = useState<{ profileUnsubscribe: (() => void) | null }>({
+        profileUnsubscribe: null
+    });
+
     useEffect(() => {
-        console.log("AuthProvider: useEffect triggered, subcribing to auth state change...");
+        // console.log("AuthProvider: useEffect triggered, subcribing to auth state change...");
 
         if (!isFirebaseInitialized) {
             console.warn("AuthProvider: Firebase not initialized. Skipping auth check.");
+            setError("Firebase não inicializado.");
             setLoading(false);
             return;
         }
@@ -51,39 +61,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         }, 5000);
 
-        const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-            console.log("AuthProvider: onAuthStateChanged fired. User:", firebaseUser ? firebaseUser.uid : "null");
+        const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+            if (isMocking) return;
 
-            // If we are mocking, ignore updates from real Firebase (unless it's a real login event, but usually it's just null)
-            if (isMocking) {
-                console.log("AuthProvider: Ignoring Firebase update because Mock Mode is active.");
-                return;
+            // Unsubscribe from previous profile listener if exists
+            if (currentState.profileUnsubscribe) {
+                currentState.profileUnsubscribe();
             }
 
             if (firebaseUser) {
                 setUser(firebaseUser);
-                try {
-                    const userProfile = await getUserProfile(firebaseUser.uid);
-                    setProfile(userProfile);
-                } catch (error) {
-                    console.error("Error fetching user profile:", error);
-                    setProfile(null);
-                }
+
+                // Real-time listener for profile changes
+                const userRef = doc(db, 'users', firebaseUser.uid);
+                const unsubscribeProfile = onSnapshot(userRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        setProfile({ uid: docSnap.id, ...docSnap.data() } as UserProfile);
+                        setLoading(false); // Valid profile loaded
+                    } else {
+                        console.warn("AuthContext: User authenticated but no profile found (yet).");
+                        setProfile(null);
+                        // If it's a new user, we might still be loading until the profile is created
+                        // However, we set loading false to allow the UI to decide (e.g. show "Complete Registration")
+                        setLoading(false);
+                    }
+                }, (err) => {
+                    console.error("AuthContext: Profile sync error", err);
+                    setError("Erro ao sincronizar perfil do usuário.");
+                    setLoading(false);
+                });
+
+                // Store unsubscribe function to clean up later
+                setCurrentState(prev => ({ ...prev, profileUnsubscribe: unsubscribeProfile }));
+
             } else {
                 setUser(null);
                 setProfile(null);
+                setLoading(false);
             }
-
-            setLoading(false);
-            clearTimeout(timeoutId);
         });
 
         return () => {
-            console.log("AuthProvider: unsubscribing...");
-            unsubscribe();
+            unsubscribeAuth();
+            if (currentState.profileUnsubscribe) currentState.profileUnsubscribe();
             clearTimeout(timeoutId);
         };
-    }, [isMocking]); // Re-subscribe if mocking changes (though logically we just want the guard inside)
+    }, [isMocking]);
 
     const loginAsTestUser = (role: 'client' | 'admin') => {
         setIsMocking(true); // Enable mock mode
@@ -148,6 +171,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         profile,
         loading,
+        error,
         isAdmin: profile?.role === 'owner',
         isOwner: profile?.role === 'owner',
         loginAsTestUser

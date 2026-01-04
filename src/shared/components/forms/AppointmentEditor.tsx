@@ -208,6 +208,19 @@ export const AppointmentEditor: React.FC<{
     };
 
     const handleSave = () => {
+        if (!data.clientName) {
+            alert('Por favor, informe o nome do cliente.');
+            return;
+        }
+        if (!data.professionalId) {
+            alert('Por favor, selecione um profissional.');
+            return;
+        }
+        if (data.services.length === 0) {
+            const confirmEmpty = window.confirm('Nenhum serviço selecionado. Deseja continuar?');
+            if (!confirmEmpty) return;
+        }
+
         onSave(data);
         onClose();
     };
@@ -313,10 +326,26 @@ export const AppointmentEditor: React.FC<{
                             <div className="flex items-center justify-between mb-2">
                                 <label className="block text-xs text-neo-text-secondary">Serviços</label>
                                 <button
-                                    onClick={() => {/* TODO: Nova Comanda */ }}
-                                    className="text-xs text-neo-accent font-medium px-3 py-1 rounded-neo shadow-neo-out"
+                                    onClick={() => {
+                                        const name = prompt('Nome do item/produto:');
+                                        if (!name) return;
+                                        const priceStr = prompt('Valor (R$):');
+                                        if (!priceStr) return;
+                                        const price = parseFloat(priceStr.replace(',', '.'));
+                                        if (isNaN(price)) {
+                                            alert('Valor inválido');
+                                            return;
+                                        }
+                                        handleAddService({
+                                            id: `custom-${Date.now()}`,
+                                            name: `[EXTRA] ${name}`,
+                                            price,
+                                            duration: 0
+                                        });
+                                    }}
+                                    className="text-xs text-neo-accent font-medium px-3 py-1 rounded-neo shadow-neo-out hover:shadow-neo-pressed active:scale-95 transition-all"
                                 >
-                                    Nova Comanda
+                                    + Produto/Extra
                                 </button>
                             </div>
 

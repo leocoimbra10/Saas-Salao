@@ -1,90 +1,18 @@
-/**
- * BEAUTY SALON NEOMORPHIC APP - Portfolio Page
- */
-import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import {
   Image as ImageIcon,
-  Upload,
-  X,
   Heart,
-  Sparkles,
-  Filter,
-  Plus
+  X
 } from 'lucide-react';
-import { cn, format } from '../../../shared/lib/utils';
+import { cn } from '../../../shared/lib/utils';
 import { PortfolioItem } from '../../../shared/types/types';
-import { NeoCard, NeoButton, Badge, Progress, NeoSelect } from '../../../shared/components/ui/NeoComponents';
+import { NeoButton, Badge, NeoSelect } from '../../../shared/components/ui/NeoComponents';
 import { ActionBottomSheet } from '../../../shared/components/ui/BottomSheet';
+import { portfolioService } from '../../portfolio/services/portfolioService';
 
-// Mock portfolio data - Beauty Salon themed images
-const MOCK_PORTFOLIO: PortfolioItem[] = [
-  {
-    id: '1',
-    imageUrl: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&h=400&fit=crop',
-    title: 'Maquiagem Noiva',
-    category: 'makeup',
-    uploadDate: new Date(),
-  },
-  {
-    id: '2',
-    imageUrl: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=400&h=400&fit=crop',
-    title: 'Coque Elegante',
-    category: 'hairstyle',
-    uploadDate: new Date(),
-  },
-  {
-    id: '3',
-    imageUrl: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400&h=400&fit=crop',
-    title: 'Make Glamour',
-    category: 'makeup',
-    uploadDate: new Date(),
-  },
-  {
-    id: '4',
-    imageUrl: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400&h=400&fit=crop',
-    title: 'Tranças Modernas',
-    category: 'hairstyle',
-    uploadDate: new Date(),
-  },
-  {
-    id: '5',
-    imageUrl: 'https://images.unsplash.com/photo-1503236823255-94609f598e71?w=400&h=400&fit=crop',
-    title: 'Maquiagem Natural',
-    category: 'makeup',
-    uploadDate: new Date(),
-  },
-  {
-    id: '6',
-    imageUrl: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=400&h=400&fit=crop',
-    title: 'Penteado Festa',
-    category: 'hairstyle',
-    uploadDate: new Date(),
-  },
-  {
-    id: '7',
-    imageUrl: 'https://images.unsplash.com/photo-1596704017254-9b121068fb31?w=400&h=400&fit=crop',
-    title: 'Olhos Esfumados',
-    category: 'makeup',
-    uploadDate: new Date(),
-  },
-  {
-    id: '8',
-    imageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&h=400&fit=crop',
-    title: 'Ondas Naturais',
-    category: 'hairstyle',
-    uploadDate: new Date(),
-  },
-  {
-    id: '9',
-    imageUrl: 'https://images.unsplash.com/photo-1457972729786-0411a3b2b626?w=400&h=400&fit=crop',
-    title: 'Maquiagem Artística',
-    category: 'makeup',
-    uploadDate: new Date(),
-  },
-];
-
-// Portfolio Categories
+// Reuse categories (ideal to have in shared constants)
 type PortfolioCategory = 'makeup' | 'hairstyle' | 'bride' | 'nails' | 'skin';
 
 const PORTFOLIO_CATEGORIES: { value: PortfolioCategory; label: string; color: string }[] = [
@@ -95,142 +23,11 @@ const PORTFOLIO_CATEGORIES: { value: PortfolioCategory; label: string; color: st
   { value: 'skin', label: 'Pele', color: 'bg-green-100 text-green-600' },
 ];
 
-// Image Upload Component with Category Selection
-const ImageUploader: React.FC<{
-  onUpload: (file: File, title: string, category: PortfolioCategory) => void;
-  progress: number;
-  uploading: boolean;
-}> = ({ onUpload, progress, uploading }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<PortfolioCategory>('makeup');
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleSubmit = () => {
-    if (selectedFile) {
-      const finalTitle = title.trim() || 'Novo Trabalho';
-      onUpload(selectedFile, finalTitle, category);
-      setSelectedFile(null);
-      setPreview(null);
-      setTitle('');
-      setCategory('makeup');
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      {!preview ? (
-        <div
-          onClick={() => fileInputRef.current?.click()}
-          className={cn(
-            'border-2 border-dashed rounded-neo-lg p-8 text-center cursor-pointer transition-all',
-            'border-neo-text-secondary/30 hover:border-neo-accent/50',
-            uploading && 'pointer-events-none opacity-50'
-          )}
-        >
-          <div className="w-16 h-16 bg-neo-bg rounded-full shadow-neo-out flex items-center justify-center mx-auto mb-4">
-            <Upload size={24} className="text-neo-text-secondary" />
-          </div>
-          <p className="text-neo-text font-medium mb-1">
-            {uploading ? 'Enviando...' : 'Selecionar foto'}
-          </p>
-          <p className="text-xs text-neo-text-secondary">
-            PNG, JPG até 10MB
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {/* Preview */}
-          <div className="relative aspect-square rounded-neo overflow-hidden shadow-neo-out">
-            <img src={preview} alt="Preview" className="w-full h-full object-cover" />
-            <button
-              onClick={() => { setSelectedFile(null); setPreview(null); }}
-              className="absolute top-2 right-2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center"
-            >
-              <X size={16} />
-            </button>
-          </div>
-
-          {/* Title Input */}
-          <div>
-            <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-              Título do trabalho
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex: Make Noiva Clássica"
-              className="w-full neo-input"
-            />
-          </div>
-
-          {/* Category Selector */}
-          <div>
-            <label className="block text-sm font-medium text-neo-text-secondary mb-2">
-              Categoria
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {PORTFOLIO_CATEGORIES.map((cat) => (
-                <button
-                  key={cat.value}
-                  onClick={() => setCategory(cat.value)}
-                  className={cn(
-                    'py-2 px-3 rounded-neo text-xs font-medium transition-all',
-                    category === cat.value
-                      ? 'shadow-neo-pressed text-neo-accent'
-                      : 'shadow-neo-out text-neo-text-secondary'
-                  )}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            onClick={handleSubmit}
-            disabled={!selectedFile || uploading}
-            className="w-full btn-glass-glow disabled:opacity-50"
-          >
-            {uploading ? 'Enviando...' : 'Adicionar ao Portfolio'}
-          </button>
-        </div>
-      )}
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        className="hidden"
-      />
-
-      {uploading && (
-        <div className="space-y-2">
-          <Progress value={progress} showLabel />
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Portfolio Grid Item
+// Portfolio Grid Item (Read-Only Version)
 const PortfolioItemCard: React.FC<{
   item: PortfolioItem;
   onClick: () => void;
-  onDelete: () => void;
-}> = ({ item, onClick, onDelete }) => {
+}> = ({ item, onClick }) => {
   const [isPressed, setIsPressed] = useState(false);
 
   return (
@@ -255,23 +52,12 @@ const PortfolioItemCard: React.FC<{
       {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity">
         <div className="absolute bottom-0 left-0 right-0 p-4">
-          <Badge variant={item.category === 'bride' ? 'warning' : item.category === 'makeup' ? 'warning' : 'info'} className="mb-2">
+          <Badge variant={item.category === 'bride' ? 'warning' : 'info'} className="mb-2">
             {PORTFOLIO_CATEGORIES.find(c => c.value === item.category)?.label || item.category}
           </Badge>
           <h4 className="text-white font-semibold">{item.title}</h4>
         </div>
       </div>
-
-      {/* Delete Button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
-        className="absolute top-2 right-2 w-8 h-8 bg-neo-bg/80 rounded-full flex items-center justify-center text-neo-danger opacity-0 hover:opacity-100 transition-opacity"
-      >
-        <X size={16} />
-      </button>
     </motion.div>
   );
 };
@@ -302,7 +88,7 @@ const ImageDetail: React.FC<{
           <div>
             <h3 className="font-semibold text-neo-text text-lg">{item.title}</h3>
             <Badge variant={item.category === 'makeup' ? 'warning' : 'info'}>
-              {item.category === 'makeup' ? 'Maquiagem' : 'Cabelo'}
+              {PORTFOLIO_CATEGORIES.find(c => c.value === item.category)?.label || item.category}
             </Badge>
           </div>
           <button className="w-12 h-12 bg-neo-bg rounded-full shadow-neo-out flex items-center justify-center text-neo-danger active:shadow-neo-pressed transition-all">
@@ -316,49 +102,19 @@ const ImageDetail: React.FC<{
 
 // Main Portfolio Page
 export const Portfolio: React.FC = () => {
-  const [items, setItems] = useState<PortfolioItem[]>(MOCK_PORTFOLIO);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [showDetail, setShowDetail] = useState(false);
-  const [showUpload, setShowUpload] = useState(false);
   const [filter, setFilter] = useState<'all' | PortfolioCategory>('all');
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Fetch from Firestore
+  const { data: items, isLoading } = useQuery({
+    queryKey: ['portfolio'],
+    queryFn: portfolioService.getPortfolioItems
+  });
 
   const filteredItems = filter === 'all'
-    ? items
-    : items.filter(item => item.category === filter);
-
-  const handleUpload = (file: File, title: string, category: PortfolioCategory) => {
-    setUploading(true);
-    setUploadProgress(0);
-
-    // Simulate upload
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setUploading(false);
-          setShowUpload(false);
-
-          // Add new item with provided title and category
-          const newItem: PortfolioItem = {
-            id: Date.now().toString(),
-            imageUrl: URL.createObjectURL(file),
-            title: title,
-            category: category,
-            uploadDate: new Date(),
-          };
-          setItems(prev => [newItem, ...prev]);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 200);
-  };
-
-  const handleDelete = (id: string) => {
-    setItems(prev => prev.filter(item => item.id !== id));
-  };
+    ? (items || [])
+    : (items || []).filter(item => item.category === filter);
 
   return (
     <div className="min-h-screen bg-neo-bg pb-24 overflow-x-hidden">
@@ -370,14 +126,7 @@ export const Portfolio: React.FC = () => {
               <h1 className="text-display mb-2">Portfolio</h1>
               <p className="text-caption">Veja nossos trabalhos</p>
             </div>
-            <NeoButton
-              variant="gradient"
-              size="sm"
-              onClick={() => setShowUpload(true)}
-            >
-              <Plus size={18} />
-              Adicionar
-            </NeoButton>
+            {/* Admin Add Button Removed */}
           </div>
 
           {/* Filter Dropdown */}
@@ -396,7 +145,13 @@ export const Portfolio: React.FC = () => {
 
         {/* Content */}
         <main className="px-6">
-          {filteredItems.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-2 gap-3">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="aspect-square bg-neo-bg shadow-neo-out rounded-neo animate-pulse" />
+              ))}
+            </div>
+          ) : filteredItems.length === 0 ? (
             <div className="text-center py-16">
               <div className="w-20 h-20 bg-neo-bg rounded-full shadow-neo-out flex items-center justify-center mx-auto mb-4">
                 <ImageIcon size={32} className="text-neo-text-secondary" />
@@ -418,27 +173,12 @@ export const Portfolio: React.FC = () => {
                       setSelectedItem(item);
                       setShowDetail(true);
                     }}
-                    onDelete={() => handleDelete(item.id)}
                   />
                 </motion.div>
               ))}
             </div>
           )}
         </main>
-
-        {/* Upload Bottom Sheet */}
-        <ActionBottomSheet
-          isOpen={showUpload}
-          onClose={() => setShowUpload(false)}
-          title="Adicionar ao Portfolio"
-          actions={[]}
-        >
-          <ImageUploader
-            onUpload={handleUpload}
-            progress={uploadProgress}
-            uploading={uploading}
-          />
-        </ActionBottomSheet>
 
         {/* Image Detail Modal */}
         <ImageDetail

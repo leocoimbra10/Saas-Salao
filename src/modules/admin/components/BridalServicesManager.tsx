@@ -5,6 +5,7 @@
  */
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     Crown,
     Plus,
@@ -24,28 +25,26 @@ import {
     Copy,
     Save
 } from 'lucide-react';
+import { toast } from 'sonner';
+
 import { cn, formatCurrency } from '../../../shared/lib/utils';
 import { NeoCard, Badge, Toggle } from '../../../shared/components/ui/NeoComponents';
+import { useBranding } from '../../../shared/context/BrandingContext';
+import {
+    getBridalServices,
+    createBridalService,
+    updateBridalService,
+    deleteBridalService,
+    BridalServiceData
+} from '../../bride/services/brideService';
 
 // Brand Colors
 const ROSE = 'var(--color-brand-primary)';
-const GOLD = ROSE; // Legacy alias
+const GOLD = ROSE;
 const GOLD_LIGHT = '#F5E6B3';
 
-// Types
-interface BridalService {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    duration: number; // minutes
-    category: 'bride' | 'attendant' | 'mother' | 'trial' | 'package';
-    isActive: boolean;
-    hasDiscount: boolean;
-    discountPercentage: number;
-    customFields: CustomField[];
-    order: number;
-}
+// Re-map type for local usage
+type BridalService = BridalServiceData;
 
 interface CustomField {
     id: string;
@@ -55,119 +54,14 @@ interface CustomField {
     options?: string[]; // For select type
 }
 
-// Heart icon component (defined before usage)
-const Heart: React.FC<{ size: number }> = ({ size }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
-);
-
 // Category Labels
 const CATEGORY_LABELS: Record<BridalService['category'], { label: string; icon: React.ReactNode; color: string }> = {
     bride: { label: 'Noiva', icon: <Crown size={14} />, color: GOLD },
     attendant: { label: 'Acompanhante', icon: <Sparkles size={14} />, color: '#8B5CF6' },
-    mother: { label: 'Mãe/Sogra', icon: <Heart size={14} />, color: '#EC4899' },
+    mother: { label: 'Mãe/Sogra', icon: <React.Fragment><svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg></React.Fragment>, color: '#EC4899' },
     trial: { label: 'Prova', icon: <Eye size={14} />, color: '#3B82F6' },
     package: { label: 'Pacote', icon: <Tag size={14} />, color: '#10B981' },
 };
-
-// Mock Data
-const INITIAL_SERVICES: BridalService[] = [
-    {
-        id: '1',
-        name: 'Noiva Dia D (Make + Hair)',
-        description: 'Maquiagem completa e penteado para o grande dia',
-        price: 850,
-        duration: 180,
-        category: 'bride',
-        isActive: true,
-        hasDiscount: false,
-        discountPercentage: 0,
-        customFields: [],
-        order: 1,
-    },
-    {
-        id: '2',
-        name: 'Prova de Noiva',
-        description: 'Teste de maquiagem e penteado antes do casamento',
-        price: 350,
-        duration: 120,
-        category: 'trial',
-        isActive: true,
-        hasDiscount: true,
-        discountPercentage: 15,
-        customFields: [],
-        order: 2,
-    },
-    {
-        id: '3',
-        name: 'Ensaio Pré-Wedding',
-        description: 'Produção para sessão de fotos pré-casamento',
-        price: 450,
-        duration: 120,
-        category: 'bride',
-        isActive: true,
-        hasDiscount: false,
-        discountPercentage: 0,
-        customFields: [],
-        order: 3,
-    },
-    {
-        id: '4',
-        name: 'Acompanhante (Make + Hair)',
-        description: 'Maquiagem e penteado para madrinhas/damas',
-        price: 280,
-        duration: 90,
-        category: 'attendant',
-        isActive: true,
-        hasDiscount: false,
-        discountPercentage: 0,
-        customFields: [],
-        order: 4,
-    },
-    {
-        id: '5',
-        name: 'Acompanhante (Make)',
-        description: 'Apenas maquiagem para acompanhantes',
-        price: 160,
-        duration: 60,
-        category: 'attendant',
-        isActive: true,
-        hasDiscount: false,
-        discountPercentage: 0,
-        customFields: [],
-        order: 5,
-    },
-    {
-        id: '6',
-        name: 'Mãe da Noiva (Make + Hair)',
-        description: 'Produção especial para a mãe da noiva',
-        price: 350,
-        duration: 120,
-        category: 'mother',
-        isActive: true,
-        hasDiscount: false,
-        discountPercentage: 0,
-        customFields: [],
-        order: 6,
-    },
-    {
-        id: '7',
-        name: 'Pacote Completo Noiva',
-        description: 'Inclui prova + dia D + retoque',
-        price: 1350,
-        duration: 300,
-        category: 'package',
-        isActive: true,
-        hasDiscount: true,
-        discountPercentage: 10,
-        customFields: [
-            { id: 'f1', label: 'Inclui Retoque', type: 'toggle', value: 'true' },
-            { id: 'f2', label: 'Qtd. de Provas', type: 'number', value: '2' },
-        ],
-        order: 7,
-    },
-];
 
 // Service Card Component
 const ServiceCard: React.FC<{
@@ -289,13 +183,14 @@ const ServiceCard: React.FC<{
 // Service Editor Modal
 const ServiceEditorModal: React.FC<{
     service: BridalService | null;
+    orgId: string;
     isOpen: boolean;
     onClose: () => void;
     onSave: (service: BridalService) => void;
-}> = ({ service, isOpen, onClose, onSave }) => {
+    isSaving: boolean;
+}> = ({ service, orgId, isOpen, onClose, onSave, isSaving }) => {
     const [formData, setFormData] = useState<BridalService>(
         service || {
-            id: `service-${Date.now()}`,
             name: '',
             description: '',
             price: 0,
@@ -306,6 +201,7 @@ const ServiceEditorModal: React.FC<{
             discountPercentage: 0,
             customFields: [],
             order: 999,
+            orgId
         }
     );
 
@@ -317,7 +213,6 @@ const ServiceEditorModal: React.FC<{
             setFormData(service);
         } else {
             setFormData({
-                id: `service-${Date.now()}`,
                 name: '',
                 description: '',
                 price: 0,
@@ -328,9 +223,10 @@ const ServiceEditorModal: React.FC<{
                 discountPercentage: 0,
                 customFields: [],
                 order: 999,
+                orgId
             });
         }
-    }, [service, isOpen]);
+    }, [service, isOpen, orgId]);
 
     const addCustomField = () => {
         if (!newFieldLabel.trim()) return;
@@ -353,7 +249,7 @@ const ServiceEditorModal: React.FC<{
     const removeCustomField = (fieldId: string) => {
         setFormData({
             ...formData,
-            customFields: formData.customFields.filter(f => f.id !== fieldId),
+            customFields: formData.customFields.filter((f: any) => f.id !== fieldId),
         });
     };
 
@@ -502,7 +398,7 @@ const ServiceEditorModal: React.FC<{
                             Campos Personalizados
                         </label>
                         <div className="space-y-2 mb-3">
-                            {formData.customFields.map((field) => (
+                            {formData.customFields.map((field: any) => (
                                 <div key={field.id} className="flex items-center gap-2 p-2 bg-neo-bg rounded-neo shadow-neo-in">
                                     <span className="flex-1 text-sm text-neo-text">{field.label}</span>
                                     <span className="text-xs text-neo-text-secondary px-2 py-0.5 bg-neo-bg rounded-full shadow-neo-out">
@@ -564,13 +460,15 @@ const ServiceEditorModal: React.FC<{
                 <div className="flex gap-3 mt-6">
                     <button
                         onClick={() => onSave(formData)}
-                        className="flex-1 btn-glass-glow"
+                        disabled={isSaving}
+                        className="flex-1 btn-glass-glow disabled:opacity-50"
                     >
                         <Save size={18} />
-                        Salvar
+                        {isSaving ? 'Salvando...' : 'Salvar'}
                     </button>
                     <button
                         onClick={onClose}
+                        disabled={isSaving}
                         className="flex-1 py-3 rounded-neo shadow-neo-out text-neo-text-secondary font-semibold"
                     >
                         Cancelar
@@ -581,7 +479,7 @@ const ServiceEditorModal: React.FC<{
     );
 };
 
-// Filter Dropdown Component - Collapsible
+// Filter Dropdown Component
 const FilterDropdown: React.FC<{
     filterCategory: BridalService['category'] | 'all';
     setFilterCategory: (cat: BridalService['category'] | 'all') => void;
@@ -683,25 +581,61 @@ const FilterDropdown: React.FC<{
                     </motion.div>
                 )}
             </AnimatePresence>
-
-            {/* Click outside to close */}
-            {isOpen && (
-                <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setIsOpen(false)}
-                />
-            )}
+            {isOpen && <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />}
         </div>
     );
 };
 
 // Main Bridal Services Manager Component
 export const BridalServicesManager: React.FC = () => {
-    const [services, setServices] = useState<BridalService[]>(INITIAL_SERVICES);
+    const { organization } = useBranding();
+    const queryClient = useQueryClient();
     const [selectedService, setSelectedService] = useState<BridalService | null>(null);
     const [showEditor, setShowEditor] = useState(false);
     const [filterCategory, setFilterCategory] = useState<BridalService['category'] | 'all'>('all');
     const [showInactive, setShowInactive] = useState(true);
+
+    // Queries
+    const { data: services = [], isLoading } = useQuery({
+        queryKey: ['bridal_services', organization?.id],
+        queryFn: () => getBridalServices(organization?.id || 'default'),
+        enabled: !!organization?.id
+    });
+
+    // Mutations
+    const createMutation = useMutation({
+        mutationFn: createBridalService,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['bridal_services'] });
+            setShowEditor(false);
+            toast.success('Serviço criado com sucesso!');
+        }
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: ({ id, data }: { id: string, data: Partial<BridalService> }) => updateBridalService(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['bridal_services'] });
+            setShowEditor(false);
+            toast.success('Serviço atualizado com sucesso!');
+        }
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: deleteBridalService,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['bridal_services'] });
+            toast.success('Serviço removido com sucesso!');
+        }
+    });
+
+    const toggleActiveMutation = useMutation({
+        mutationFn: (service: BridalService) => updateBridalService(service.id!, { isActive: !service.isActive }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['bridal_services'] });
+            toast.success('Status atualizado!');
+        }
+    });
 
     const filteredServices = services
         .filter(s => filterCategory === 'all' || s.category === filterCategory)
@@ -719,36 +653,30 @@ export const BridalServicesManager: React.FC = () => {
     };
 
     const handleSaveService = (service: BridalService) => {
-        if (selectedService) {
-            // Edit existing
-            setServices(services.map(s => s.id === service.id ? service : s));
+        if (!organization?.id) return;
+
+        if (service.id) {
+            updateMutation.mutate({ id: service.id, data: service });
         } else {
-            // Add new
-            setServices([...services, { ...service, order: services.length + 1 }]);
+            createMutation.mutate({ ...service, orgId: organization.id });
         }
-        setShowEditor(false);
     };
 
     const handleDeleteService = (serviceId: string) => {
         if (confirm('Tem certeza que deseja excluir este serviço?')) {
-            setServices(services.filter(s => s.id !== serviceId));
+            deleteMutation.mutate(serviceId);
         }
     };
 
-    const handleToggleActive = (serviceId: string) => {
-        setServices(services.map(s =>
-            s.id === serviceId ? { ...s, isActive: !s.isActive } : s
-        ));
-    };
-
     const handleDuplicate = (service: BridalService) => {
-        const duplicated: BridalService = {
-            ...service,
-            id: `service-${Date.now()}`,
-            name: `${service.name} (Cópia)`,
-            order: services.length + 1,
-        };
-        setServices([...services, duplicated]);
+        if (!organization?.id) return;
+        const { id, ...data } = service;
+        createMutation.mutate({
+            ...data,
+            name: `${data.name} (Cópia)`,
+            orgId: organization.id,
+            order: services.length + 1
+        });
     };
 
     // Stats
@@ -794,38 +722,35 @@ export const BridalServicesManager: React.FC = () => {
 
             {/* Services List */}
             <div className="space-y-3">
-                <AnimatePresence>
-                    {filteredServices.map((service) => (
-                        <ServiceCard
-                            key={service.id}
-                            service={service}
-                            onEdit={() => handleEditService(service)}
-                            onDelete={() => handleDeleteService(service.id)}
-                            onToggleActive={() => handleToggleActive(service.id)}
-                            onDuplicate={() => handleDuplicate(service)}
-                        />
-                    ))}
-                </AnimatePresence>
+                {isLoading ? (
+                    <div className="text-center py-8 text-neo-text-secondary">Carregando serviços...</div>
+                ) : filteredServices.length === 0 ? (
+                    <div className="text-center py-8 text-neo-text-secondary">Nenhum serviço encontrado.</div>
+                ) : (
+                    <AnimatePresence>
+                        {filteredServices.map((service) => (
+                            <ServiceCard
+                                key={service.id}
+                                service={service}
+                                onEdit={() => handleEditService(service)}
+                                onDelete={() => handleDeleteService(service.id!)}
+                                onToggleActive={() => toggleActiveMutation.mutate(service)}
+                                onDuplicate={() => handleDuplicate(service)}
+                            />
+                        ))}
+                    </AnimatePresence>
+                )}
             </div>
 
-            {filteredServices.length === 0 && (
-                <div className="text-center py-12">
-                    <Crown size={48} className="mx-auto mb-4 text-neo-text-secondary/30" />
-                    <p className="text-neo-text-secondary">Nenhum serviço encontrado</p>
-                </div>
-            )}
-
             {/* Editor Modal */}
-            <AnimatePresence>
-                {showEditor && (
-                    <ServiceEditorModal
-                        service={selectedService}
-                        isOpen={showEditor}
-                        onClose={() => setShowEditor(false)}
-                        onSave={handleSaveService}
-                    />
-                )}
-            </AnimatePresence>
+            <ServiceEditorModal
+                service={selectedService}
+                orgId={organization?.id || 'default'}
+                isOpen={showEditor}
+                onClose={() => setShowEditor(false)}
+                onSave={handleSaveService}
+                isSaving={createMutation.isPending || updateMutation.isPending}
+            />
         </div>
     );
 };
